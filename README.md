@@ -1,4 +1,4 @@
-# VirusRescueAR
+# Pac-ManMazeMandness3D
 
 _Proyecto final
 Computación Grácfica Avanzada_
@@ -26,6 +26,6 @@ _Para poder hacer uso de esta aplicación de requiere de:_
 
 ## Autores 🔩
 
-_* Isabel Gómez Yareli Elizabeth_
-_* Ortiz Figueroa María Fernanda_
-_* Roldan Rivera Luis Ricardo_
+_* Isabel Gómez Yareli Elizabeth
+* Ortiz Figueroa María Fernanda
+* Roldan Rivera Luis Ricardo_
