@@ -97,6 +97,9 @@ Model modelFountain;
 // Mayow
 Model mayowModelAnimate;
 
+// Laberinto
+Model laberintoModelAnimate;
+
 // Terrain model instance
 Terrain terrain(-1, -1, 200, 16, "../Textures/heightmap.png");
 
@@ -127,6 +130,7 @@ int lastMousePosY, offsetY = 0;
 // Model matrix definitions
 glm::mat4 modelMatrixMayow = glm::mat4(1.0f);
 glm::mat4 modelMatrixFountain = glm::mat4(1.0f);
+glm::mat4 modelMatrixLaberinto = glm::mat4(1.0f);
 
 int animationIndex = 1;
 int modelSelected = 2;
@@ -466,8 +470,12 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	modelFountain.setShader(&shaderMulLighting);
 
 	//Mayow
-	mayowModelAnimate.loadModel("../models/mayow/personaje2.fbx");
+	mayowModelAnimate.loadModel("../models/Pacman/MS-PACMAN_ANIMACIONES.fbx");
 	mayowModelAnimate.setShader(&shaderMulLighting);
+
+	//Laberinto
+	laberintoModelAnimate.loadModel("../models/LaberintoEgipto/laberintoCompletoEgipto.obj");
+	laberintoModelAnimate.setShader(&shaderMulLighting);
 
 	camera->setPosition(glm::vec3(0.0, 0.0, 10.0));
 	camera->setDistanceFromTarget(distanceFromTarget);
@@ -1026,6 +1034,7 @@ void destroy() {
 
 	// Custom objects animate
 	mayowModelAnimate.destroy();
+	laberintoModelAnimate.destroy();
 
 	// Textures Delete
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -1170,6 +1179,8 @@ void applicationLoop() {
 	modelMatrixFountain[3][1] = terrain.getHeightTerrain(modelMatrixFountain[3][0] , modelMatrixFountain[3][2]) + 0.2;
 	modelMatrixFountain = glm::scale(modelMatrixFountain, glm::vec3(10.0f, 10.0f, 10.0f));
 
+	modelMatrixLaberinto = glm::translate(modelMatrixLaberinto, glm::vec3(0.0f, 0.0f, 0.0f));
+	
 	lastTime = TimeManager::Instance().GetTime();
 
 	// Time for the particles animation
@@ -1659,6 +1670,11 @@ void renderScene(bool renderParticles){
 	modelMatrixMayowBody = glm::scale(modelMatrixMayowBody, glm::vec3(0.021, 0.021, 0.021));
 	mayowModelAnimate.setAnimationIndex(animationIndex);
 	mayowModelAnimate.render(modelMatrixMayowBody);
+
+	modelMatrixLaberinto[3][1] = terrain.getHeightTerrain(modelMatrixLaberinto[3][0], modelMatrixLaberinto[3][2]);
+	glm::mat4 modelMatrixLaberintoBody = glm::mat4(modelMatrixLaberinto);
+	modelMatrixLaberintoBody = glm::scale(modelMatrixLaberintoBody, glm::vec3(1.0, 1.0, 1.0));
+	laberintoModelAnimate.render(modelMatrixLaberintoBody);
 
 	/**********
 	 * Update the position with alpha objects
