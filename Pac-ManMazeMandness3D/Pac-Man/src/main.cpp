@@ -91,6 +91,9 @@ ShadowBox * shadowBox;
 // Hierba
 Model modelGrass;
 
+// Punto
+Model puntoModel;
+
 // Model animate instance
 // Pacman
 Model pacmanModelAnimate;
@@ -237,6 +240,77 @@ GLuint feedback[2];
 GLuint drawBuf = 1;
 float particleSize = 0.5, particleLifetime = 3.0;
 double currTimeParticlesAnimationFire, lastTimeParticlesAnimationFire;
+
+// Puntos posiciones
+std::vector<glm::vec3> puntosPosition = {
+	glm::vec3(-20.987, 0.0, 0.0), glm::vec3(20.987, 0.0, 0.0),
+	glm::vec3(-16.3175, 0.0, 0.0), glm::vec3(16.3175, 0.0, 0.0),
+	glm::vec3(-11.811, 0.0, 0.0), glm::vec3(11.811, 0.0, 0.0),
+	glm::vec3(-9.812, 0.0, 0.0), glm::vec3(9.812, 0.0, 0.0),
+	glm::vec3(-7.455, 0.0, 0.0), glm::vec3(7.455, 0.0, 0.0),
+
+	glm::vec3(-0.985, 0.0, -6.7505), glm::vec3(0.985, 0.0, -6.7505), glm::vec3(-0.985, 0.0, 6.7505), glm::vec3(0.985, 0.0, 6.7505),
+	glm::vec3(-0.985, 0.0, -11.6845), glm::vec3(0.985, 0.0, -11.6845), glm::vec3(-0.985, 0.0, 11.6845), glm::vec3(0.985, 0.0, 11.6845),
+	glm::vec3(-0.985, 0.0, -16.0565), glm::vec3(0.985, 0.0, -16.0565), glm::vec3(-0.985, 0.0, 16.0565), glm::vec3(0.985, 0.0, 16.0565),
+	glm::vec3(-0.985, 0.0, -20.1625), glm::vec3(0.985, 0.0, -20.1625), glm::vec3(-0.985, 0.0, 20.1625), glm::vec3(0.985, 0.0, 20.1625),
+
+	glm::vec3(-3.2405, 0.0, -6.7505), glm::vec3(3.2405, 0.0, -6.7505), glm::vec3(-3.2405, 0.0, 6.7505), glm::vec3(3.2405, 0.0, 6.7505),
+	glm::vec3(-3.2405, 0.0, -11.6845), glm::vec3(3.2405, 0.0, -11.6845), glm::vec3(-3.2405, 0.0, 11.6845), glm::vec3(3.2405, 0.0, 11.6845),
+	glm::vec3(-3.2405, 0.0, -16.0565), glm::vec3(3.2405, 0.0, -16.0565), glm::vec3(-3.2405, 0.0, 16.0565), glm::vec3(3.2405, 0.0, 16.0565),
+	glm::vec3(-3.2405, 0.0, -20.1625), glm::vec3(3.2405, 0.0, -20.1625), glm::vec3(-3.2405, 0.0, 20.1625), glm::vec3(3.2405, 0.0, 20.1625),
+
+	glm::vec3(-5.3795, 0.0, -6.7505), glm::vec3(5.3795, 0.0, -6.7505), glm::vec3(-5.3795, 0.0, 6.7505), glm::vec3(5.3795, 0.0, 6.7505),
+	glm::vec3(-5.3795, 0.0, -9.5085), glm::vec3(5.3795, 0.0, -9.5085), glm::vec3(-5.3795, 0.0, 9.5085), glm::vec3(5.3795, 0.0, 9.5085),
+	glm::vec3(-5.3795, 0.0, -11.6845), glm::vec3(5.3795, 0.0, -11.6845), glm::vec3(-5.3795, 0.0, 11.6845), glm::vec3(5.3795, 0.0, 11.6845),
+	glm::vec3(-5.3795, 0.0, -16.0565), glm::vec3(5.3795, 0.0, -16.0565), glm::vec3(-5.3795, 0.0, 16.0565), glm::vec3(5.3795, 0.0, 16.0565),
+	glm::vec3(-5.3795, 0.0, -20.1625), glm::vec3(5.3795, 0.0, -20.1625), glm::vec3(-5.3795, 0.0, 20.1625), glm::vec3(5.3795, 0.0, 20.1625),
+
+	glm::vec3(-7.4025, 0.0, -2.273), glm::vec3(7.4025, 0.0, -2.273), glm::vec3(-7.4025, 0.0, 2.273), glm::vec3(7.4025, 0.0, 2.273),
+	glm::vec3(-7.4025, 0.0, -4.514), glm::vec3(7.4025, 0.0, -4.514), glm::vec3(-7.4025, 0.0, 4.514), glm::vec3(7.4025, 0.0, 4.514),
+	glm::vec3(-7.4025, 0.0, -6.7505), glm::vec3(7.4025, 0.0, -6.7505), glm::vec3(-7.4025, 0.0, 6.7505), glm::vec3(7.4025, 0.0, 6.7505),
+	glm::vec3(-7.4025, 0.0, -11.6845), glm::vec3(7.4025, 0.0, -11.6845), glm::vec3(-7.4025, 0.0, 11.6845), glm::vec3(7.4025, 0.0, 11.6845),
+	glm::vec3(-7.4025, 0.0, -16.0565), glm::vec3(7.4025, 0.0, -16.0565), glm::vec3(-7.4025, 0.0, 16.0565), glm::vec3(7.4025, 0.0, 16.0565),
+	glm::vec3(-7.4025, 0.0, -20.1625), glm::vec3(7.4025, 0.0, -20.1625), glm::vec3(-7.4025, 0.0, 20.1625), glm::vec3(7.4025, 0.0, 20.1625),
+
+	glm::vec3(-9.812, 0.0, -6.7505), glm::vec3(9.812, 0.0, -6.7505), glm::vec3(-9.812, 0.0, 6.7505), glm::vec3(9.812, 0.0, 6.7505),
+	glm::vec3(-9.812, 0.0, -11.6845), glm::vec3(9.812, 0.0, -11.6845), glm::vec3(-9.812, 0.0, 11.6845), glm::vec3(9.812, 0.0, 11.6845),
+	glm::vec3(-9.812, 0.0, -16.0565), glm::vec3(9.812, 0.0, -16.0565), glm::vec3(-9.812, 0.0, 16.0565), glm::vec3(9.812, 0.0, 16.0565),
+	glm::vec3(-9.812, 0.0, -20.1625), glm::vec3(9.812, 0.0, -20.1625), glm::vec3(-9.812, 0.0, 20.1625), glm::vec3(9.812, 0.0, 20.1625),
+
+	glm::vec3(-11.811, 0.0, -2.273), glm::vec3(11.811, 0.0, -2.273), glm::vec3(-11.811, 0.0, 2.273), glm::vec3(11.811, 0.0, 2.273),
+	glm::vec3(-11.811, 0.0, -4.514), glm::vec3(11.811, 0.0, -4.514), glm::vec3(-11.811, 0.0, 4.514), glm::vec3(11.811, 0.0, 4.514),
+	glm::vec3(-11.811, 0.0, -6.7505), glm::vec3(11.811, 0.0, -6.7505), glm::vec3(-11.811, 0.0, 6.7505), glm::vec3(11.811, 0.0, 6.7505),
+	glm::vec3(-11.811, 0.0, -11.6845), glm::vec3(11.811, 0.0, -11.6845), glm::vec3(-11.811, 0.0, 11.6845), glm::vec3(11.811, 0.0, 11.6845),
+	glm::vec3(-11.811, 0.0, -16.0565), glm::vec3(11.811, 0.0, -16.0565), glm::vec3(-11.811, 0.0, 16.0565), glm::vec3(11.811, 0.0, 16.0565),
+	glm::vec3(-11.811, 0.0, -18.0915), glm::vec3(11.811, 0.0, -18.0915), glm::vec3(-11.811, 0.0, 18.0915), glm::vec3(11.811, 0.0, 18.0915),
+	glm::vec3(-11.811, 0.0, -20.1625), glm::vec3(11.811, 0.0, -20.1625), glm::vec3(-11.811, 0.0, 20.1625), glm::vec3(11.811, 0.0, 20.1625),
+
+	glm::vec3(-14.2075, 0.0, -11.6845), glm::vec3(14.2075, 0.0, -11.6845), glm::vec3(-14.2075, 0.0, 11.6845), glm::vec3(14.2075, 0.0, 11.6845),
+	glm::vec3(-14.2075, 0.0, -16.0565), glm::vec3(14.2075, 0.0, -16.0565), glm::vec3(-14.2075, 0.0, 16.0565), glm::vec3(14.2075, 0.0, 16.0565),
+	glm::vec3(-14.2075, 0.0, -20.1625),
+
+	glm::vec3(-16.3175, 0.0, -2.273), glm::vec3(16.3175, 0.0, -2.273), glm::vec3(-16.3175, 0.0, 2.273), glm::vec3(16.3175, 0.0, 2.273),
+	glm::vec3(-16.3175, 0.0, -4.514), glm::vec3(16.3175, 0.0, -4.514), glm::vec3(-16.3175, 0.0, 4.514), glm::vec3(16.3175, 0.0, 4.514),
+	glm::vec3(-16.3175, 0.0, -6.7505), glm::vec3(16.3175, 0.0, -6.7505), glm::vec3(-16.3175, 0.0, 6.7505), glm::vec3(16.3175, 0.0, 6.7505),
+	glm::vec3(-16.3175, 0.0, -9.5085), glm::vec3(16.3175, 0.0, -9.5085), glm::vec3(-16.3175, 0.0, 9.5085), glm::vec3(16.3175, 0.0, 9.5085),
+	glm::vec3(-16.3175, 0.0, -11.6845), glm::vec3(16.3175, 0.0, -11.6845), glm::vec3(-16.3175, 0.0, 11.6845), glm::vec3(16.3175, 0.0, 11.6845),
+	glm::vec3(-16.3175, 0.0, -14.004), glm::vec3(16.3175, 0.0, -14.004), glm::vec3(-16.3175, 0.0, 14.004), glm::vec3(16.3175, 0.0, 14.004),
+	glm::vec3(-16.3175, 0.0, -16.0565), glm::vec3(16.3175, 0.0, -16.0565), glm::vec3(-16.3175, 0.0, 16.0565), glm::vec3(16.3175, 0.0, 16.0565),
+	glm::vec3(-16.3175, 0.0, -20.1625), glm::vec3(16.3175, 0.0, -20.1625), glm::vec3(-16.3175, 0.0, 20.1625), glm::vec3(16.3175, 0.0, 20.1625),
+
+	glm::vec3(-18.664, 0.0, -11.6845), glm::vec3(18.664, 0.0, -11.6845), glm::vec3(-18.664, 0.0, 11.6845), glm::vec3(18.664, 0.0, 11.6845),
+	glm::vec3(-18.664, 0.0, -20.1625), glm::vec3(18.664, 0.0, -20.1625), glm::vec3(-18.664, 0.0, 20.1625), glm::vec3(18.664, 0.0, 20.1625),
+
+	glm::vec3(-20.987, 0.0, -2.273), glm::vec3(20.987, 0.0, -2.273), glm::vec3(-20.987, 0.0, 2.273), glm::vec3(20.987, 0.0, 2.273),
+	glm::vec3(-20.987, 0.0, -4.514), glm::vec3(20.987, 0.0, -4.514), glm::vec3(-20.987, 0.0, 4.514), glm::vec3(20.987, 0.0, 4.514),
+	glm::vec3(-20.987, 0.0, -6.7505), glm::vec3(20.987, 0.0, -6.7505), glm::vec3(-20.987, 0.0, 6.7505), glm::vec3(20.987, 0.0, 6.7505),
+	glm::vec3(-20.987, 0.0, -9.5085), glm::vec3(20.987, 0.0, -9.5085), glm::vec3(-20.987, 0.0, 9.5085), glm::vec3(20.987, 0.0, 9.5085),
+	glm::vec3(-20.987, 0.0, -11.6845), glm::vec3(20.987, 0.0, -11.6845), glm::vec3(-20.987, 0.0, 11.6845), glm::vec3(20.987, 0.0, 11.6845),
+	glm::vec3(-20.987, 0.0, -14.004), glm::vec3(20.987, 0.0, -14.004), glm::vec3(-20.987, 0.0, 14.004), glm::vec3(20.987, 0.0, 14.004),
+	glm::vec3(-20.987, 0.0, -16.0565), glm::vec3(20.987, 0.0, -16.0565), glm::vec3(-20.987, 0.0, 16.0565), glm::vec3(20.987, 0.0, 16.0565),
+	glm::vec3(-20.987, 0.0, -18.0915), glm::vec3(20.987, 0.0, -18.0915), glm::vec3(-20.987, 0.0, 18.0915), glm::vec3(20.987, 0.0, 18.0915),
+	glm::vec3(-20.987, 0.0, -20.1625), glm::vec3(20.987, 0.0, -20.1625), glm::vec3(-20.987, 0.0, 20.1625), glm::vec3(20.987, 0.0, 20.1625),
+};
 
 // Colliders
 std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> > collidersOBB;
@@ -541,6 +615,10 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	pacmanModelAnimate.loadModel("../models/Pacman/MS-PACMAN_ANIMACIONES.fbx");
 	pacmanModelAnimate.setShader(&shaderMulLighting);
 
+	// Punto
+	puntoModel.loadModel("../models/Pacman/punto.obj");
+	puntoModel.setShader(&shaderMulLighting);
+
 	//Laberinto
 	LE1ModelAnimate.loadModel("../models/LaberintoEgipto/LE1.obj");
 	LE1ModelAnimate.setShader(&shaderMulLighting);
@@ -741,7 +819,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	textureTerrainG.freeImage(bitmap);
 
 	// Definiendo la textura a utilizar -> COLOR AZUL
-	Texture textureTerrainB("../Textures/water2.jpg");
+	Texture textureTerrainB("../Textures/water.jpg");
 	// Carga el mapa de bits (FIBITMAP es el tipo de dato de la libreria)
 	bitmap = textureTerrainB.loadImage();
 	// Convertimos el mapa de bits en un arreglo unidimensional de tipo unsigned char
@@ -997,6 +1075,7 @@ void destroy() {
 
 	// Custom objects animate
 	pacmanModelAnimate.destroy();
+	puntoModel.destroy();
 	LE1ModelAnimate.destroy();
 	LE2ModelAnimate.destroy();
 	LE3ModelAnimate.destroy();
@@ -1040,11 +1119,6 @@ void destroy() {
 
 	// Textures Delete
 	glBindTexture(GL_TEXTURE_2D, 0);
-	glDeleteTextures(1, &textureCespedID);
-	glDeleteTextures(1, &textureWallID);
-	glDeleteTextures(1, &textureWindowID);
-	glDeleteTextures(1, &textureHighwayID);
-	glDeleteTextures(1, &textureLandingPadID);
 	glDeleteTextures(1, &textureTerrainBackgroundID);
 	glDeleteTextures(1, &textureTerrainRID);
 	glDeleteTextures(1, &textureTerrainGID);
@@ -1429,15 +1503,28 @@ void applicationLoop() {
 		// Collider de Pacman
 		AbstractModel::SBB pacmanCollider;
 		glm::mat4 modelMatrixColliderPacman = glm::mat4(modelMatrixPacman);
-		modelMatrixColliderPacman = glm::scale(modelMatrixColliderPacman, glm::vec3(0.006, 0.006, 0.006));
+		modelMatrixColliderPacman = glm::scale(modelMatrixColliderPacman, glm::vec3(0.005, 0.005, 0.005));
 		// Se hace la suma del vector, porque el pivote esta en el origen, e la esfera
 		// de colisión no se ubica de forma adecuada con respecto al modelo
 		modelMatrixColliderPacman = glm::translate(modelMatrixColliderPacman,
 			pacmanModelAnimate.getSbb().c + glm::vec3(0.0, 160.0, -60.0));
 		pacmanCollider.c = glm::vec3(modelMatrixColliderPacman[3]);
-		pacmanCollider.ratio = pacmanModelAnimate.getSbb().ratio * 0.006;
+		pacmanCollider.ratio = pacmanModelAnimate.getSbb().ratio * 0.005;
 		addOrUpdateColliders(collidersSBB, "pacman", pacmanCollider, modelMatrixPacman);
 		
+		// Punto
+		for (int i = 0; i < puntosPosition.size(); i++) {
+			AbstractModel::SBB puntoCollider;
+			glm::mat4 modelMatrixColliderPunto = glm::mat4(1.0);
+			modelMatrixColliderPunto = glm::translate(modelMatrixColliderPunto, puntosPosition[i]);
+			addOrUpdateColliders(collidersSBB, "punto" + std::to_string(i), puntoCollider, modelMatrixColliderPunto);
+			
+			modelMatrixColliderPunto = glm::translate(modelMatrixColliderPunto, puntoModel.getSbb().c);
+			puntoCollider.c = glm::vec3(modelMatrixColliderPunto[3]);
+			puntoCollider.ratio = puntoModel.getSbb().ratio * 0.6;
+			std::get<0>(collidersSBB.find("punto" + std::to_string(i))->second) = puntoCollider;
+		}
+
 		//Laberinto
 		AbstractModel::OBB LECollider;
 		glm::mat4 modelmatrixColliderLE1 = glm::mat4(modelMatrixLE1);
@@ -1794,11 +1881,8 @@ void applicationLoop() {
 			for (std::map<std::string,
 					std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >::iterator jt =
 					collidersOBB.begin(); jt != collidersOBB.end(); jt++) {
-				if (it != jt
-						&& testOBBOBB(std::get<0>(it->second),
-								std::get<0>(jt->second))) {
-					std::cout << "Colision " << it->first << " with "
-							<< jt->first << std::endl;
+				if (it != jt && testOBBOBB(std::get<0>(it->second), std::get<0>(jt->second))) {
+					//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
 					isCollision = true;
 				}
 			}
@@ -1812,11 +1896,8 @@ void applicationLoop() {
 			for (std::map<std::string,
 					std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> >::iterator jt =
 					collidersSBB.begin(); jt != collidersSBB.end(); jt++) {
-				if (it != jt
-						&& testSphereSphereIntersection(std::get<0>(it->second),
-								std::get<0>(jt->second))) {
-					std::cout << "Colision " << it->first << " with "
-							<< jt->first << std::endl;
+				if (it != jt && testSphereSphereIntersection(std::get<0>(it->second), std::get<0>(jt->second))) {
+					std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
 					isCollision = true;
 				}
 			}
@@ -1831,10 +1912,8 @@ void applicationLoop() {
 					std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >::iterator jt =
 					collidersOBB.begin();
 			for (; jt != collidersOBB.end(); jt++) {
-				if (testSphereOBox(std::get<0>(it->second),
-								std::get<0>(jt->second))) {
-					std::cout << "Colision " << it->first << " with "
-							<< jt->first << std::endl;
+				if (testSphereOBox(std::get<0>(it->second), std::get<0>(jt->second))) {
+					std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
 					isCollision = true;
 					addOrUpdateCollisionDetection(collisionDetection, jt->first, isCollision);
 				}
@@ -1843,8 +1922,7 @@ void applicationLoop() {
 		}
 
 		std::map<std::string, bool>::iterator colIt;
-		for (colIt = collisionDetection.begin(); colIt != collisionDetection.end();
-				colIt++) {
+		for (colIt = collisionDetection.begin(); colIt != collisionDetection.end(); colIt++) {
 			std::map<std::string,
 					std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> >::iterator it =
 					collidersSBB.find(colIt->first);
@@ -2052,13 +2130,20 @@ void renderScene(bool renderParticles){
 	modelGrass.render();
 	glEnable(GL_CULL_FACE);
 
+	// Puntos
+	for (int i = 0; i < puntosPosition.size(); i++) {
+		puntosPosition[i].y = terrain.getHeightTerrain(puntosPosition[i].x, puntosPosition[i].z);
+		puntoModel.setPosition(puntosPosition[i]);
+		puntoModel.render();
+	}
+
 	/*******************************************
 	 * Custom Anim objects obj
 	 *******************************************/
 	//Pacman
 	modelMatrixPacman[3][1] = terrain.getHeightTerrain(modelMatrixPacman[3][0], modelMatrixPacman[3][2]);
 	glm::mat4 modelMatrixPacmanBody = glm::mat4(modelMatrixPacman);
-	modelMatrixPacmanBody = glm::scale(modelMatrixPacmanBody, glm::vec3(0.006, 0.006, 0.006));
+	modelMatrixPacmanBody = glm::scale(modelMatrixPacmanBody, glm::vec3(0.005, 0.005, 0.005));
 	pacmanModelAnimate.setAnimationIndex(animationIndex);
 	pacmanModelAnimate.render(modelMatrixPacmanBody);
 

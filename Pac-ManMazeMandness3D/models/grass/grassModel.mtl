@@ -1,13 +1,378 @@
-# Blender MTL File: 'None'
-# Material Count: 1
-
-newmtl Material.001
-Ns 96.078431
-Ka 1.000000 1.000000 1.000000
-Kd 0.640000 0.640000 0.640000
-Ks 0.500000 0.500000 0.500000
-Ke 0.000000 0.000000 0.000000
-Ni 1.000000
-d 1.000000
-illum 2
+newmtl grassModel:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
 map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel1:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel2:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel3:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel4:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel5:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel6:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel7:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel8:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel9:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel10:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel11:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel12:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel13:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel14:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel15:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel16:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel17:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel18:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel19:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel20:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel21:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel22:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel23:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel24:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel25:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel26:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel28:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel29:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel30:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel31:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel32:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel33:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel34:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel35:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel36:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel37:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel38:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel39:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel40:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel41:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
+newmtl grassModel42:Material_001
+illum 4
+Kd 0.00 0.00 0.00
+Ka 1.00 1.00 1.00
+Tf 1.00 1.00 1.00
+map_Kd agaveTexture.png
+Ni 1.00
+Ks 0.50 0.50 0.50
+Ns 96.08
