@@ -1072,10 +1072,10 @@ void destroy() {
 
 	// Custom objects Delete
 	modelGrass.destroy();
+	puntoModel.destroy();
 
 	// Custom objects animate
 	pacmanModelAnimate.destroy();
-	puntoModel.destroy();
 	LE1ModelAnimate.destroy();
 	LE2ModelAnimate.destroy();
 	LE3ModelAnimate.destroy();
@@ -1226,10 +1226,10 @@ bool processInput(bool continueApplication) {
 		modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(-1.0f), glm::vec3(0, 1, 0));
 		animationIndex = 3;
 	}if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
-		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.02));
+		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.06));
 		animationIndex = 3;
 	}else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
-		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, -0.02));
+		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, -0.06));
 		animationIndex = 3;
 	}
 
