@@ -6,6 +6,8 @@
 //std includes
 #include <string>
 #include <iostream>
+#include <vector>
+using namespace std;
 
 // contains new std::shuffle definition
 #include <algorithm>
@@ -93,6 +95,9 @@ Model modelGrass;
 
 // Punto
 Model puntoModel;
+// Para tener un control de los puntos en el laberinto se tiene 
+// una asoción de un nombre y el valor del punto
+std::map<std::string, int> puntoObtenido;
 
 // Model animate instance
 // Pacman
@@ -139,6 +144,10 @@ Model LE37ModelAnimate;
 Model LE38ModelAnimate;
 Model LE39ModelAnimate;
 Model LE40ModelAnimate;
+
+// Juego
+int vidaPacman = 3;
+int puntosPacman = 0;
 
 // Terrain model instance
 Terrain terrain(-1, -1, 200, 16, "../Textures/heightmap.png");
@@ -241,75 +250,131 @@ GLuint drawBuf = 1;
 float particleSize = 0.5, particleLifetime = 3.0;
 double currTimeParticlesAnimationFire, lastTimeParticlesAnimationFire;
 
-// Puntos posiciones
-std::vector<glm::vec3> puntosPosition = {
-	glm::vec3(-20.987, 0.0, 0.0), glm::vec3(20.987, 0.0, 0.0),
-	glm::vec3(-16.3175, 0.0, 0.0), glm::vec3(16.3175, 0.0, 0.0),
-	glm::vec3(-11.811, 0.0, 0.0), glm::vec3(11.811, 0.0, 0.0),
-	glm::vec3(-9.812, 0.0, 0.0), glm::vec3(9.812, 0.0, 0.0),
-	glm::vec3(-7.455, 0.0, 0.0), glm::vec3(7.455, 0.0, 0.0),
+// Para tener un control de los puntos en el laberinto
+// Key: Nombre para ubicar el punto
+// Value: Tupla que contiene su ubicación
+//		  Valor entero 0 -> Punto no comido por Pacman	
+//					   1 -> Punto comido por Pacman
+std::map<std::string, std::tuple<glm::vec3, int>> puntosPosition = {
+	{"punto0", {glm::vec3(-20.987, 0.0, 0.0),	0}},	{"punto1", {glm::vec3(20.987, 0.0, 0.0),	0}},
+	{"punto2", {glm::vec3(-16.3175, 0.0, 0.0),	0}},	{"punto3", {glm::vec3(16.3175, 0.0, 0.0),	0}},
+	{"punto4", {glm::vec3(-11.811, 0.0, 0.0),	0}},	{"punto5", {glm::vec3(11.811, 0.0, 0.0),	0}},
+	{"punto6", {glm::vec3(-9.812, 0.0, 0.0),	0}},	{"punto7", {glm::vec3(9.812, 0.0, 0.0),		0}},
+	{"punto8", {glm::vec3(-7.455, 0.0, 0.0),	0}},	{"punto9", {glm::vec3(7.455, 0.0, 0.0),		0}},
 
-	glm::vec3(-0.985, 0.0, -6.7505), glm::vec3(0.985, 0.0, -6.7505), glm::vec3(-0.985, 0.0, 6.7505), glm::vec3(0.985, 0.0, 6.7505),
-	glm::vec3(-0.985, 0.0, -11.6845), glm::vec3(0.985, 0.0, -11.6845), glm::vec3(-0.985, 0.0, 11.6845), glm::vec3(0.985, 0.0, 11.6845),
-	glm::vec3(-0.985, 0.0, -16.0565), glm::vec3(0.985, 0.0, -16.0565), glm::vec3(-0.985, 0.0, 16.0565), glm::vec3(0.985, 0.0, 16.0565),
-	glm::vec3(-0.985, 0.0, -20.1625), glm::vec3(0.985, 0.0, -20.1625), glm::vec3(-0.985, 0.0, 20.1625), glm::vec3(0.985, 0.0, 20.1625),
+	{"punto10", {glm::vec3(-0.985, 0.0, -6.7505),	0}},	{"punto11", {glm::vec3(0.985, 0.0, -6.7505),	0}},
+	{"punto12", {glm::vec3(-0.985, 0.0, 6.7505),	0}},	{"punto13", {glm::vec3(0.985, 0.0, 6.7505),		0}},
+	{"punto14", {glm::vec3(-0.985, 0.0, -11.6845),	0}},	{"punto15", {glm::vec3(0.985, 0.0, -11.6845),	0}},
+	{"punto16", {glm::vec3(-0.985, 0.0, 11.6845),	0}},	{"punto17", {glm::vec3(0.985, 0.0, 11.6845),	0}},
+	{"punto18", {glm::vec3(-0.985, 0.0, -16.0565),	0}},	{"punto19", {glm::vec3(0.985, 0.0, -16.0565),	0}},
+	{"punto20", {glm::vec3(-0.985, 0.0, 16.0565),	0}},	{"punto21", {glm::vec3(0.985, 0.0, 16.0565),	0}},
+	{"punto22", {glm::vec3(-0.985, 0.0, -20.1625),	0}},	{"punto23", {glm::vec3(0.985, 0.0, -20.1625),	0}},
+	{"punto24", {glm::vec3(-0.985, 0.0, 20.1625),	0}},	{"punto25", {glm::vec3(0.985, 0.0, 20.1625),	0}},
 
-	glm::vec3(-3.2405, 0.0, -6.7505), glm::vec3(3.2405, 0.0, -6.7505), glm::vec3(-3.2405, 0.0, 6.7505), glm::vec3(3.2405, 0.0, 6.7505),
-	glm::vec3(-3.2405, 0.0, -11.6845), glm::vec3(3.2405, 0.0, -11.6845), glm::vec3(-3.2405, 0.0, 11.6845), glm::vec3(3.2405, 0.0, 11.6845),
-	glm::vec3(-3.2405, 0.0, -16.0565), glm::vec3(3.2405, 0.0, -16.0565), glm::vec3(-3.2405, 0.0, 16.0565), glm::vec3(3.2405, 0.0, 16.0565),
-	glm::vec3(-3.2405, 0.0, -20.1625), glm::vec3(3.2405, 0.0, -20.1625), glm::vec3(-3.2405, 0.0, 20.1625), glm::vec3(3.2405, 0.0, 20.1625),
+	{"punto26", {glm::vec3(-3.2405, 0.0, -6.7505),	0}},	{"punto27", {glm::vec3(3.2405, 0.0, -6.7505),	0}},
+	{"punto28", {glm::vec3(-3.2405, 0.0, 6.7505),	0}},	{"punto29", {glm::vec3(3.2405, 0.0, 6.7505),	0}},
+	{"punto30", {glm::vec3(-3.2405, 0.0, -11.6845),	0}},	{"punto31", {glm::vec3(3.2405, 0.0, -11.6845),	0}},
+	{"punto32", {glm::vec3(-3.2405, 0.0, 11.6845),	0}},	{"punto33", {glm::vec3(3.2405, 0.0, 11.6845),	0}},
+	{"punto34", {glm::vec3(-3.2405, 0.0, -16.0565),	0}},	{"punto35", {glm::vec3(3.2405, 0.0, -16.0565),	0}},
+	{"punto36", {glm::vec3(-3.2405, 0.0, 16.0565),	0}},	{"punto37", {glm::vec3(3.2405, 0.0, 16.0565),	0}},
+	{"punto38", {glm::vec3(-3.2405, 0.0, -20.1625),	0}},	{"punto39", {glm::vec3(3.2405, 0.0, -20.1625),	0}},
+	{"punto40", {glm::vec3(-3.2405, 0.0, 20.1625),	0}},	{"punto41", {glm::vec3(3.2405, 0.0, 20.1625),	0}},
 
-	glm::vec3(-5.3795, 0.0, -6.7505), glm::vec3(5.3795, 0.0, -6.7505), glm::vec3(-5.3795, 0.0, 6.7505), glm::vec3(5.3795, 0.0, 6.7505),
-	glm::vec3(-5.3795, 0.0, -9.5085), glm::vec3(5.3795, 0.0, -9.5085), glm::vec3(-5.3795, 0.0, 9.5085), glm::vec3(5.3795, 0.0, 9.5085),
-	glm::vec3(-5.3795, 0.0, -11.6845), glm::vec3(5.3795, 0.0, -11.6845), glm::vec3(-5.3795, 0.0, 11.6845), glm::vec3(5.3795, 0.0, 11.6845),
-	glm::vec3(-5.3795, 0.0, -16.0565), glm::vec3(5.3795, 0.0, -16.0565), glm::vec3(-5.3795, 0.0, 16.0565), glm::vec3(5.3795, 0.0, 16.0565),
-	glm::vec3(-5.3795, 0.0, -20.1625), glm::vec3(5.3795, 0.0, -20.1625), glm::vec3(-5.3795, 0.0, 20.1625), glm::vec3(5.3795, 0.0, 20.1625),
+	{"punto42", {glm::vec3(-5.3795, 0.0, -6.7505),	0} },	{"punto43", {glm::vec3(5.3795, 0.0, -6.7505),	0 }},
+	{"punto44", {glm::vec3(-5.3795, 0.0, 6.7505),	0 }},	{"punto45", {glm::vec3(5.3795, 0.0, 6.7505),	0 }},
+	{"punto46", {glm::vec3(-5.3795, 0.0, -9.5085),	0 }},	{"punto47", {glm::vec3(5.3795, 0.0, -9.5085),	0 }},
+	{"punto48", {glm::vec3(-5.3795, 0.0, 9.5085),	0 }},	{"punto49", {glm::vec3(5.3795, 0.0, 9.5085),	0 }},
+	{"punto50", {glm::vec3(-5.3795, 0.0, -11.6845),	0 }},	{"punto51", {glm::vec3(5.3795, 0.0, -11.6845),	0 }},
+	{"punto52", {glm::vec3(-5.3795, 0.0, 11.6845),	0 }},	{"punto53", {glm::vec3(5.3795, 0.0, 11.6845),	0 }},
+	{"punto54", {glm::vec3(-5.3795, 0.0, -16.0565),	0 }},	{"punto55", {glm::vec3(5.3795, 0.0, -16.0565),	0 }},
+	{"punto56", {glm::vec3(-5.3795, 0.0, 16.0565),	0 }},	{"punto57", {glm::vec3(5.3795, 0.0, 16.0565),	0 }},
+	{"punto58", {glm::vec3(-5.3795, 0.0, -20.1625),	0 }},	{"punto59", {glm::vec3(5.3795, 0.0, -20.1625),	0 }},
+	{"punto60", {glm::vec3(-5.3795, 0.0, 20.1625),	0 }},	{"punto61", {glm::vec3(5.3795, 0.0, 20.1625),	0 }},
 
-	glm::vec3(-7.4025, 0.0, -2.273), glm::vec3(7.4025, 0.0, -2.273), glm::vec3(-7.4025, 0.0, 2.273), glm::vec3(7.4025, 0.0, 2.273),
-	glm::vec3(-7.4025, 0.0, -4.514), glm::vec3(7.4025, 0.0, -4.514), glm::vec3(-7.4025, 0.0, 4.514), glm::vec3(7.4025, 0.0, 4.514),
-	glm::vec3(-7.4025, 0.0, -6.7505), glm::vec3(7.4025, 0.0, -6.7505), glm::vec3(-7.4025, 0.0, 6.7505), glm::vec3(7.4025, 0.0, 6.7505),
-	glm::vec3(-7.4025, 0.0, -11.6845), glm::vec3(7.4025, 0.0, -11.6845), glm::vec3(-7.4025, 0.0, 11.6845), glm::vec3(7.4025, 0.0, 11.6845),
-	glm::vec3(-7.4025, 0.0, -16.0565), glm::vec3(7.4025, 0.0, -16.0565), glm::vec3(-7.4025, 0.0, 16.0565), glm::vec3(7.4025, 0.0, 16.0565),
-	glm::vec3(-7.4025, 0.0, -20.1625), glm::vec3(7.4025, 0.0, -20.1625), glm::vec3(-7.4025, 0.0, 20.1625), glm::vec3(7.4025, 0.0, 20.1625),
+	{"punto62", {glm::vec3(-7.4025, 0.0, -2.273),	0 }},	{"punto63", {glm::vec3(7.4025, 0.0, -2.273),	0 }},
+	{"punto64", {glm::vec3(-7.4025, 0.0, 2.273),	0 }},	{"punto65", {glm::vec3(7.4025, 0.0, 2.273),		0 } },
+	{"punto66", {glm::vec3(-7.4025, 0.0, -4.514),	0 }},	{"punto67", {glm::vec3(7.4025, 0.0, -4.514),	0 } },
+	{"punto68", {glm::vec3(-7.4025, 0.0, 4.514),	0 }},	{"punto69", {glm::vec3(7.4025, 0.0, 4.514),		0 } },
+	{"punto70", {glm::vec3(-7.4025, 0.0, -6.7505),	0 }},	{"punto71", {glm::vec3(7.4025, 0.0, -6.7505),	0 } },
+	{"punto72", {glm::vec3(-7.4025, 0.0, 6.7505),	0 }},	{"punto73", {glm::vec3(7.4025, 0.0, 6.7505),	0 } },
+	{"punto74", {glm::vec3(-7.4025, 0.0, -11.6845),	0 }},	{"punto75", {glm::vec3(7.4025, 0.0, -11.6845),	0 } },
+	{"punto76", {glm::vec3(-7.4025, 0.0, 11.6845),	0 }},	{"punto77", {glm::vec3(7.4025, 0.0, 11.6845),	0 } },
+	{"punto78", {glm::vec3(-7.4025, 0.0, -16.0565),	0 }},	{"punto79", {glm::vec3(7.4025, 0.0, -16.0565),	0 } },
+	{"punto80", {glm::vec3(-7.4025, 0.0, 16.0565),	0 }},	{"punto81", {glm::vec3(7.4025, 0.0, 16.0565),	0 } },
+	{"punto82", {glm::vec3(-7.4025, 0.0, -20.1625),	0 }},	{"punto83", {glm::vec3(7.4025, 0.0, -20.1625),	0 } },
+	{"punto84", {glm::vec3(-7.4025, 0.0, 20.1625),	0 }},	{"punto85", {glm::vec3(7.4025, 0.0, 20.1625),	0 } },
 
-	glm::vec3(-9.812, 0.0, -6.7505), glm::vec3(9.812, 0.0, -6.7505), glm::vec3(-9.812, 0.0, 6.7505), glm::vec3(9.812, 0.0, 6.7505),
-	glm::vec3(-9.812, 0.0, -11.6845), glm::vec3(9.812, 0.0, -11.6845), glm::vec3(-9.812, 0.0, 11.6845), glm::vec3(9.812, 0.0, 11.6845),
-	glm::vec3(-9.812, 0.0, -16.0565), glm::vec3(9.812, 0.0, -16.0565), glm::vec3(-9.812, 0.0, 16.0565), glm::vec3(9.812, 0.0, 16.0565),
-	glm::vec3(-9.812, 0.0, -20.1625), glm::vec3(9.812, 0.0, -20.1625), glm::vec3(-9.812, 0.0, 20.1625), glm::vec3(9.812, 0.0, 20.1625),
+	{"punto86", {glm::vec3(-9.812, 0.0, -6.7505),	0 }},	{"punto87", {glm::vec3(9.812, 0.0, -6.7505),	0 }},
+	{"punto88", {glm::vec3(-9.812, 0.0, 6.7505),	0 }},	{"punto89", {glm::vec3(9.812, 0.0, 6.7505),		0 }},
+	{"punto90", {glm::vec3(-9.812, 0.0, -11.6845),	0 }},	{"punto91", {glm::vec3(9.812, 0.0, -11.6845),	0 }},
+	{"punto92", {glm::vec3(-9.812, 0.0, 11.6845),	0 }},	{"punto93", {glm::vec3(9.812, 0.0, 11.6845),	0 }},
+	{"punto94", {glm::vec3(-9.812, 0.0, -16.0565),	0 }},	{"punto95", {glm::vec3(9.812, 0.0, -16.0565),	0 }},
+	{"punto96", {glm::vec3(-9.812, 0.0, 16.0565),	0 }},	{"punto97", {glm::vec3(9.812, 0.0, 16.0565),	0 }},
+	{"punto98", {glm::vec3(-9.812, 0.0, -20.1625),	0 }},	{"punto99", {glm::vec3(9.812, 0.0, -20.1625),	0 }},
+	{"punto100", {glm::vec3(-9.812, 0.0, 20.1625),	0 }},	{"punto101", {glm::vec3(9.812, 0.0, 20.1625),	0 }},
 
-	glm::vec3(-11.811, 0.0, -2.273), glm::vec3(11.811, 0.0, -2.273), glm::vec3(-11.811, 0.0, 2.273), glm::vec3(11.811, 0.0, 2.273),
-	glm::vec3(-11.811, 0.0, -4.514), glm::vec3(11.811, 0.0, -4.514), glm::vec3(-11.811, 0.0, 4.514), glm::vec3(11.811, 0.0, 4.514),
-	glm::vec3(-11.811, 0.0, -6.7505), glm::vec3(11.811, 0.0, -6.7505), glm::vec3(-11.811, 0.0, 6.7505), glm::vec3(11.811, 0.0, 6.7505),
-	glm::vec3(-11.811, 0.0, -11.6845), glm::vec3(11.811, 0.0, -11.6845), glm::vec3(-11.811, 0.0, 11.6845), glm::vec3(11.811, 0.0, 11.6845),
-	glm::vec3(-11.811, 0.0, -16.0565), glm::vec3(11.811, 0.0, -16.0565), glm::vec3(-11.811, 0.0, 16.0565), glm::vec3(11.811, 0.0, 16.0565),
-	glm::vec3(-11.811, 0.0, -18.0915), glm::vec3(11.811, 0.0, -18.0915), glm::vec3(-11.811, 0.0, 18.0915), glm::vec3(11.811, 0.0, 18.0915),
-	glm::vec3(-11.811, 0.0, -20.1625), glm::vec3(11.811, 0.0, -20.1625), glm::vec3(-11.811, 0.0, 20.1625), glm::vec3(11.811, 0.0, 20.1625),
+	{"punto102", {glm::vec3(-11.811, 0.0, -2.273),	0 }},	{"punto103", {glm::vec3(11.811, 0.0, -2.273),	0 }},
+	{"punto104", {glm::vec3(-11.811, 0.0, 2.273),	0 }},	{"punto105", {glm::vec3(11.811, 0.0, 2.273),	0 }},
+	{"punto106", {glm::vec3(-11.811, 0.0, -4.514),	0 }},	{"punto107", {glm::vec3(11.811, 0.0, -4.514),	0 }},
+	{"punto108", {glm::vec3(-11.811, 0.0, 4.514),	0 }},	{"punto109", {glm::vec3(11.811, 0.0, 4.514),	0 }},
+	{"punto110", {glm::vec3(-11.811, 0.0, -6.7505),	0 }},	{"punto111", {glm::vec3(11.811, 0.0, -6.7505),	0 }},
+	{"punto112", {glm::vec3(-11.811, 0.0, 6.7505),	0 }},	{"punto113", {glm::vec3(11.811, 0.0, 6.7505),	0 }},
+	{"punto114", {glm::vec3(-11.811, 0.0, -11.6845),0 }},	{"punto115", {glm::vec3(11.811, 0.0, -11.6845),	0 }},
+	{"punto116", {glm::vec3(-11.811, 0.0, 11.6845),	0 }},	{"punto117", {glm::vec3(11.811, 0.0, 11.6845),	0 }},
+	{"punto118", {glm::vec3(-11.811, 0.0, -16.0565),0 }},	{"punto119", {glm::vec3(11.811, 0.0, -16.0565),	0 }},
+	{"punto120", {glm::vec3(-11.811, 0.0, 16.0565),	0 }},	{"punto121", {glm::vec3(11.811, 0.0, 16.0565),	0 }},
+	{"punto122", {glm::vec3(-11.811, 0.0, -18.0915),0 }},	{"punto123", {glm::vec3(11.811, 0.0, -18.0915),	0 }},
+	{"punto124", {glm::vec3(-11.811, 0.0, 18.0915),	0 }},	{"punto125", {glm::vec3(11.811, 0.0, 18.0915),	0 }},
+	{"punto126", {glm::vec3(-11.811, 0.0, -20.1625),0 }},	{"punto127", {glm::vec3(11.811, 0.0, -20.1625),	0 }},
+	{"punto128", {glm::vec3(-11.811, 0.0, 20.1625),	0 }},	{"punto129", {glm::vec3(11.811, 0.0, 20.1625),	0 }},
 
-	glm::vec3(-14.2075, 0.0, -11.6845), glm::vec3(14.2075, 0.0, -11.6845), glm::vec3(-14.2075, 0.0, 11.6845), glm::vec3(14.2075, 0.0, 11.6845),
-	glm::vec3(-14.2075, 0.0, -16.0565), glm::vec3(14.2075, 0.0, -16.0565), glm::vec3(-14.2075, 0.0, 16.0565), glm::vec3(14.2075, 0.0, 16.0565),
-	glm::vec3(-14.2075, 0.0, -20.1625),
+	{"punto130", {glm::vec3(-14.2075, 0.0, -11.6845),	0 }},	{"punto131", {glm::vec3(14.2075, 0.0, -11.6845),	0 }},
+	{"punto132", {glm::vec3(-14.2075, 0.0, 11.6845),	0 }},	{"punto133", {glm::vec3(14.2075, 0.0, 11.6845),		0 }},
+	{"punto134", {glm::vec3(-14.2075, 0.0, -16.0565),	0 }},	{"punto135", {glm::vec3(14.2075, 0.0, -16.0565),	0 }},
+	{"punto136", {glm::vec3(-14.2075, 0.0, 16.0565),	0 }},	{"punto137", {glm::vec3(14.2075, 0.0, 16.0565),		0 }},
+	{"punto138", {glm::vec3(-14.2075, 0.0, -20.1625),	0 }},	{"punto139", {glm::vec3(14.2075, 0.0, -20.1625),	0 }},
+	{"punto140", {glm::vec3(-14.2075, 0.0, 20.1625),	0 }},	{"punto141", {glm::vec3(14.2075, 0.0, 20.1625),		0 }},
 
-	glm::vec3(-16.3175, 0.0, -2.273), glm::vec3(16.3175, 0.0, -2.273), glm::vec3(-16.3175, 0.0, 2.273), glm::vec3(16.3175, 0.0, 2.273),
-	glm::vec3(-16.3175, 0.0, -4.514), glm::vec3(16.3175, 0.0, -4.514), glm::vec3(-16.3175, 0.0, 4.514), glm::vec3(16.3175, 0.0, 4.514),
-	glm::vec3(-16.3175, 0.0, -6.7505), glm::vec3(16.3175, 0.0, -6.7505), glm::vec3(-16.3175, 0.0, 6.7505), glm::vec3(16.3175, 0.0, 6.7505),
-	glm::vec3(-16.3175, 0.0, -9.5085), glm::vec3(16.3175, 0.0, -9.5085), glm::vec3(-16.3175, 0.0, 9.5085), glm::vec3(16.3175, 0.0, 9.5085),
-	glm::vec3(-16.3175, 0.0, -11.6845), glm::vec3(16.3175, 0.0, -11.6845), glm::vec3(-16.3175, 0.0, 11.6845), glm::vec3(16.3175, 0.0, 11.6845),
-	glm::vec3(-16.3175, 0.0, -14.004), glm::vec3(16.3175, 0.0, -14.004), glm::vec3(-16.3175, 0.0, 14.004), glm::vec3(16.3175, 0.0, 14.004),
-	glm::vec3(-16.3175, 0.0, -16.0565), glm::vec3(16.3175, 0.0, -16.0565), glm::vec3(-16.3175, 0.0, 16.0565), glm::vec3(16.3175, 0.0, 16.0565),
-	glm::vec3(-16.3175, 0.0, -20.1625), glm::vec3(16.3175, 0.0, -20.1625), glm::vec3(-16.3175, 0.0, 20.1625), glm::vec3(16.3175, 0.0, 20.1625),
+	{"punto142", {glm::vec3(-16.3175, 0.0, -2.273),		0 }},	{"punto143", {glm::vec3(16.3175, 0.0, -2.273),	0 }},
+	{"punto144", {glm::vec3(-16.3175, 0.0, 2.273),		0 }},	{"punto145", {glm::vec3(16.3175, 0.0, 2.273),	0 }},
+	{"punto146", {glm::vec3(-16.3175, 0.0, -4.514),		0 }},	{"punto147", {glm::vec3(16.3175, 0.0, -4.514),	0 }},
+	{"punto148", {glm::vec3(-16.3175, 0.0, 4.514),		0 }},	{"punto149", {glm::vec3(16.3175, 0.0, 4.514),	0 }},
+	{"punto150", {glm::vec3(-16.3175, 0.0, -6.7505),	0 }},	{"punto151", {glm::vec3(16.3175, 0.0, -6.7505),	0 }},
+	{"punto152", {glm::vec3(-16.3175, 0.0, 6.7505),		0 }},	{"punto153", {glm::vec3(16.3175, 0.0, 6.7505),	0 }},
+	{"punto154", {glm::vec3(-16.3175, 0.0, -9.5085),	0 }},	{"punto155", {glm::vec3(16.3175, 0.0, -9.5085),	0 }},
+	{"punto156", {glm::vec3(-16.3175, 0.0, 9.5085),		0 }},	{"punto157", {glm::vec3(16.3175, 0.0, 9.5085),	0 }},
+	{"punto158", {glm::vec3(-16.3175, 0.0, -11.6845),	0 }},	{"punto159", {glm::vec3(16.3175, 0.0, -11.6845),0 }},
+	{"punto160", {glm::vec3(-16.3175, 0.0, 11.6845),	0 }},	{"punto161", {glm::vec3(16.3175, 0.0, 11.6845),	0 }},
+	{"punto162", {glm::vec3(-16.3175, 0.0, -14.004),	0 }},	{"punto163", {glm::vec3(16.3175, 0.0, -14.004),	0 }},
+	{"punto164", {glm::vec3(-16.3175, 0.0, 14.004),		0 }},	{"punto165", {glm::vec3(16.3175, 0.0, 14.004),	0 }},
+	{"punto166", {glm::vec3(-16.3175, 0.0, -16.0565),	0 }},	{"punto167", {glm::vec3(16.3175, 0.0, -16.0565),0 }},
+	{"punto168", {glm::vec3(-16.3175, 0.0, 16.0565),	0 }},	{"punto169", {glm::vec3(16.3175, 0.0, 16.0565),	0 }},
+	{"punto170", {glm::vec3(-16.3175, 0.0, -20.1625),	0 }},	{"punto171", {glm::vec3(16.3175, 0.0, -20.1625),0 }},
+	{"punto172", {glm::vec3(-16.3175, 0.0, 20.1625),	0 }},	{"punto173", {glm::vec3(16.3175, 0.0, 20.1625),	0 }},
 
-	glm::vec3(-18.664, 0.0, -11.6845), glm::vec3(18.664, 0.0, -11.6845), glm::vec3(-18.664, 0.0, 11.6845), glm::vec3(18.664, 0.0, 11.6845),
-	glm::vec3(-18.664, 0.0, -20.1625), glm::vec3(18.664, 0.0, -20.1625), glm::vec3(-18.664, 0.0, 20.1625), glm::vec3(18.664, 0.0, 20.1625),
-
-	glm::vec3(-20.987, 0.0, -2.273), glm::vec3(20.987, 0.0, -2.273), glm::vec3(-20.987, 0.0, 2.273), glm::vec3(20.987, 0.0, 2.273),
-	glm::vec3(-20.987, 0.0, -4.514), glm::vec3(20.987, 0.0, -4.514), glm::vec3(-20.987, 0.0, 4.514), glm::vec3(20.987, 0.0, 4.514),
-	glm::vec3(-20.987, 0.0, -6.7505), glm::vec3(20.987, 0.0, -6.7505), glm::vec3(-20.987, 0.0, 6.7505), glm::vec3(20.987, 0.0, 6.7505),
-	glm::vec3(-20.987, 0.0, -9.5085), glm::vec3(20.987, 0.0, -9.5085), glm::vec3(-20.987, 0.0, 9.5085), glm::vec3(20.987, 0.0, 9.5085),
-	glm::vec3(-20.987, 0.0, -11.6845), glm::vec3(20.987, 0.0, -11.6845), glm::vec3(-20.987, 0.0, 11.6845), glm::vec3(20.987, 0.0, 11.6845),
-	glm::vec3(-20.987, 0.0, -14.004), glm::vec3(20.987, 0.0, -14.004), glm::vec3(-20.987, 0.0, 14.004), glm::vec3(20.987, 0.0, 14.004),
-	glm::vec3(-20.987, 0.0, -16.0565), glm::vec3(20.987, 0.0, -16.0565), glm::vec3(-20.987, 0.0, 16.0565), glm::vec3(20.987, 0.0, 16.0565),
-	glm::vec3(-20.987, 0.0, -18.0915), glm::vec3(20.987, 0.0, -18.0915), glm::vec3(-20.987, 0.0, 18.0915), glm::vec3(20.987, 0.0, 18.0915),
-	glm::vec3(-20.987, 0.0, -20.1625), glm::vec3(20.987, 0.0, -20.1625), glm::vec3(-20.987, 0.0, 20.1625), glm::vec3(20.987, 0.0, 20.1625),
+	{"punto174", {glm::vec3(-18.664, 0.0, -11.6845),	0 }},	{"punto175", {glm::vec3(18.664, 0.0, -11.6845),	0 }},
+	{"punto176", {glm::vec3(-18.664, 0.0, 11.6845),		0 }},	{"punto177", {glm::vec3(18.664, 0.0, 11.6845),	0 }},
+	{"punto178", {glm::vec3(-18.664, 0.0, -20.1625),	0 }},	{"punto179", {glm::vec3(18.664, 0.0, -20.1625),	0 }},
+	{"punto180", {glm::vec3(-18.664, 0.0, 20.1625),		0 }},	{"punto181", {glm::vec3(18.664, 0.0, 20.1625),	0 }},
+	
+	{"punto182", {glm::vec3(-20.987, 0.0, -2.273),		0 }},	{"punto183", {glm::vec3(20.987, 0.0, -2.273),	0 }},
+	{"punto184", {glm::vec3(-20.987, 0.0, 2.273),		0 }},	{"punto185", {glm::vec3(20.987, 0.0, 2.273),	0 }},
+	{"punto186", {glm::vec3(-20.987, 0.0, -4.514),		0 }},	{"punto187", {glm::vec3(20.987, 0.0, -4.514),	0 }},
+	{"punto188", {glm::vec3(-20.987, 0.0, 4.514),		0 }},	{"punto189", {glm::vec3(20.987, 0.0, 4.514),	0 }},
+	{"punto190", {glm::vec3(-20.987, 0.0, -6.7505),		0 }},	{"punto191", {glm::vec3(20.987, 0.0, -6.7505),	0 }},
+	{"punto192", {glm::vec3(-20.987, 0.0, 6.7505),		0 }},	{"punto193", {glm::vec3(20.987, 0.0, 6.7505),	0 }},
+	{"punto194", {glm::vec3(-20.987, 0.0, -9.5085),		0 }},	{"punto195", {glm::vec3(20.987, 0.0, -9.5085),	0 }},
+	{"punto196", {glm::vec3(-20.987, 0.0, 9.5085),		0 }},	{"punto197", {glm::vec3(20.987, 0.0, 9.5085),	0 }},
+	{"punto198", {glm::vec3(-20.987, 0.0, -11.6845),	0 }},	{"punto199", {glm::vec3(20.987, 0.0, -11.6845),	0 }},
+	{"punto200", {glm::vec3(-20.987, 0.0, 11.6845),		0 }},	{"punto201", {glm::vec3(20.987, 0.0, 11.6845),	0 }},
+	{"punto202", {glm::vec3(-20.987, 0.0, -14.004),		0 }},	{"punto203", {glm::vec3(20.987, 0.0, -14.004),	0 }},
+	{"punto204", {glm::vec3(-20.987, 0.0, 14.004),		0 }},	{"punto205", {glm::vec3(20.987, 0.0, 14.004),	0 }},
+	{"punto206", {glm::vec3(-20.987, 0.0, -16.0565),	0 }},	{"punto207", {glm::vec3(20.987, 0.0, -16.0565),	0 }},
+	{"punto208", {glm::vec3(-20.987, 0.0, 16.0565),		0 }},	{"punto209", {glm::vec3(20.987, 0.0, 16.0565),	0 }},
+	{"punto210", {glm::vec3(-20.987, 0.0, -18.0915),	0 }},	{"punto211", {glm::vec3(20.987, 0.0, -18.0915),	0 }},
+	{"punto212", {glm::vec3(-20.987, 0.0, 18.0915),		0 }},	{"punto213", {glm::vec3(20.987, 0.0, 18.0915),	0 }},
+	{"punto214", {glm::vec3(-20.987, 0.0, -20.1625),	0 }},	{"punto215", {glm::vec3(20.987, 0.0, -20.1625),	0 }},
+	{"punto216", {glm::vec3(-20.987, 0.0, 20.1625),		0 }},	{"punto217", {glm::vec3(20.987, 0.0, 20.1625),	0 }},
 };
 
 // Colliders
@@ -363,6 +428,7 @@ void initParticleBuffers();
 void init(int width, int height, std::string strTitle, bool bFullScreen);
 void destroy();
 bool processInput(bool continueApplication = true);
+void applicationLoop();
 void prepareScene();
 void prepareDepthScene();
 void renderScene(bool renderParticles = true);
@@ -1514,15 +1580,18 @@ void applicationLoop() {
 		
 		// Punto
 		for (int i = 0; i < puntosPosition.size(); i++) {
-			AbstractModel::SBB puntoCollider;
-			glm::mat4 modelMatrixColliderPunto = glm::mat4(1.0);
-			modelMatrixColliderPunto = glm::translate(modelMatrixColliderPunto, puntosPosition[i]);
-			addOrUpdateColliders(collidersSBB, "punto" + std::to_string(i), puntoCollider, modelMatrixColliderPunto);
-			
-			modelMatrixColliderPunto = glm::translate(modelMatrixColliderPunto, puntoModel.getSbb().c);
-			puntoCollider.c = glm::vec3(modelMatrixColliderPunto[3]);
-			puntoCollider.ratio = puntoModel.getSbb().ratio * 0.6;
-			std::get<0>(collidersSBB.find("punto" + std::to_string(i))->second) = puntoCollider;
+			if (std::get<1>(puntosPosition.find("punto" + std::to_string(i))->second) == 0) {
+				AbstractModel::SBB puntoCollider;
+				glm::mat4 modelMatrixColliderPunto = glm::mat4(1.0);
+				modelMatrixColliderPunto = glm::translate(modelMatrixColliderPunto, 
+					std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second));
+				addOrUpdateColliders(collidersSBB, "punto" + std::to_string(i), puntoCollider, modelMatrixColliderPunto);
+
+				modelMatrixColliderPunto = glm::translate(modelMatrixColliderPunto, puntoModel.getSbb().c);
+				puntoCollider.c = glm::vec3(modelMatrixColliderPunto[3]);
+				puntoCollider.ratio = puntoModel.getSbb().ratio * 0.6;
+				std::get<0>(collidersSBB.find("punto" + std::to_string(i))->second) = puntoCollider;
+			}
 		}
 
 		//Laberinto
@@ -1888,7 +1957,7 @@ void applicationLoop() {
 			}
 			addOrUpdateCollisionDetection(collisionDetection, it->first, isCollision);
 		}
-
+		
 		for (std::map<std::string,
 				std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> >::iterator it =
 				collidersSBB.begin(); it != collidersSBB.end(); it++) {
@@ -1898,6 +1967,10 @@ void applicationLoop() {
 					collidersSBB.begin(); jt != collidersSBB.end(); jt++) {
 				if (it != jt && testSphereSphereIntersection(std::get<0>(it->second), std::get<0>(jt->second))) {
 					std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
+					if (it->first[0] == 'p' && it->first[1] == 'u') {
+						std::get<1>(puntosPosition.find(it->first)->second) = 1;
+						puntoObtenido.insert(std::pair<std::string, int>(it->first, 1));
+					}
 					isCollision = true;
 				}
 			}
@@ -2024,6 +2097,13 @@ void applicationLoop() {
 				}
 			}
 		}
+		
+		for (std::map<std::string, int>::iterator p = puntoObtenido.begin(); p != puntoObtenido.end(); p++) {
+			collidersSBB.erase(collidersSBB.find(p->first));
+			puntosPacman = puntosPacman + p->second;
+		}
+
+		puntoObtenido.clear();
 
 		// Constantes de animaciones
 		animationIndex = 2;
@@ -2132,9 +2212,13 @@ void renderScene(bool renderParticles){
 
 	// Puntos
 	for (int i = 0; i < puntosPosition.size(); i++) {
-		puntosPosition[i].y = terrain.getHeightTerrain(puntosPosition[i].x, puntosPosition[i].z);
-		puntoModel.setPosition(puntosPosition[i]);
-		puntoModel.render();
+		if (std::get<1>(puntosPosition.find("punto" + std::to_string(i))->second) == 0) {
+			std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second).y =
+				terrain.getHeightTerrain(std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second).x,
+					std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second).z);
+			puntoModel.setPosition(std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second));
+			puntoModel.render();
+		}
 	}
 
 	/*******************************************
