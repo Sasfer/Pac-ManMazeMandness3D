@@ -103,8 +103,20 @@ public:
 		return this->angleTarget;
 	}
 
+	float getDistanceFromTarget() {
+		return this->distanceFromTarget;
+	}
+
 	void setDistanceFromTarget(float distanceFromTarget) {
 		this->distanceFromTarget = distanceFromTarget;
+	}
+
+	float getPitch() {
+		return this->pitch;
+	}
+
+	void setPitch(float pitch) {
+		this->pitch = pitch;
 	}
 
 protected:

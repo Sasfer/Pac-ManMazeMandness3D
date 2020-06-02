@@ -81,6 +81,10 @@ Shader shaderDepth;
 
 std::shared_ptr<Camera> camera(new ThirdPersonCamera());
 float distanceFromTarget = 12.0;
+glm::vec3 auxCameraPosition, auxCameraTarget;
+float auxCamDistanceFromTarget, auxCamAngleTarget, auxCamPitch;
+int vistaAerea = 0;
+int auxVistaArea = 1;
 
 Sphere skyboxSphere(20, 20);
 Box boxCollider;
@@ -1295,8 +1299,23 @@ bool processInput(bool continueApplication) {
 
 	else if(glfwGetKey(window, GLFW_KEY_TAB) == GLFW_RELEASE)
 		enableCountSelected = true;
+	
+	// Si se presiona la tecla V, se cambia a vista area para tener 
+	// un panorama general del laberinto, el tiempo no se pausa, sigue corriendo
+	if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) {
+			vistaAerea = 1;
+	}
 
-	if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+	// Si se presiona la tecla C, se cambia a vista en tercera 
+	// persona del personaje de Pac-Man en el laberinto
+	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) {
+		vistaAerea = 0;
+	}
+
+	// Mientras no se este en vista área se tiene control de los
+	// movimiento del Pac-Man dentro del laberinto, en cada caso 
+	// se valida su orientación con respecto al desplazamiento
+	if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS && vistaAerea == 0) {
 		if (anteriorMove != 1)
 			rotarMove = 0;
 		if (rotarMove == 0 && anteriorMove != 1) {
@@ -1312,7 +1331,7 @@ bool processInput(bool continueApplication) {
 		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.08));
 		animationIndex = 3;
 	}
-	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS && vistaAerea == 0) {
 		if (anteriorMove != 2)
 			rotarMove = 0;
 		if (rotarMove == 0 && anteriorMove != 2) {
@@ -1328,7 +1347,7 @@ bool processInput(bool continueApplication) {
 		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.08));
 		animationIndex = 3;
 	}
-	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS && vistaAerea == 0) {
 		if (anteriorMove != 3)
 			rotarMove = 0;
 		if (rotarMove == 0 && anteriorMove != 3) {
@@ -1344,7 +1363,7 @@ bool processInput(bool continueApplication) {
 		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.08));
 		animationIndex = 3;
 	}
-	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS && vistaAerea == 0) {
 		if (anteriorMove != 4)
 			rotarMove = 0;
 		if (rotarMove == 0 && anteriorMove != 4) {
@@ -1454,8 +1473,36 @@ void applicationLoop() {
 			target = modelMatrixPacman[3];
 		}
 
-		camera->setCameraTarget(target);
-		camera->setAngleTarget(angleTarget);
+		if (vistaAerea == 0) {
+			if (auxVistaArea == 0) {
+				camera->setAngleTarget(auxCamAngleTarget);
+				camera->setDistanceFromTarget(auxCamDistanceFromTarget);
+				camera->setPosition(auxCameraPosition);
+				camera->setCameraTarget(auxCameraTarget);
+				camera->setPitch(auxCamPitch);
+				auxVistaArea = 1;
+			}
+
+			camera->setCameraTarget(target);
+			camera->setAngleTarget(angleTarget);
+		}
+		else {
+			if (auxVistaArea == 1) {
+				auxCamAngleTarget = camera->getAngleTarget();
+				auxCamDistanceFromTarget = camera->getDistanceFromTarget();
+				auxCameraPosition = camera->getPosition();
+				auxCameraTarget = camera->getCameraTarget();
+				auxCamPitch = camera->getPitch();
+				auxVistaArea = 0;
+			}
+
+			camera->setAngleTarget(glm::radians(180.0f));
+			camera->setDistanceFromTarget(60.0f);
+			camera->setPosition(glm::vec3(0.0, 0.0, 10.0));
+			camera->setCameraTarget(glm::vec3(0.0, 0.0, 0.0));
+			camera->setPitch(glm::radians(90.0f));
+		}
+
 		camera->updateCamera();
 		view = camera->getViewMatrix();
 
