@@ -80,7 +80,7 @@ Shader shaderViewDepth;
 Shader shaderDepth;
 
 std::shared_ptr<Camera> camera(new ThirdPersonCamera());
-float distanceFromTarget = 7.0;
+float distanceFromTarget = 12.0;
 
 Sphere skyboxSphere(20, 20);
 Box boxCollider;
@@ -102,6 +102,7 @@ std::map<std::string, int> puntoObtenido;
 // Model animate instance
 // Pacman
 Model pacmanModelAnimate;
+Model fantasmaAzulModel;
 
 // Laberinto
 Model LE1ModelAnimate;
@@ -179,6 +180,7 @@ int lastMousePosY, offsetY = 0;
 // Model matrix definitions
 // Pacman
 glm::mat4 modelMatrixPacman = glm::mat4(1.0f);
+glm::mat4 modelMatrizFantasmaAzul = glm::mat4(1.0f);
 
 // Laberinto
 glm::mat4 modelMatrixLE1 = glm::mat4(1.0f);
@@ -223,6 +225,10 @@ glm::mat4 modelMatrixLE39 = glm::mat4(1.0f);
 glm::mat4 modelMatrixLE40 = glm::mat4(1.0f);
 
 int animationIndex = 1;
+// Para controlar la orientación 
+// del Pacman mientras se mueve
+int anteriorMove = 1;
+int rotarMove = 0;
 int modelSelected = 0;
 bool enableCountSelected = true;
 
@@ -680,6 +686,9 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	// Animaciones 0 -> Dying	1 -> Hang Raising	2 -> Idle	3 -> Walking
 	pacmanModelAnimate.loadModel("../models/Pacman/MS-PACMAN_ANIMACIONES.fbx");
 	pacmanModelAnimate.setShader(&shaderMulLighting);
+
+	fantasmaAzulModel.loadModel("../models/Fantasma/fantasma.obj");
+	fantasmaAzulModel.setShader(&shaderMulLighting);
 
 	// Punto
 	puntoModel.loadModel("../models/Pacman/punto.obj");
@@ -1139,6 +1148,7 @@ void destroy() {
 	// Custom objects Delete
 	modelGrass.destroy();
 	puntoModel.destroy();
+	fantasmaAzulModel.destroy();
 
 	// Custom objects animate
 	pacmanModelAnimate.destroy();
@@ -1282,20 +1292,72 @@ bool processInput(bool continueApplication) {
 		
 		std::cout << "modelSelected:" << modelSelected << std::endl;
 	}
+
 	else if(glfwGetKey(window, GLFW_KEY_TAB) == GLFW_RELEASE)
 		enableCountSelected = true;
 
-	if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS){
-		modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(1.0f), glm::vec3(0, 1, 0));
+	if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+		if (anteriorMove != 1)
+			rotarMove = 0;
+		if (rotarMove == 0 && anteriorMove != 1) {
+			if (anteriorMove == 2)
+				modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			if (anteriorMove == 3)
+				modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(180.0f), glm::vec3(0, 1, 0));
+			if (anteriorMove == 4)
+				modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(90.0f), glm::vec3(0, 1, 0));
+			anteriorMove = 1;
+			rotarMove = 1;
+		}
+		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.08));
 		animationIndex = 3;
-	}else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS){
-		modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(-1.0f), glm::vec3(0, 1, 0));
+	}
+	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+		if (anteriorMove != 2)
+			rotarMove = 0;
+		if (rotarMove == 0 && anteriorMove != 2) {
+			if (anteriorMove == 1)
+				modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(90.0f), glm::vec3(0, 1, 0));
+			if (anteriorMove == 3)
+				modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			if (anteriorMove == 4)
+				modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(180.0f), glm::vec3(0, 1, 0));
+			anteriorMove = 2;
+			rotarMove = 1;
+		}
+		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.08));
 		animationIndex = 3;
-	}if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS){
-		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.06));
+	}
+	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+		if (anteriorMove != 3)
+			rotarMove = 0;
+		if (rotarMove == 0 && anteriorMove != 3) {
+			if (anteriorMove == 1)
+				modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(180.0f), glm::vec3(0, 1, 0));
+			if (anteriorMove == 2)
+				modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(90.0f), glm::vec3(0, 1, 0));
+			if (anteriorMove == 4)
+				modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			anteriorMove = 3;
+			rotarMove = 1;
+		}
+		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.08));
 		animationIndex = 3;
-	}else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
-		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, -0.06));
+	}
+	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+		if (anteriorMove != 4)
+			rotarMove = 0;
+		if (rotarMove == 0 && anteriorMove != 4) {
+			if (anteriorMove == 1)
+				modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			if (anteriorMove == 2)
+				modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(180.0f), glm::vec3(0, 1, 0));
+			if (anteriorMove == 3)
+				modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(90.0f), glm::vec3(0, 1, 0));
+			anteriorMove = 4;
+			rotarMove = 1;
+		}
+		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.08));
 		animationIndex = 3;
 	}
 
@@ -1385,18 +1447,12 @@ void applicationLoop() {
 		glm::mat4 projection = glm::perspective(glm::radians(45.0f),
 				(float) screenWidth / (float) screenHeight, 0.1f, 100.0f);
 
+		
 		if(modelSelected == 0){
+			angleTarget = 0.0f;
 			axis = glm::axis(glm::quat_cast(modelMatrixPacman));
-			angleTarget = glm::angle(glm::quat_cast(modelMatrixPacman));
 			target = modelMatrixPacman[3];
 		}
-
-		if(std::isnan(angleTarget))
-			angleTarget = 0.0;
-		if(axis.y < 0)
-			angleTarget = -angleTarget;
-		if(modelSelected == 1)
-			angleTarget -= glm::radians(90.0f);
 
 		camera->setCameraTarget(target);
 		camera->setAngleTarget(angleTarget);
