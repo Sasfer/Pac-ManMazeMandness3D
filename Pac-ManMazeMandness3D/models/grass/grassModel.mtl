@@ -1,378 +1,590 @@
-newmtl grassModel:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel1:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel2:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel3:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel4:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel5:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel6:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel7:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel8:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel9:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel10:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel11:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel12:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel13:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel14:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel15:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel16:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel17:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel18:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel19:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel20:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel21:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel22:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel23:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel24:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel25:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel26:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel28:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel29:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel30:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel31:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel32:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel33:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel34:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel35:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel36:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel37:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel38:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel39:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel40:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel41:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
-newmtl grassModel42:Material_001
-illum 4
-Kd 0.00 0.00 0.00
-Ka 1.00 1.00 1.00
-Tf 1.00 1.00 1.00
-map_Kd agaveTexture.png
-Ni 1.00
-Ks 0.50 0.50 0.50
-Ns 96.08
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 02.06.2020 19:49:09
+
+newmtl grassModel1_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel15_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel19_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel5_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel13_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel6_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel42_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel14_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel7_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel16_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel17_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel36_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel11_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel10_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel33_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel39_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel25_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel12_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel41_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel38_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel32_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel35_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel2_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel21_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel31_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel24_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel28_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel20_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel34_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel4_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel23_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel3_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel30_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel40_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel26_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel9_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel22_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel29_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel8_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel18_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png
+
+newmtl grassModel37_Material_001
+	Ns 96.0800
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 1.0000 1.0000 1.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka agaveTexture.png
+	map_Kd agaveTexture.png

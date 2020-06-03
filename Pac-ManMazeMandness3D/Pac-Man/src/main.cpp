@@ -106,7 +106,7 @@ std::map<std::string, int> puntoObtenido;
 // Model animate instance
 // Pacman
 Model pacmanModelAnimate;
-Model fantasmaAzulModel;
+Model fantasmaModel;
 
 // Laberinto
 Model LE1ModelAnimate;
@@ -184,7 +184,10 @@ int lastMousePosY, offsetY = 0;
 // Model matrix definitions
 // Pacman
 glm::mat4 modelMatrixPacman = glm::mat4(1.0f);
-glm::mat4 modelMatrizFantasmaAzul = glm::mat4(1.0f);
+glm::mat4 modelMatrixFantasmaRojo = glm::mat4(1.0f);
+glm::mat4 modelMatrixFantasmaRosa = glm::mat4(1.0f);
+glm::mat4 modelMatrixFantasmaCian = glm::mat4(1.0f);
+glm::mat4 modelMatrixFantasmaNaranja = glm::mat4(1.0f);
 
 // Laberinto
 glm::mat4 modelMatrixLE1 = glm::mat4(1.0f);
@@ -238,6 +241,11 @@ bool enableCountSelected = true;
 
 // Blending model unsorted
 std::map<std::string, glm::vec3> blendingUnsorted = {
+	{"fantasmaRojo", glm::vec3(0.0, 0.05, 2.0)},
+	{"fantasmaRosa", glm::vec3(0.0, 0.05, 0.5)},
+	{"fantasmaCian", glm::vec3(0.0, 0.05, -1.0)},
+	{"fantasmaNaranja", glm::vec3(0.0, 0.05, -2.5)},
+	{"grass", glm::vec3(0.0, 5.0, 0.0)}
 };
 
 double deltaTime;
@@ -691,8 +699,9 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	pacmanModelAnimate.loadModel("../models/Pacman/MS-PACMAN_ANIMACIONES.fbx");
 	pacmanModelAnimate.setShader(&shaderMulLighting);
 
-	fantasmaAzulModel.loadModel("../models/Fantasma/fantasma.obj");
-	fantasmaAzulModel.setShader(&shaderMulLighting);
+	//Fantasmas
+	fantasmaModel.loadModel("../models/Fantasma/fantasma.obj");
+	fantasmaModel.setShader(&shaderMulLighting);
 
 	// Punto
 	puntoModel.loadModel("../models/Pacman/punto.obj");
@@ -1152,7 +1161,7 @@ void destroy() {
 	// Custom objects Delete
 	modelGrass.destroy();
 	puntoModel.destroy();
-	fantasmaAzulModel.destroy();
+	fantasmaModel.destroy();
 
 	// Custom objects animate
 	pacmanModelAnimate.destroy();
@@ -1395,6 +1404,12 @@ void applicationLoop() {
 	// Pacman
 	modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(13.0f, 0.05f, -5.0f));
 
+	// Fantasma azul
+	modelMatrixFantasmaRojo = glm::translate(modelMatrixFantasmaRojo, glm::vec3(0.0f, 0.05f, 1.5f));
+	modelMatrixFantasmaRosa = glm::translate(modelMatrixFantasmaRosa, glm::vec3(0.0f, 0.05f, 0.0f));
+	modelMatrixFantasmaCian = glm::translate(modelMatrixFantasmaCian, glm::vec3(0.0f, 0.05f, -1.5f));
+	modelMatrixFantasmaNaranja = glm::translate(modelMatrixFantasmaNaranja, glm::vec3(0.0f, 0.05f, -3.0f));
+
 	// Laberinto
 	modelMatrixLE1 = glm::translate(modelMatrixLE1, glm::vec3(0.0f, 1.0f, 0.0f));
 	modelMatrixLE2 = glm::translate(modelMatrixLE2, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -1567,18 +1582,18 @@ void applicationLoop() {
 		 * Propiedades Luz direccional
 		 *******************************************/
 		shaderMulLighting.setVectorFloat3("viewPos", glm::value_ptr(camera->getPosition()));
-		shaderMulLighting.setVectorFloat3("directionalLight.light.ambient", glm::value_ptr(glm::vec3(0.2, 0.2, 0.2)));
-		shaderMulLighting.setVectorFloat3("directionalLight.light.diffuse", glm::value_ptr(glm::vec3(0.5, 0.5, 0.5)));
-		shaderMulLighting.setVectorFloat3("directionalLight.light.specular", glm::value_ptr(glm::vec3(0.2, 0.2, 0.2)));
+		shaderMulLighting.setVectorFloat3("directionalLight.light.ambient", glm::value_ptr(glm::vec3(0.15, 0.15, 0.15)));
+		shaderMulLighting.setVectorFloat3("directionalLight.light.diffuse", glm::value_ptr(glm::vec3(0.45, 0.45, 0.45)));
+		shaderMulLighting.setVectorFloat3("directionalLight.light.specular", glm::value_ptr(glm::vec3(0.15, 0.15, 0.15)));
 		shaderMulLighting.setVectorFloat3("directionalLight.direction", glm::value_ptr(glm::vec3(-0.707106781, -0.707106781, 0.0)));
 
 		/*******************************************
 		 * Propiedades Luz direccional Terrain
 		 *******************************************/
 		shaderTerrain.setVectorFloat3("viewPos", glm::value_ptr(camera->getPosition()));
-		shaderTerrain.setVectorFloat3("directionalLight.light.ambient", glm::value_ptr(glm::vec3(0.2, 0.2, 0.2)));
-		shaderTerrain.setVectorFloat3("directionalLight.light.diffuse", glm::value_ptr(glm::vec3(0.5, 0.5, 0.5)));
-		shaderTerrain.setVectorFloat3("directionalLight.light.specular", glm::value_ptr(glm::vec3(0.2, 0.2, 0.2)));
+		shaderTerrain.setVectorFloat3("directionalLight.light.ambient", glm::value_ptr(glm::vec3(0.15, 0.15, 0.15)));
+		shaderTerrain.setVectorFloat3("directionalLight.light.diffuse", glm::value_ptr(glm::vec3(0.45, 0.45, 0.45)));
+		shaderTerrain.setVectorFloat3("directionalLight.light.specular", glm::value_ptr(glm::vec3(0.15, 0.15, 0.15)));
 		shaderTerrain.setVectorFloat3("directionalLight.direction", glm::value_ptr(glm::vec3(-0.707106781, -0.707106781, 0.0)));
 
 		/*******************************************
@@ -2305,14 +2320,6 @@ void renderScene(bool renderParticles){
 	 * Custom objects obj
 	 *******************************************/
 
-	// Grass
-	glDisable(GL_CULL_FACE);
-	glm::vec3 grassPosition = glm::vec3(0.0, 0.0, 0.0);
-	grassPosition.y = terrain.getHeightTerrain(grassPosition.x, grassPosition.z);
-	modelGrass.setPosition(grassPosition);
-	modelGrass.render();
-	glEnable(GL_CULL_FACE);
-
 	// Puntos
 	for (int i = 0; i < puntosPosition.size(); i++) {
 		if (std::get<1>(puntosPosition.find("punto" + std::to_string(i))->second) == 0) {
@@ -2333,7 +2340,7 @@ void renderScene(bool renderParticles){
 	modelMatrixPacmanBody = glm::scale(modelMatrixPacmanBody, glm::vec3(0.005, 0.005, 0.005));
 	pacmanModelAnimate.setAnimationIndex(animationIndex);
 	pacmanModelAnimate.render(modelMatrixPacmanBody);
-
+	
 	//Laberinto
 	modelMatrixLE1[3][1] = terrain.getHeightTerrain(modelMatrixLE1[3][0], modelMatrixLE1[3][2]);
 	glm::mat4 modelMatrixLE1Body = glm::mat4(modelMatrixLE1);
@@ -2501,6 +2508,20 @@ void renderScene(bool renderParticles){
 	 * Update the position with alpha objects
 	 */
 
+	// Update Fantasma Rojo
+	blendingUnsorted.find("fantasmaRojo")->second = glm::vec3(modelMatrixFantasmaRojo[3]);
+	// Update Fantasma Rosa
+	blendingUnsorted.find("fantasmaRosa")->second = glm::vec3(modelMatrixFantasmaRosa[3]);
+	// Update Fantasma Cian
+	blendingUnsorted.find("fantasmaCian")->second = glm::vec3(modelMatrixFantasmaCian[3]);
+	// Update Fantasma Naranja
+	blendingUnsorted.find("fantasmaNaranja")->second = glm::vec3(modelMatrixFantasmaNaranja[3]);
+
+	// Update Grass
+	glm::vec3 grassPosition = blendingUnsorted.find("grass")->second;
+	grassPosition[1] = terrain.getHeightTerrain(grassPosition[0], grassPosition[2]);
+	blendingUnsorted.find("grass")->second = grassPosition;
+
 	/**********
 	 * Sorter with alpha objects
 	 */
@@ -2515,13 +2536,54 @@ void renderScene(bool renderParticles){
 	 * Render de las transparencias
 	 */
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_CULL_FACE);
 	for(std::map<float, std::pair<std::string, glm::vec3> >::reverse_iterator it = blendingSorted.rbegin(); it != blendingSorted.rend(); it++){
-		if(renderParticles && it->second.first.compare("fountain") == 0){
+		if (it->second.first.compare("grass") == 0) {
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			modelGrass.setPosition(it->second.second);
+			modelGrass.render();
+		}
+		else if (it->second.first.compare("fantasmaRojo") == 0) {
+			glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
+			glBlendColor(1.0, 0.0, 0.0, 1.0);
+			//Fantasma Rojo
+			glm::mat4 modelMatrixFantasmaRojoBlend = glm::mat4(modelMatrixFantasmaRojo);
+			modelMatrixFantasmaRojoBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaRojoBlend[3][0], modelMatrixFantasmaRojoBlend[3][2]);
+			modelMatrixFantasmaRojoBlend = glm::scale(modelMatrixFantasmaRojoBlend, glm::vec3(0.065, 0.065, 0.065));
+			fantasmaModel.render(modelMatrixFantasmaRojoBlend);
+		}
+		else if (it->second.first.compare("fantasmaRosa") == 0) {
+			glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
+			glBlendColor(1.0, 0.078431, 0.576470, 1.0);
+			//Fantasma Rosa
+			glm::mat4 modelMatrixFantasmaRosaBlend = glm::mat4(modelMatrixFantasmaRosa);
+			modelMatrixFantasmaRosaBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaRosaBlend[3][0], modelMatrixFantasmaRosaBlend[3][2]);
+			modelMatrixFantasmaRosaBlend = glm::scale(modelMatrixFantasmaRosaBlend, glm::vec3(0.065, 0.065, 0.065));
+			fantasmaModel.render(modelMatrixFantasmaRosaBlend);
+		}
+		else if (it->second.first.compare("fantasmaCian") == 0) {
+			glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
+			glBlendColor(0.0, 1.0, 1.0, 1.0);
+			//Fantasma Cian
+			glm::mat4 modelMatrixFantasmaCianBlend = glm::mat4(modelMatrixFantasmaCian);
+			modelMatrixFantasmaCianBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaCianBlend[3][0], modelMatrixFantasmaCianBlend[3][2]);
+			modelMatrixFantasmaCianBlend = glm::scale(modelMatrixFantasmaCianBlend, glm::vec3(0.065, 0.065, 0.065));
+			fantasmaModel.render(modelMatrixFantasmaCianBlend);
+		}
+		else if (it->second.first.compare("fantasmaNaranja") == 0) {
+			glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
+			glBlendColor(1.0, 0.549019, 0.0, 1.0);
+			//Fantasma Naranja
+			glm::mat4 modelMatrixFantasmaNaranjaBlend = glm::mat4(modelMatrixFantasmaNaranja);
+			modelMatrixFantasmaNaranjaBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaNaranjaBlend[3][0], modelMatrixFantasmaNaranjaBlend[3][2]);
+			modelMatrixFantasmaNaranjaBlend = glm::scale(modelMatrixFantasmaNaranjaBlend, glm::vec3(0.065, 0.065, 0.065));
+			fantasmaModel.render(modelMatrixFantasmaNaranjaBlend);
+		}
+		else if(renderParticles && it->second.first.compare("fountain") == 0){
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			/**********
-			 * Init Render particles systems
-			 */
+			* Init Render particles systems
+			*/
 			glm::mat4 modelMatrixParticlesFountain = glm::mat4(1.0);
 			modelMatrixParticlesFountain = glm::translate(modelMatrixParticlesFountain, it->second.second);
 			modelMatrixParticlesFountain[3][1] = terrain.getHeightTerrain(modelMatrixParticlesFountain[3][0], modelMatrixParticlesFountain[3][2]) + 0.36 * 10.0;
@@ -2544,13 +2606,14 @@ void renderScene(bool renderParticles){
 			glBindVertexArray(VAOParticles);
 			glDrawArrays(GL_POINTS, 0, nParticles);
 			glDepthMask(GL_TRUE);
-			//glEnable(GL_DEPTH_TEST);
+			//glEnable(GL_DEPTH_TEST)
 			shaderParticlesFountain.turnOff();
 			/**********
-			 * End Render particles systems
-			 */
+			* End Render particles systems
+			*/
 		}
 		else if(renderParticles && it->second.first.compare("fire") == 0){
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			/**********
 			 * Init Render particles systems
 			 */
@@ -2593,7 +2656,7 @@ void renderScene(bool renderParticles){
 			glDepthMask(GL_TRUE);
 			drawBuf = 1 - drawBuf;
 			shaderParticlesFire.turnOff();
-
+			
 			/****************************+
 			 * Open AL sound data
 			 */
@@ -2606,7 +2669,6 @@ void renderScene(bool renderParticles){
 			 * End Render particles systems
 			 */
 		}
-
 	}
 	glEnable(GL_CULL_FACE);
 }
