@@ -17,6 +17,7 @@ double TimeManager::CalculateFrameRate(bool writeToConsole = false) {
 
 	// Obtiene el tiempo actual en segundos, depende de nuestro ambiente
 	CurrentTime = GetTime();
+	//fprintf(stderr, "Tienmpo actual second: %d\n", int(CurrentTime));
 
 	// Se calcula el tiempo delta, este es el tiempo que ha pasadp desde la ultima que revisamos el tiempo actual
 	DeltaTime = CurrentTime - lastTime;
@@ -38,8 +39,7 @@ double TimeManager::CalculateFrameRate(bool writeToConsole = false) {
 
 		// Si la bandera esta habilitada muestra los frames por segundo acutales.
 		if (writeToConsole)
-			fprintf(stderr, "Current Frames Per Second: %d\n",
-					int(framesPerSecond));
+			//fprintf(stderr, "Current Frames Per Second: %d\n", int(framesPerSecond));
 
 		// Se almacenan los FPS actuales, reiniciamos este en la siguiente linea
 		currentFPS = framesPerSecond;

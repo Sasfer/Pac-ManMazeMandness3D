@@ -80,7 +80,7 @@ Shader shaderViewDepth;
 Shader shaderDepth;
 
 std::shared_ptr<Camera> camera(new ThirdPersonCamera());
-float distanceFromTarget = 12.0;
+float distanceFromTarget = 16.0;
 glm::vec3 auxCameraPosition, auxCameraTarget;
 float auxCamDistanceFromTarget, auxCamAngleTarget, auxCamPitch;
 int vistaAerea = 0;
@@ -107,6 +107,16 @@ std::map<std::string, int> puntoObtenido;
 // Pacman
 Model pacmanModelAnimate;
 Model fantasmaModel;
+
+Model portalFantasma1Model;
+Model portalFantasma2Model;
+Model portalPacman1Model;
+Model portalPacman2Model;
+
+Model pisoAntorcha1Model;
+Model pisoAntorcha2Model;
+Model pisoAntorcha3Model;
+Model pisoAntorcha4Model;
 
 // Laberinto
 Model LE1ModelAnimate;
@@ -148,11 +158,19 @@ Model LE36ModelAnimate;
 Model LE37ModelAnimate;
 Model LE38ModelAnimate;
 Model LE39ModelAnimate;
-Model LE40ModelAnimate;
 
 // Juego
-int vidaPacman = 3;
+int vidaPacman = 5;
 int puntosPacman = 0;
+int tiempoJuego = 0;
+
+int auxGiro = 0;
+
+// Fantasmas movimiento
+int moveIzqFantasmaRojo, moveDerFantasmaRojo, verificaMoveFantasmaRojo, auxGiroFantasmaRojo = 0;
+int moveIzqFantasmaRosa, moveDerFantasmaRosa, verificaMoveFantasmaRosa, auxGiroFantasmaRosa = 0;
+int moveIzqFantasmaCian, moveDerFantasmaCian, verificaMoveFantasmaCian, auxGiroFantasmaCian = 0;
+int moveIzqFantasmaNaranja, moveDerFantasmaNaranja, verificaMoveFantasmaNaranja, auxGiroFantasmaNaranja = 0;
 
 // Terrain model instance
 Terrain terrain(-1, -1, 200, 16, "../Textures/heightmap.png");
@@ -188,6 +206,16 @@ glm::mat4 modelMatrixFantasmaRojo = glm::mat4(1.0f);
 glm::mat4 modelMatrixFantasmaRosa = glm::mat4(1.0f);
 glm::mat4 modelMatrixFantasmaCian = glm::mat4(1.0f);
 glm::mat4 modelMatrixFantasmaNaranja = glm::mat4(1.0f);
+
+glm::mat4 modelMatrixPortalFantasma1 = glm::mat4(1.0);
+glm::mat4 modelMatrixPortalFantasma2 = glm::mat4(1.0);
+glm::mat4 modelMatrixPortalPacman1 = glm::mat4(1.0);
+glm::mat4 modelMatrixPortalPacman2 = glm::mat4(1.0);
+
+glm::mat4 modelMatrixPisoAntorcha1 = glm::mat4(1.0);
+glm::mat4 modelMatrixPisoAntorcha2 = glm::mat4(1.0);
+glm::mat4 modelMatrixPisoAntorcha3 = glm::mat4(1.0);
+glm::mat4 modelMatrixPisoAntorcha4 = glm::mat4(1.0);
 
 // Laberinto
 glm::mat4 modelMatrixLE1 = glm::mat4(1.0f);
@@ -229,7 +257,6 @@ glm::mat4 modelMatrixLE36 = glm::mat4(1.0f);
 glm::mat4 modelMatrixLE37 = glm::mat4(1.0f);
 glm::mat4 modelMatrixLE38 = glm::mat4(1.0f);
 glm::mat4 modelMatrixLE39 = glm::mat4(1.0f);
-glm::mat4 modelMatrixLE40 = glm::mat4(1.0f);
 
 int animationIndex = 1;
 // Para controlar la orientación 
@@ -274,125 +301,126 @@ double currTimeParticlesAnimationFire, lastTimeParticlesAnimationFire;
 //		  Valor entero 0 -> Punto no comido por Pacman	
 //					   1 -> Punto comido por Pacman
 std::map<std::string, std::tuple<glm::vec3, int>> puntosPosition = {
-	{"punto0", {glm::vec3(-20.987, 0.0, 0.0),	0}},	{"punto1", {glm::vec3(20.987, 0.0, 0.0),	0}},
-	{"punto2", {glm::vec3(-16.3175, 0.0, 0.0),	0}},	{"punto3", {glm::vec3(16.3175, 0.0, 0.0),	0}},
-	{"punto4", {glm::vec3(-11.811, 0.0, 0.0),	0}},	{"punto5", {glm::vec3(11.811, 0.0, 0.0),	0}},
-	{"punto6", {glm::vec3(-9.812, 0.0, 0.0),	0}},	{"punto7", {glm::vec3(9.812, 0.0, 0.0),		0}},
-	{"punto8", {glm::vec3(-7.455, 0.0, 0.0),	0}},	{"punto9", {glm::vec3(7.455, 0.0, 0.0),		0}},
+	{"punto0", {glm::vec3(-2.25, 0.0, 0.0),		0}},	{"punto1", {glm::vec3(2.25, 0.0, 0.0),		0}},
+														{"punto2", {glm::vec3(0.0, 0.0, 2.25),		0}},
+	{"punto3", {glm::vec3(-4.45, 0.0, 0.0),		0}},	{"punto4", {glm::vec3(4.45, 0.0, 0.0),		0}},
+	{"punto5", {glm::vec3(0.0, 0.0, -4.45),		0}},	{"punto6", {glm::vec3(0.0, 0.0, 4.45),		0}},
+	{"punto7", {glm::vec3(-6.75, 0.0, 0.0),		0}},	{"punto8", {glm::vec3(6.75, 0.0, 0.0),		0}},
+	{"punto9", {glm::vec3(0.0, 0.0, -6.75),		0}},	{"punto10", {glm::vec3(0.0, 0.0, 6.75),		0}},
+	{"punto11", {glm::vec3(-11.25, 0.0, 0.0),	0}},	{"punto12", {glm::vec3(11.25, 0.0, 0.0),	0}},
+	{"punto13", {glm::vec3(0.0, 0.0, -11.25),	0}},	{"punto14", {glm::vec3(0.0, 0.0, 11.25),	0}},
+	{"punto15", {glm::vec3(-15.75, 0.0, 0.0),	0}},	{"punto16", {glm::vec3(15.75, 0.0, 0.0),	0}},
+	{"punto17", {glm::vec3(0.0, 0.0, -15.75),	0}},	{"punto18", {glm::vec3(0.0, 0.0, 15.75),	0}},
+	{"punto19", {glm::vec3(-20.25, 0.0, 0.0),	0}},	{"punto20", {glm::vec3(20.25, 0.0, 0.0),	0}},
+	{"punto21", {glm::vec3(0.0, 0.0, -20.25),	0}},	{"punto22", {glm::vec3(0.0, 0.0, 20.25),	0}},
 
-	{"punto10", {glm::vec3(-0.985, 0.0, -6.7505),	0}},	{"punto11", {glm::vec3(0.985, 0.0, -6.7505),	0}},
-	{"punto12", {glm::vec3(-0.985, 0.0, 6.7505),	0}},	{"punto13", {glm::vec3(0.985, 0.0, 6.7505),		0}},
-	{"punto14", {glm::vec3(-0.985, 0.0, -11.6845),	0}},	{"punto15", {glm::vec3(0.985, 0.0, -11.6845),	0}},
-	{"punto16", {glm::vec3(-0.985, 0.0, 11.6845),	0}},	{"punto17", {glm::vec3(0.985, 0.0, 11.6845),	0}},
-	{"punto18", {glm::vec3(-0.985, 0.0, -16.0565),	0}},	{"punto19", {glm::vec3(0.985, 0.0, -16.0565),	0}},
-	{"punto20", {glm::vec3(-0.985, 0.0, 16.0565),	0}},	{"punto21", {glm::vec3(0.985, 0.0, 16.0565),	0}},
-	{"punto22", {glm::vec3(-0.985, 0.0, -20.1625),	0}},	{"punto23", {glm::vec3(0.985, 0.0, -20.1625),	0}},
-	{"punto24", {glm::vec3(-0.985, 0.0, 20.1625),	0}},	{"punto25", {glm::vec3(0.985, 0.0, 20.1625),	0}},
+	{"punto23", {glm::vec3(-2.25, 0.0, -2.25),	0}},	{"punto24", {glm::vec3(2.25, 0.0, -2.25),	0}},
+	{"punto25", {glm::vec3(-2.25, 0.0, 2.25),	0}},	{"punto26", {glm::vec3(2.25, 0.0, 2.25),	0}},
+	{"punto27", {glm::vec3(-6.75, 0.0, -2.25),	0}},	{"punto28", {glm::vec3(6.75, 0.0, -2.25),	0}},
+	{"punto29", {glm::vec3(-6.75, 0.0, 2.25),	0}},	{"punto30", {glm::vec3(6.75, 0.0, 2.25),	0}},
+	{"punto31", {glm::vec3(-11.25, 0.0, -2.25),	0}},	{"punto32", {glm::vec3(11.25, 0.0, -2.25),	0}},
+	{"punto33", {glm::vec3(-11.25, 0.0, 2.25),	0}},	{"punto34", {glm::vec3(11.25, 0.0, 2.25),	0}},
+	{"punto35", {glm::vec3(-15.75, 0.0, -2.25),	0}},	{"punto36", {glm::vec3(15.75, 0.0, -2.25),	0}},
+	{"punto37", {glm::vec3(-15.75, 0.0, 2.25),	0}},	{"punto38", {glm::vec3(15.75, 0.0, 2.25),	0}},
+	{"punto39", {glm::vec3(-20.25, 0.0, -2.25),	0}},	{"punto40", {glm::vec3(20.25, 0.0, -2.25),	0}},
+	{"punto41", {glm::vec3(-20.25, 0.0, 2.25),	0}},	{"punto42", {glm::vec3(20.25, 0.0, 2.25),	0}},
 
-	{"punto26", {glm::vec3(-3.2405, 0.0, -6.7505),	0}},	{"punto27", {glm::vec3(3.2405, 0.0, -6.7505),	0}},
-	{"punto28", {glm::vec3(-3.2405, 0.0, 6.7505),	0}},	{"punto29", {glm::vec3(3.2405, 0.0, 6.7505),	0}},
-	{"punto30", {glm::vec3(-3.2405, 0.0, -11.6845),	0}},	{"punto31", {glm::vec3(3.2405, 0.0, -11.6845),	0}},
-	{"punto32", {glm::vec3(-3.2405, 0.0, 11.6845),	0}},	{"punto33", {glm::vec3(3.2405, 0.0, 11.6845),	0}},
-	{"punto34", {glm::vec3(-3.2405, 0.0, -16.0565),	0}},	{"punto35", {glm::vec3(3.2405, 0.0, -16.0565),	0}},
-	{"punto36", {glm::vec3(-3.2405, 0.0, 16.0565),	0}},	{"punto37", {glm::vec3(3.2405, 0.0, 16.0565),	0}},
-	{"punto38", {glm::vec3(-3.2405, 0.0, -20.1625),	0}},	{"punto39", {glm::vec3(3.2405, 0.0, -20.1625),	0}},
-	{"punto40", {glm::vec3(-3.2405, 0.0, 20.1625),	0}},	{"punto41", {glm::vec3(3.2405, 0.0, 20.1625),	0}},
+	{"punto43", {glm::vec3(-6.75, 0.0, -4.5),	0}},	{"punto44", {glm::vec3(6.75, 0.0, -4.5),	0}},
+	{"punto45", {glm::vec3(-6.75, 0.0, 4.5),	0}},	{"punto46", {glm::vec3(6.75, 0.0, 4.5),		0}},
+	{"punto47", {glm::vec3(-11.25, 0.0, -4.5),	0}},	{"punto48", {glm::vec3(11.25, 0.0, -4.5),	0}},
+	{"punto49", {glm::vec3(-11.25, 0.0, 4.5),	0}},	{"punto50", {glm::vec3(11.25, 0.0, 4.5),	0}},
+	{"punto51", {glm::vec3(-15.75, 0.0, -4.5),	0}},	{"punto52", {glm::vec3(15.75, 0.0, -4.5),	0}},
+	{"punto53", {glm::vec3(-15.75, 0.0, 4.5),	0}},	{"punto54", {glm::vec3(15.75, 0.0, 4.5),	0}},
+	{"punto55", {glm::vec3(-20.25, 0.0, -4.5),	0}},	{"punto56", {glm::vec3(20.25, 0.0, -4.5),	0}},
+	{"punto57", {glm::vec3(-20.25, 0.0, 4.5),	0}},	{"punto58", {glm::vec3(20.25, 0.0, 4.5),	0}},
 
-	{"punto42", {glm::vec3(-5.3795, 0.0, -6.7505),	0} },	{"punto43", {glm::vec3(5.3795, 0.0, -6.7505),	0 }},
-	{"punto44", {glm::vec3(-5.3795, 0.0, 6.7505),	0 }},	{"punto45", {glm::vec3(5.3795, 0.0, 6.7505),	0 }},
-	{"punto46", {glm::vec3(-5.3795, 0.0, -9.5085),	0 }},	{"punto47", {glm::vec3(5.3795, 0.0, -9.5085),	0 }},
-	{"punto48", {glm::vec3(-5.3795, 0.0, 9.5085),	0 }},	{"punto49", {glm::vec3(5.3795, 0.0, 9.5085),	0 }},
-	{"punto50", {glm::vec3(-5.3795, 0.0, -11.6845),	0 }},	{"punto51", {glm::vec3(5.3795, 0.0, -11.6845),	0 }},
-	{"punto52", {glm::vec3(-5.3795, 0.0, 11.6845),	0 }},	{"punto53", {glm::vec3(5.3795, 0.0, 11.6845),	0 }},
-	{"punto54", {glm::vec3(-5.3795, 0.0, -16.0565),	0 }},	{"punto55", {glm::vec3(5.3795, 0.0, -16.0565),	0 }},
-	{"punto56", {glm::vec3(-5.3795, 0.0, 16.0565),	0 }},	{"punto57", {glm::vec3(5.3795, 0.0, 16.0565),	0 }},
-	{"punto58", {glm::vec3(-5.3795, 0.0, -20.1625),	0 }},	{"punto59", {glm::vec3(5.3795, 0.0, -20.1625),	0 }},
-	{"punto60", {glm::vec3(-5.3795, 0.0, 20.1625),	0 }},	{"punto61", {glm::vec3(5.3795, 0.0, 20.1625),	0 }},
+	{"punto59", {glm::vec3(-2.25, 0.0, -6.75),	0}},	{"punto60", {glm::vec3(2.25, 0.0, -6.75),	0}},
+	{"punto61", {glm::vec3(-2.25, 0.0, 6.75),	0}},	{"punto62", {glm::vec3(2.25, 0.0, 6.75),	0}},
+	{"punto63", {glm::vec3(-4.5, 0.0, -6.75),	0}},	{"punto64", {glm::vec3(4.5, 0.0, -6.75),	0}},
+	{"punto65", {glm::vec3(-4.5, 0.0, 6.75),	0}},	{"punto66", {glm::vec3(4.5, 0.0, 6.75),		0}},
+	{"punto67", {glm::vec3(-6.75, 0.0, -6.75),	0}},	{"punto68", {glm::vec3(6.75, 0.0, -6.75),	0}},
+	{"punto69", {glm::vec3(-6.75, 0.0, 6.75),	0}},	{"punto70", {glm::vec3(6.75, 0.0, 6.75),	0}},
+	{"punto71", {glm::vec3(-9.0, 0.0, -6.75),	0}},	{"punto72", {glm::vec3(9.0, 0.0, -6.75),	0}},
+	{"punto73", {glm::vec3(-9.0, 0.0, 6.75),	0}},	{"punto74", {glm::vec3(9.0, 0.0, 6.75),		0}},
+	{"punto75", {glm::vec3(-11.25, 0.0, -6.75),	0}},	{"punto76", {glm::vec3(11.25, 0.0, -6.75),	0}},
+	{"punto77", {glm::vec3(-11.25, 0.0, 6.75),	0}},	{"punto78", {glm::vec3(11.25, 0.0, 6.75),	0}},
+	{"punto79", {glm::vec3(-15.75, 0.0, -6.75),	0}},	{"punto80", {glm::vec3(15.75, 0.0, -6.75),	0}},
+	{"punto81", {glm::vec3(-15.75, 0.0, 6.75),	0}},	{"punto82", {glm::vec3(15.75, 0.0, 6.75),	0}},
+	{"punto83", {glm::vec3(-20.25, 0.0, -6.75),	0}},	{"punto84", {glm::vec3(20.25, 0.0, -6.75),	0}},
+	{"punto85", {glm::vec3(-20.25, 0.0, 6.75),	0}},	{"punto86", {glm::vec3(20.25, 0.0, 6.75),	0}},
 
-	{"punto62", {glm::vec3(-7.4025, 0.0, -2.273),	0 }},	{"punto63", {glm::vec3(7.4025, 0.0, -2.273),	0 }},
-	{"punto64", {glm::vec3(-7.4025, 0.0, 2.273),	0 }},	{"punto65", {glm::vec3(7.4025, 0.0, 2.273),		0 } },
-	{"punto66", {glm::vec3(-7.4025, 0.0, -4.514),	0 }},	{"punto67", {glm::vec3(7.4025, 0.0, -4.514),	0 } },
-	{"punto68", {glm::vec3(-7.4025, 0.0, 4.514),	0 }},	{"punto69", {glm::vec3(7.4025, 0.0, 4.514),		0 } },
-	{"punto70", {glm::vec3(-7.4025, 0.0, -6.7505),	0 }},	{"punto71", {glm::vec3(7.4025, 0.0, -6.7505),	0 } },
-	{"punto72", {glm::vec3(-7.4025, 0.0, 6.7505),	0 }},	{"punto73", {glm::vec3(7.4025, 0.0, 6.7505),	0 } },
-	{"punto74", {glm::vec3(-7.4025, 0.0, -11.6845),	0 }},	{"punto75", {glm::vec3(7.4025, 0.0, -11.6845),	0 } },
-	{"punto76", {glm::vec3(-7.4025, 0.0, 11.6845),	0 }},	{"punto77", {glm::vec3(7.4025, 0.0, 11.6845),	0 } },
-	{"punto78", {glm::vec3(-7.4025, 0.0, -16.0565),	0 }},	{"punto79", {glm::vec3(7.4025, 0.0, -16.0565),	0 } },
-	{"punto80", {glm::vec3(-7.4025, 0.0, 16.0565),	0 }},	{"punto81", {glm::vec3(7.4025, 0.0, 16.0565),	0 } },
-	{"punto82", {glm::vec3(-7.4025, 0.0, -20.1625),	0 }},	{"punto83", {glm::vec3(7.4025, 0.0, -20.1625),	0 } },
-	{"punto84", {glm::vec3(-7.4025, 0.0, 20.1625),	0 }},	{"punto85", {glm::vec3(7.4025, 0.0, 20.1625),	0 } },
+	{"punto87", {glm::vec3(-4.5, 0.0, -9.0),	0}},	{"punto88", {glm::vec3(4.5, 0.0, -9.0),		0}},
+	{"punto89", {glm::vec3(-4.5, 0.0, 9.0),		0}},	{"punto90", {glm::vec3(4.5, 0.0, 9.0),		0}},
+	{"punto91", {glm::vec3(-15.75, 0.0, -9.0),	0}},	{"punto92", {glm::vec3(15.75, 0.0, -9.0),	0}},
+	{"punto93", {glm::vec3(-15.75, 0.0, 9.0),	0}},	{"punto94", {glm::vec3(15.75, 0.0, 9.0),	0}},
+	{"punto95", {glm::vec3(-20.25, 0.0, -9.0),	0}},	{"punto96", {glm::vec3(20.25, 0.0, -9.0),	0}},
+	{"punto97", {glm::vec3(-20.25, 0.0, 9.0),	0}},	{"punto98", {glm::vec3(20.25, 0.0, 9.0),	0}},
 
-	{"punto86", {glm::vec3(-9.812, 0.0, -6.7505),	0 }},	{"punto87", {glm::vec3(9.812, 0.0, -6.7505),	0 }},
-	{"punto88", {glm::vec3(-9.812, 0.0, 6.7505),	0 }},	{"punto89", {glm::vec3(9.812, 0.0, 6.7505),		0 }},
-	{"punto90", {glm::vec3(-9.812, 0.0, -11.6845),	0 }},	{"punto91", {glm::vec3(9.812, 0.0, -11.6845),	0 }},
-	{"punto92", {glm::vec3(-9.812, 0.0, 11.6845),	0 }},	{"punto93", {glm::vec3(9.812, 0.0, 11.6845),	0 }},
-	{"punto94", {glm::vec3(-9.812, 0.0, -16.0565),	0 }},	{"punto95", {glm::vec3(9.812, 0.0, -16.0565),	0 }},
-	{"punto96", {glm::vec3(-9.812, 0.0, 16.0565),	0 }},	{"punto97", {glm::vec3(9.812, 0.0, 16.0565),	0 }},
-	{"punto98", {glm::vec3(-9.812, 0.0, -20.1625),	0 }},	{"punto99", {glm::vec3(9.812, 0.0, -20.1625),	0 }},
-	{"punto100", {glm::vec3(-9.812, 0.0, 20.1625),	0 }},	{"punto101", {glm::vec3(9.812, 0.0, 20.1625),	0 }},
+	{"punto99", {glm::vec3(-2.25, 0.0, -11.25),		0}},	{"punto100", {glm::vec3(2.25, 0.0, -11.25),	0}},
+	{"punto101", {glm::vec3(-2.25, 0.0, 11.25),		0}},	{"punto102", {glm::vec3(2.25, 0.0, 11.25),	0}},
+	{"punto103", {glm::vec3(-4.5, 0.0, -11.25),		0}},	{"punto104", {glm::vec3(4.5, 0.0, -11.25),	0}},
+	{"punto105", {glm::vec3(-4.5, 0.0, 11.25),		0}},	{"punto106", {glm::vec3(4.5, 0.0, 11.25),	0}},
+	{"punto107", {glm::vec3(-6.75, 0.0, -11.25),	0}},	{"punto108", {glm::vec3(6.75, 0.0, -11.25),	0}},
+	{"punto109", {glm::vec3(-6.75, 0.0, 11.25),		0}},	{"punto110", {glm::vec3(6.75, 0.0, 11.25),	0}},
+	{"punto111", {glm::vec3(-9.0, 0.0, -11.25),		0}},	{"punto112", {glm::vec3(9.0, 0.0, -11.25),	0}},
+	{"punto113", {glm::vec3(-9.0, 0.0, 11.25),		0}},	{"punto114", {glm::vec3(9.0, 0.0, 11.25),	0}},
+	{"punto115", {glm::vec3(-11.25, 0.0, -11.25),	0}},	{"punto116", {glm::vec3(11.25, 0.0, -11.25),0}},
+	{"punto117", {glm::vec3(-11.25, 0.0, 11.25),	0}},	{"punto118", {glm::vec3(11.25, 0.0, 11.25),	0}},
+	{"punto119", {glm::vec3(-13.5, 0.0, -11.25),	0}},	{"punto120", {glm::vec3(13.5, 0.0, -11.25),	0}},
+	{"punto121", {glm::vec3(-13.5, 0.0, 11.25),		0}},	{"punto122", {glm::vec3(13.5, 0.0, 11.25),	0}},
+	{"punto123", {glm::vec3(-15.75, 0.0, -11.25),	0}},	{"punto124", {glm::vec3(15.75, 0.0, -11.25),0}},
+	{"punto125", {glm::vec3(-15.75, 0.0, 11.25),	0}},	{"punto126", {glm::vec3(15.75, 0.0, 11.25),	0}},
+	{"punto127", {glm::vec3(-18.0, 0.0, -11.25),	0}},	{"punto128", {glm::vec3(18.0, 0.0, -11.25),	0}},
+	{"punto129", {glm::vec3(-18.0, 0.0, 11.25),		0}},	{"punto130", {glm::vec3(18.0, 0.0, 11.25),	0}},
+	{"punto131", {glm::vec3(-20.25, 0.0, -11.25),	0}},	{"punto132", {glm::vec3(20.25, 0.0, -11.25),0}},
+	{"punto133", {glm::vec3(-20.25, 0.0, 11.25),	0}},	{"punto134", {glm::vec3(20.25, 0.0, 11.25),	0}},
 
-	{"punto102", {glm::vec3(-11.811, 0.0, -2.273),	0 }},	{"punto103", {glm::vec3(11.811, 0.0, -2.273),	0 }},
-	{"punto104", {glm::vec3(-11.811, 0.0, 2.273),	0 }},	{"punto105", {glm::vec3(11.811, 0.0, 2.273),	0 }},
-	{"punto106", {glm::vec3(-11.811, 0.0, -4.514),	0 }},	{"punto107", {glm::vec3(11.811, 0.0, -4.514),	0 }},
-	{"punto108", {glm::vec3(-11.811, 0.0, 4.514),	0 }},	{"punto109", {glm::vec3(11.811, 0.0, 4.514),	0 }},
-	{"punto110", {glm::vec3(-11.811, 0.0, -6.7505),	0 }},	{"punto111", {glm::vec3(11.811, 0.0, -6.7505),	0 }},
-	{"punto112", {glm::vec3(-11.811, 0.0, 6.7505),	0 }},	{"punto113", {glm::vec3(11.811, 0.0, 6.7505),	0 }},
-	{"punto114", {glm::vec3(-11.811, 0.0, -11.6845),0 }},	{"punto115", {glm::vec3(11.811, 0.0, -11.6845),	0 }},
-	{"punto116", {glm::vec3(-11.811, 0.0, 11.6845),	0 }},	{"punto117", {glm::vec3(11.811, 0.0, 11.6845),	0 }},
-	{"punto118", {glm::vec3(-11.811, 0.0, -16.0565),0 }},	{"punto119", {glm::vec3(11.811, 0.0, -16.0565),	0 }},
-	{"punto120", {glm::vec3(-11.811, 0.0, 16.0565),	0 }},	{"punto121", {glm::vec3(11.811, 0.0, 16.0565),	0 }},
-	{"punto122", {glm::vec3(-11.811, 0.0, -18.0915),0 }},	{"punto123", {glm::vec3(11.811, 0.0, -18.0915),	0 }},
-	{"punto124", {glm::vec3(-11.811, 0.0, 18.0915),	0 }},	{"punto125", {glm::vec3(11.811, 0.0, 18.0915),	0 }},
-	{"punto126", {glm::vec3(-11.811, 0.0, -20.1625),0 }},	{"punto127", {glm::vec3(11.811, 0.0, -20.1625),	0 }},
-	{"punto128", {glm::vec3(-11.811, 0.0, 20.1625),	0 }},	{"punto129", {glm::vec3(11.811, 0.0, 20.1625),	0 }},
+	{"punto135", {glm::vec3(-15.75, 0.0, -13.5),	0}},	{"punto136", {glm::vec3(15.75, 0.0, -13.5),	0}},
+	{"punto137", {glm::vec3(-15.75, 0.0, 13.5),		0}},	{"punto138", {glm::vec3(15.75, 0.0, 13.5),	0}},
+	{"punto139", {glm::vec3(-20.25, 0.0, -13.5),	0}},	{"punto140", {glm::vec3(20.25, 0.0, -13.5),	0}},
+	{"punto141", {glm::vec3(-20.25, 0.0, 13.5),		0}},	{"punto142", {glm::vec3(20.25, 0.0, 13.5),	0}},
 
-	{"punto130", {glm::vec3(-14.2075, 0.0, -11.6845),	0 }},	{"punto131", {glm::vec3(14.2075, 0.0, -11.6845),	0 }},
-	{"punto132", {glm::vec3(-14.2075, 0.0, 11.6845),	0 }},	{"punto133", {glm::vec3(14.2075, 0.0, 11.6845),		0 }},
-	{"punto134", {glm::vec3(-14.2075, 0.0, -16.0565),	0 }},	{"punto135", {glm::vec3(14.2075, 0.0, -16.0565),	0 }},
-	{"punto136", {glm::vec3(-14.2075, 0.0, 16.0565),	0 }},	{"punto137", {glm::vec3(14.2075, 0.0, 16.0565),		0 }},
-	{"punto138", {glm::vec3(-14.2075, 0.0, -20.1625),	0 }},	{"punto139", {glm::vec3(14.2075, 0.0, -20.1625),	0 }},
-	{"punto140", {glm::vec3(-14.2075, 0.0, 20.1625),	0 }},	{"punto141", {glm::vec3(14.2075, 0.0, 20.1625),		0 }},
+	{"punto143", {glm::vec3(-2.25, 0.0, -15.75),	0}},	{"punto144", {glm::vec3(2.25, 0.0, -15.75),	0}},
+	{"punto145", {glm::vec3(-2.25, 0.0, 15.75),		0}},	{"punto146", {glm::vec3(2.25, 0.0, 15.75),	0}},
+	{"punto147", {glm::vec3(-4.5, 0.0, -15.75),		0}},	{"punto148", {glm::vec3(4.5, 0.0, -15.75),	0}},
+	{"punto149", {glm::vec3(-4.5, 0.0, 15.75),		0}},	{"punto150", {glm::vec3(4.5, 0.0, 15.75),	0}},
+	{"punto151", {glm::vec3(-6.75, 0.0, -15.75),	0}},	{"punto152", {glm::vec3(6.75, 0.0, -15.75),	0}},
+	{"punto153", {glm::vec3(-6.75, 0.0, 15.75),		0}},	{"punto154", {glm::vec3(6.75, 0.0, 15.75),	0}},
+	{"punto155", {glm::vec3(-9.0, 0.0, -15.75),		0}},	{"punto156", {glm::vec3(9.0, 0.0, -15.75),	0}},
+	{"punto157", {glm::vec3(-9.0, 0.0, 15.75),		0}},	{"punto158", {glm::vec3(9.0, 0.0, 15.75),	0}},
+	{"punto159", {glm::vec3(-11.25, 0.0, -15.75),	0}},	{"punto160", {glm::vec3(11.25, 0.0, -15.75),0}},
+	{"punto161", {glm::vec3(-11.25, 0.0, 15.75),	0}},	{"punto162", {glm::vec3(11.25, 0.0, 15.75),	0}},
+	{"punto163", {glm::vec3(-13.5, 0.0, -15.75),	0}},	{"punto164", {glm::vec3(13.5, 0.0, -15.75),	0}},
+	{"punto165", {glm::vec3(-13.5, 0.0, 15.75),		0}},	{"punto166", {glm::vec3(13.5, 0.0, 15.75),	0}},
+	{"punto167", {glm::vec3(-15.75, 0.0, -15.75),	0}},	{"punto168", {glm::vec3(15.75, 0.0, -15.75),0}},
+	{"punto169", {glm::vec3(-15.75, 0.0, 15.75),	0}},	{"punto170", {glm::vec3(15.75, 0.0, 15.75),	0}},
+	{"punto171", {glm::vec3(-20.25, 0.0, -15.75),	0}},	{"punto172", {glm::vec3(20.25, 0.0, -15.75),0}},
+	{"punto173", {glm::vec3(-20.25, 0.0, 15.75),	0}},	{"punto174", {glm::vec3(20.25, 0.0, 15.75),	0}},
 
-	{"punto142", {glm::vec3(-16.3175, 0.0, -2.273),		0 }},	{"punto143", {glm::vec3(16.3175, 0.0, -2.273),	0 }},
-	{"punto144", {glm::vec3(-16.3175, 0.0, 2.273),		0 }},	{"punto145", {glm::vec3(16.3175, 0.0, 2.273),	0 }},
-	{"punto146", {glm::vec3(-16.3175, 0.0, -4.514),		0 }},	{"punto147", {glm::vec3(16.3175, 0.0, -4.514),	0 }},
-	{"punto148", {glm::vec3(-16.3175, 0.0, 4.514),		0 }},	{"punto149", {glm::vec3(16.3175, 0.0, 4.514),	0 }},
-	{"punto150", {glm::vec3(-16.3175, 0.0, -6.7505),	0 }},	{"punto151", {glm::vec3(16.3175, 0.0, -6.7505),	0 }},
-	{"punto152", {glm::vec3(-16.3175, 0.0, 6.7505),		0 }},	{"punto153", {glm::vec3(16.3175, 0.0, 6.7505),	0 }},
-	{"punto154", {glm::vec3(-16.3175, 0.0, -9.5085),	0 }},	{"punto155", {glm::vec3(16.3175, 0.0, -9.5085),	0 }},
-	{"punto156", {glm::vec3(-16.3175, 0.0, 9.5085),		0 }},	{"punto157", {glm::vec3(16.3175, 0.0, 9.5085),	0 }},
-	{"punto158", {glm::vec3(-16.3175, 0.0, -11.6845),	0 }},	{"punto159", {glm::vec3(16.3175, 0.0, -11.6845),0 }},
-	{"punto160", {glm::vec3(-16.3175, 0.0, 11.6845),	0 }},	{"punto161", {glm::vec3(16.3175, 0.0, 11.6845),	0 }},
-	{"punto162", {glm::vec3(-16.3175, 0.0, -14.004),	0 }},	{"punto163", {glm::vec3(16.3175, 0.0, -14.004),	0 }},
-	{"punto164", {glm::vec3(-16.3175, 0.0, 14.004),		0 }},	{"punto165", {glm::vec3(16.3175, 0.0, 14.004),	0 }},
-	{"punto166", {glm::vec3(-16.3175, 0.0, -16.0565),	0 }},	{"punto167", {glm::vec3(16.3175, 0.0, -16.0565),0 }},
-	{"punto168", {glm::vec3(-16.3175, 0.0, 16.0565),	0 }},	{"punto169", {glm::vec3(16.3175, 0.0, 16.0565),	0 }},
-	{"punto170", {glm::vec3(-16.3175, 0.0, -20.1625),	0 }},	{"punto171", {glm::vec3(16.3175, 0.0, -20.1625),0 }},
-	{"punto172", {glm::vec3(-16.3175, 0.0, 20.1625),	0 }},	{"punto173", {glm::vec3(16.3175, 0.0, 20.1625),	0 }},
+	{"punto175", {glm::vec3(-11.25, 0.0, -18.0),	0}},	{"punto176", {glm::vec3(11.25, 0.0, -18.0),	0}},
+	{"punto177", {glm::vec3(-11.25, 0.0, 18.0),		0}},	{"punto178", {glm::vec3(11.25, 0.0, 18.0),	0}},
+	{"punto179", {glm::vec3(-20.25, 0.0, -18.0),	0}},	{"punto180", {glm::vec3(20.25, 0.0, -18.0),	0}},
+	{"punto181", {glm::vec3(-20.25, 0.0, 18.0),		0}},	{"punto182", {glm::vec3(20.25, 0.0, 18.0),	0}},
 
-	{"punto174", {glm::vec3(-18.664, 0.0, -11.6845),	0 }},	{"punto175", {glm::vec3(18.664, 0.0, -11.6845),	0 }},
-	{"punto176", {glm::vec3(-18.664, 0.0, 11.6845),		0 }},	{"punto177", {glm::vec3(18.664, 0.0, 11.6845),	0 }},
-	{"punto178", {glm::vec3(-18.664, 0.0, -20.1625),	0 }},	{"punto179", {glm::vec3(18.664, 0.0, -20.1625),	0 }},
-	{"punto180", {glm::vec3(-18.664, 0.0, 20.1625),		0 }},	{"punto181", {glm::vec3(18.664, 0.0, 20.1625),	0 }},
-	
-	{"punto182", {glm::vec3(-20.987, 0.0, -2.273),		0 }},	{"punto183", {glm::vec3(20.987, 0.0, -2.273),	0 }},
-	{"punto184", {glm::vec3(-20.987, 0.0, 2.273),		0 }},	{"punto185", {glm::vec3(20.987, 0.0, 2.273),	0 }},
-	{"punto186", {glm::vec3(-20.987, 0.0, -4.514),		0 }},	{"punto187", {glm::vec3(20.987, 0.0, -4.514),	0 }},
-	{"punto188", {glm::vec3(-20.987, 0.0, 4.514),		0 }},	{"punto189", {glm::vec3(20.987, 0.0, 4.514),	0 }},
-	{"punto190", {glm::vec3(-20.987, 0.0, -6.7505),		0 }},	{"punto191", {glm::vec3(20.987, 0.0, -6.7505),	0 }},
-	{"punto192", {glm::vec3(-20.987, 0.0, 6.7505),		0 }},	{"punto193", {glm::vec3(20.987, 0.0, 6.7505),	0 }},
-	{"punto194", {glm::vec3(-20.987, 0.0, -9.5085),		0 }},	{"punto195", {glm::vec3(20.987, 0.0, -9.5085),	0 }},
-	{"punto196", {glm::vec3(-20.987, 0.0, 9.5085),		0 }},	{"punto197", {glm::vec3(20.987, 0.0, 9.5085),	0 }},
-	{"punto198", {glm::vec3(-20.987, 0.0, -11.6845),	0 }},	{"punto199", {glm::vec3(20.987, 0.0, -11.6845),	0 }},
-	{"punto200", {glm::vec3(-20.987, 0.0, 11.6845),		0 }},	{"punto201", {glm::vec3(20.987, 0.0, 11.6845),	0 }},
-	{"punto202", {glm::vec3(-20.987, 0.0, -14.004),		0 }},	{"punto203", {glm::vec3(20.987, 0.0, -14.004),	0 }},
-	{"punto204", {glm::vec3(-20.987, 0.0, 14.004),		0 }},	{"punto205", {glm::vec3(20.987, 0.0, 14.004),	0 }},
-	{"punto206", {glm::vec3(-20.987, 0.0, -16.0565),	0 }},	{"punto207", {glm::vec3(20.987, 0.0, -16.0565),	0 }},
-	{"punto208", {glm::vec3(-20.987, 0.0, 16.0565),		0 }},	{"punto209", {glm::vec3(20.987, 0.0, 16.0565),	0 }},
-	{"punto210", {glm::vec3(-20.987, 0.0, -18.0915),	0 }},	{"punto211", {glm::vec3(20.987, 0.0, -18.0915),	0 }},
-	{"punto212", {glm::vec3(-20.987, 0.0, 18.0915),		0 }},	{"punto213", {glm::vec3(20.987, 0.0, 18.0915),	0 }},
-	{"punto214", {glm::vec3(-20.987, 0.0, -20.1625),	0 }},	{"punto215", {glm::vec3(20.987, 0.0, -20.1625),	0 }},
-	{"punto216", {glm::vec3(-20.987, 0.0, 20.1625),		0 }},	{"punto217", {glm::vec3(20.987, 0.0, 20.1625),	0 }},
+	{"punto183", {glm::vec3(-2.25, 0.0, -20.25),	0}},	{"punto184", {glm::vec3(2.25, 0.0, -20.25),	0}},
+	{"punto185", {glm::vec3(-2.25, 0.0, 20.25),		0}},	{"punto186", {glm::vec3(2.25, 0.0, 20.25),	0}},
+	{"punto187", {glm::vec3(-4.5, 0.0, -20.25),		0}},	{"punto188", {glm::vec3(4.5, 0.0, -20.25),	0}},
+	{"punto189", {glm::vec3(-4.5, 0.0, 20.25),		0}},	{"punto190", {glm::vec3(4.5, 0.0, 20.25),	0}},
+	{"punto191", {glm::vec3(-6.75, 0.0, -20.25),	0}},	{"punto192", {glm::vec3(6.75, 0.0, -20.25),	0}},
+	{"punto193", {glm::vec3(-6.75, 0.0, 20.25),		0}},	{"punto194", {glm::vec3(6.75, 0.0, 20.25),	0}},
+	{"punto195", {glm::vec3(-9.0, 0.0, -20.25),		0}},	{"punto196", {glm::vec3(9.0, 0.0, -20.25),	0}},
+	{"punto197", {glm::vec3(-9.0, 0.0, 20.25),		0}},	{"punto198", {glm::vec3(9.0, 0.0, 20.25),	0}},
+	{"punto199", {glm::vec3(-11.25, 0.0, -20.25),	0}},	{"punto200", {glm::vec3(11.25, 0.0, -20.25),0}},
+	{"punto201", {glm::vec3(-11.25, 0.0, 20.25),	0}},	{"punto202", {glm::vec3(11.25, 0.0, 20.25),0}},
+	{"punto203", {glm::vec3(-13.5, 0.0, -20.25),	0}},	{"punto204", {glm::vec3(13.5, 0.0, -20.25),	0}},
+	{"punto205", {glm::vec3(-13.5, 0.0, 20.25),		0}},	{"punto206", {glm::vec3(13.5, 0.0, 20.25),	0}},
+	{"punto207", {glm::vec3(-15.75, 0.0, -20.25),	0}},	{"punto208", {glm::vec3(15.75, 0.0, -20.25),0}},
+	{"punto209", {glm::vec3(-15.75, 0.0, 20.25),	0}},	{"punto210", {glm::vec3(15.75, 0.0, 20.25),0}},
+	{"punto211", {glm::vec3(-18.0, 0.0, -20.25),	0}},	{"punto212", {glm::vec3(18.0, 0.0, -20.25),	0}},
+	{"punto213", {glm::vec3(-18.0, 0.0, 20.25),		0}},	{"punto214", {glm::vec3(18.0, 0.0, 20.25),	0}},
+	{"punto215", {glm::vec3(-20.25, 0.0, -20.25),	0}},	{"punto216", {glm::vec3(20.25, 0.0, -20.25),0}},
+	{"punto217", {glm::vec3(-20.25, 0.0, 20.25),	0}},	{"punto218", {glm::vec3(20.25, 0.0, 20.25),0}},
+
 };
 
 // Colliders
@@ -707,6 +735,32 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	puntoModel.loadModel("../models/Pacman/punto.obj");
 	puntoModel.setShader(&shaderMulLighting);
 
+	// Portales
+	portalFantasma1Model.loadModel("../models/Cajas/portalFantasma1.obj");
+	portalFantasma1Model.setShader(&shaderMulLighting);
+
+	portalFantasma2Model.loadModel("../models/Cajas/portalFantasma2.obj");
+	portalFantasma2Model.setShader(&shaderMulLighting);
+
+	portalPacman1Model.loadModel("../models/Cajas/portalPacman1.obj");
+	portalPacman1Model.setShader(&shaderMulLighting);
+
+	portalPacman2Model.loadModel("../models/Cajas/portalPacman2.obj");
+	portalPacman2Model.setShader(&shaderMulLighting);
+
+	// Piso antorchas -> bases
+	pisoAntorcha1Model.loadModel("../models/Cajas/pisoAntorcha1.obj");
+	pisoAntorcha1Model.setShader(&shaderMulLighting);
+
+	pisoAntorcha2Model.loadModel("../models/Cajas/pisoAntorcha2.obj");
+	pisoAntorcha2Model.setShader(&shaderMulLighting);
+
+	pisoAntorcha3Model.loadModel("../models/Cajas/pisoAntorcha3.obj");
+	pisoAntorcha3Model.setShader(&shaderMulLighting);
+
+	pisoAntorcha4Model.loadModel("../models/Cajas/pisoAntorcha4.obj");
+	pisoAntorcha4Model.setShader(&shaderMulLighting);
+
 	//Laberinto
 	LE1ModelAnimate.loadModel("../models/LaberintoEgipto/LE1.obj");
 	LE1ModelAnimate.setShader(&shaderMulLighting);
@@ -786,8 +840,6 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	LE38ModelAnimate.setShader(&shaderMulLighting);
 	LE39ModelAnimate.loadModel("../models/LaberintoEgipto/LE39.obj");
 	LE39ModelAnimate.setShader(&shaderMulLighting);
-	LE40ModelAnimate.loadModel("../models/LaberintoEgipto/LE40.obj");
-	LE40ModelAnimate.setShader(&shaderMulLighting);
 	
 	camera->setPosition(glm::vec3(0.0, 0.0, 10.0));
 	camera->setDistanceFromTarget(distanceFromTarget);
@@ -1162,6 +1214,14 @@ void destroy() {
 	modelGrass.destroy();
 	puntoModel.destroy();
 	fantasmaModel.destroy();
+	portalFantasma1Model.destroy();
+	portalFantasma2Model.destroy();
+	portalPacman1Model.destroy();
+	portalPacman2Model.destroy();
+	pisoAntorcha1Model.destroy();
+	pisoAntorcha2Model.destroy();
+	pisoAntorcha3Model.destroy();
+	pisoAntorcha4Model.destroy();
 
 	// Custom objects animate
 	pacmanModelAnimate.destroy();
@@ -1204,7 +1264,6 @@ void destroy() {
 	LE37ModelAnimate.destroy();
 	LE38ModelAnimate.destroy();
 	LE39ModelAnimate.destroy();
-	LE40ModelAnimate.destroy();
 
 	// Textures Delete
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -1337,7 +1396,7 @@ bool processInput(bool continueApplication) {
 			anteriorMove = 1;
 			rotarMove = 1;
 		}
-		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.08));
+		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.1));
 		animationIndex = 3;
 	}
 	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS && vistaAerea == 0) {
@@ -1353,7 +1412,7 @@ bool processInput(bool continueApplication) {
 			anteriorMove = 2;
 			rotarMove = 1;
 		}
-		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.08));
+		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.1));
 		animationIndex = 3;
 	}
 	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS && vistaAerea == 0) {
@@ -1369,7 +1428,7 @@ bool processInput(bool continueApplication) {
 			anteriorMove = 3;
 			rotarMove = 1;
 		}
-		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.08));
+		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.1));
 		animationIndex = 3;
 	}
 	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS && vistaAerea == 0) {
@@ -1385,7 +1444,7 @@ bool processInput(bool continueApplication) {
 			anteriorMove = 4;
 			rotarMove = 1;
 		}
-		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.08));
+		modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.1));
 		animationIndex = 3;
 	}
 
@@ -1402,13 +1461,24 @@ void applicationLoop() {
 	float angleTarget;
 
 	// Pacman
-	modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(13.0f, 0.05f, -5.0f));
+	modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0.0f, 0.05f, -2.25f));
 
 	// Fantasma azul
-	modelMatrixFantasmaRojo = glm::translate(modelMatrixFantasmaRojo, glm::vec3(0.0f, 0.05f, 1.5f));
-	modelMatrixFantasmaRosa = glm::translate(modelMatrixFantasmaRosa, glm::vec3(0.0f, 0.05f, 0.0f));
-	modelMatrixFantasmaCian = glm::translate(modelMatrixFantasmaCian, glm::vec3(0.0f, 0.05f, -1.5f));
-	modelMatrixFantasmaNaranja = glm::translate(modelMatrixFantasmaNaranja, glm::vec3(0.0f, 0.05f, -3.0f));
+	modelMatrixFantasmaRojo = glm::translate(modelMatrixFantasmaRojo, glm::vec3(-20.25f, 0.05f, 0.0f));
+	modelMatrixFantasmaRosa = glm::translate(modelMatrixFantasmaRosa, glm::vec3(20.25f, 0.05f, 0.0f));
+	modelMatrixFantasmaCian = glm::translate(modelMatrixFantasmaCian, glm::vec3(0.0f, 0.05, 20.25f));
+	modelMatrixFantasmaNaranja = glm::translate(modelMatrixFantasmaNaranja, glm::vec3(0.0f, 0.05, -20.25f));
+
+	modelMatrixPortalFantasma1 = glm::translate(modelMatrixPortalFantasma1, glm::vec3(0.0f, 1.0f, 0.0f));
+	modelMatrixPortalFantasma2 = glm::translate(modelMatrixPortalFantasma2, glm::vec3(0.0f, 1.0f, 0.0f));
+
+	modelMatrixPortalPacman1 = glm::translate(modelMatrixPortalPacman1, glm::vec3(0.0f, 1.0f, 0.0f));
+	modelMatrixPortalPacman2 = glm::translate(modelMatrixPortalPacman2, glm::vec3(0.0f, 1.0f, 0.0f));
+
+	modelMatrixPisoAntorcha1 = glm::translate(modelMatrixPisoAntorcha1, glm::vec3(0.0f, 1.0f, 0.0f));
+	modelMatrixPisoAntorcha2 = glm::translate(modelMatrixPisoAntorcha2, glm::vec3(0.0f, 1.0f, 0.0f));
+	modelMatrixPisoAntorcha3 = glm::translate(modelMatrixPisoAntorcha3, glm::vec3(0.0f, 1.0f, 0.0f));
+	modelMatrixPisoAntorcha4 = glm::translate(modelMatrixPisoAntorcha4, glm::vec3(0.0f, 1.0f, 0.0f));
 
 	// Laberinto
 	modelMatrixLE1 = glm::translate(modelMatrixLE1, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -1450,7 +1520,6 @@ void applicationLoop() {
 	modelMatrixLE37 = glm::translate(modelMatrixLE37, glm::vec3(0.0f, 1.0f, 0.0f));
 	modelMatrixLE38 = glm::translate(modelMatrixLE38, glm::vec3(0.0f, 1.0f, 0.0f));
 	modelMatrixLE39 = glm::translate(modelMatrixLE39, glm::vec3(0.0f, 1.0f, 0.0f));
-	modelMatrixLE40 = glm::translate(modelMatrixLE40, glm::vec3(0.0f, 1.0f, 0.0f));
 	
 	lastTime = TimeManager::Instance().GetTime();
 
@@ -1520,7 +1589,7 @@ void applicationLoop() {
 
 		camera->updateCamera();
 		view = camera->getViewMatrix();
-
+		
 		shadowBox->update(screenWidth, screenHeight);
 		glm::vec3 centerBox = shadowBox->getCenter();
 
@@ -1711,6 +1780,152 @@ void applicationLoop() {
 				std::get<0>(collidersSBB.find("punto" + std::to_string(i))->second) = puntoCollider;
 			}
 		}
+
+		//Fantasma Rojo
+		AbstractModel::OBB fantasmaRojoCollider;
+		glm::mat4 modelMatrixColliderFantasmaRojo = glm::mat4(modelMatrixFantasmaRojo);
+		modelMatrixColliderFantasmaRojo[3][1] = terrain.getHeightTerrain(modelMatrixColliderFantasmaRojo[3][0], modelMatrixColliderFantasmaRojo[3][2]);
+		fantasmaRojoCollider.u = glm::quat_cast(modelMatrixColliderFantasmaRojo);
+		modelMatrixColliderFantasmaRojo = glm::scale(modelMatrixColliderFantasmaRojo, glm::vec3(0.074, 0.074, 0.074));
+		modelMatrixColliderFantasmaRojo = glm::translate(modelMatrixColliderFantasmaRojo, fantasmaModel.getObb().c);
+		fantasmaRojoCollider.c = glm::vec3(modelMatrixColliderFantasmaRojo[3]);
+		fantasmaRojoCollider.e = fantasmaModel.getObb().e * glm::vec3(0.074, 0.074, 0.074);
+		addOrUpdateColliders(collidersOBB, "fantasmaRojo", fantasmaRojoCollider, modelMatrixFantasmaRojo);
+
+		//Fantasma Rosa
+		AbstractModel::OBB fantasmaRosaCollider;
+		glm::mat4 modelMatrixColliderFantasmaRosa = glm::mat4(modelMatrixFantasmaRosa);
+		modelMatrixColliderFantasmaRosa[3][1] = terrain.getHeightTerrain(modelMatrixColliderFantasmaRosa[3][0], modelMatrixColliderFantasmaRosa[3][2]);
+		fantasmaRosaCollider.u = glm::quat_cast(modelMatrixColliderFantasmaRosa);
+		modelMatrixColliderFantasmaRosa = glm::scale(modelMatrixColliderFantasmaRosa, glm::vec3(0.074, 0.074, 0.074));
+		modelMatrixColliderFantasmaRosa = glm::translate(modelMatrixColliderFantasmaRosa, glm::vec3(fantasmaModel.getObb().c.x,
+			fantasmaModel.getObb().c.y, fantasmaModel.getObb().c.z));
+		fantasmaRosaCollider.c = glm::vec3(modelMatrixColliderFantasmaRosa[3]);
+		fantasmaRosaCollider.e = fantasmaModel.getObb().e * glm::vec3(0.074, 0.074, 0.074);
+		addOrUpdateColliders(collidersOBB, "fantasmaRosa", fantasmaRosaCollider, modelMatrixFantasmaRosa);
+
+		//Fantasma Cian
+		AbstractModel::OBB fantasmaCianCollider;
+		glm::mat4 modelMatrixColliderFantasmaCian = glm::mat4(modelMatrixFantasmaCian);
+		modelMatrixColliderFantasmaCian[3][1] = terrain.getHeightTerrain(modelMatrixColliderFantasmaCian[3][0], modelMatrixColliderFantasmaCian[3][2]);
+		fantasmaCianCollider.u = glm::quat_cast(modelMatrixColliderFantasmaCian);
+		modelMatrixColliderFantasmaCian = glm::scale(modelMatrixColliderFantasmaCian, glm::vec3(0.074, 0.074, 0.074));
+		modelMatrixColliderFantasmaCian = glm::translate(modelMatrixColliderFantasmaCian, glm::vec3(fantasmaModel.getObb().c.x,
+			fantasmaModel.getObb().c.y, fantasmaModel.getObb().c.z));
+		fantasmaCianCollider.c = glm::vec3(modelMatrixColliderFantasmaCian[3]);
+		fantasmaCianCollider.e = fantasmaModel.getObb().e * glm::vec3(0.074, 0.074, 0.074);
+		addOrUpdateColliders(collidersOBB, "fantasmaCian", fantasmaCianCollider, modelMatrixFantasmaCian);
+
+		//Fantasma Naranja
+		AbstractModel::OBB fantasmaNaranjaCollider;
+		glm::mat4 modelMatrixColliderFantasmaNaranja = glm::mat4(modelMatrixFantasmaNaranja);
+		modelMatrixColliderFantasmaNaranja[3][1] = terrain.getHeightTerrain(modelMatrixColliderFantasmaNaranja[3][0], modelMatrixColliderFantasmaNaranja[3][2]);
+		fantasmaNaranjaCollider.u = glm::quat_cast(modelMatrixColliderFantasmaNaranja);
+		modelMatrixColliderFantasmaNaranja = glm::scale(modelMatrixColliderFantasmaNaranja, glm::vec3(0.074, 0.074, 0.074));
+		modelMatrixColliderFantasmaNaranja = glm::translate(modelMatrixColliderFantasmaNaranja, glm::vec3(fantasmaModel.getObb().c.x,
+			fantasmaModel.getObb().c.y, fantasmaModel.getObb().c.z));
+		fantasmaNaranjaCollider.c = glm::vec3(modelMatrixColliderFantasmaNaranja[3]);
+		fantasmaNaranjaCollider.e = fantasmaModel.getObb().e * glm::vec3(0.074, 0.074, 0.074);
+		addOrUpdateColliders(collidersOBB, "fantasmaNaranja", fantasmaNaranjaCollider, modelMatrixFantasmaNaranja);
+
+		/*********************************/
+		// Calculo distancia entre fantasmas
+		/*********************************/
+
+		if (glm::distance(fantasmaRojoCollider.c, fantasmaRosaCollider.c) <= 3.0f) {
+			auxGiroFantasmaRojo = 1;
+			auxGiroFantasmaRosa = 1;
+		}
+		if (glm::distance(fantasmaRojoCollider.c, fantasmaCianCollider.c) <= 3.0f) {
+			auxGiroFantasmaRojo = 1;
+			auxGiroFantasmaCian = 1;
+		}
+		if (glm::distance(fantasmaRojoCollider.c, fantasmaNaranjaCollider.c) <= 3.0f) {
+			auxGiroFantasmaRojo = 1;
+			auxGiroFantasmaNaranja = 1;
+		}
+		if (glm::distance(fantasmaRosaCollider.c, fantasmaCianCollider.c) <= 3.0f) {
+			auxGiroFantasmaRosa = 1;
+			auxGiroFantasmaCian = 1;
+		}
+		if (glm::distance(fantasmaRosaCollider.c, fantasmaNaranjaCollider.c) <= 3.0f) {
+			auxGiroFantasmaRosa = 1;
+			auxGiroFantasmaNaranja = 1;
+		}
+		if (glm::distance(fantasmaCianCollider.c, fantasmaNaranjaCollider.c) <= 3.0f) {
+			auxGiroFantasmaCian = 1;
+			auxGiroFantasmaNaranja = 1;
+		}
+
+		// Portal fantasma
+		AbstractModel::OBB portalFantasmaCollider;
+		glm::mat4 modelMatrixColliderPortalFantasma1 = glm::mat4(modelMatrixPortalFantasma1);
+		modelMatrixColliderPortalFantasma1 = glm::scale(modelMatrixColliderPortalFantasma1, glm::vec3(0.5, 0.5, 0.5));
+		portalFantasmaCollider.u = glm::quat_cast(modelMatrixColliderPortalFantasma1);
+		modelMatrixColliderPortalFantasma1 = glm::translate(modelMatrixColliderPortalFantasma1, glm::vec3(portalFantasma1Model.getObb().c.x, portalFantasma1Model.getObb().c.y, portalFantasma1Model.getObb().c.z));
+		portalFantasmaCollider.e = portalFantasma1Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+		portalFantasmaCollider.c = glm::vec3(modelMatrixColliderPortalFantasma1[3]);
+		addOrUpdateColliders(collidersOBB, "portalFantasma1", portalFantasmaCollider, modelMatrixPortalFantasma1);
+
+		glm::mat4 modelMatrixColliderPortalFantasma2 = glm::mat4(modelMatrixPortalFantasma2);
+		modelMatrixColliderPortalFantasma2 = glm::scale(modelMatrixColliderPortalFantasma2, glm::vec3(0.5, 0.5, 0.5));
+		portalFantasmaCollider.u = glm::quat_cast(modelMatrixColliderPortalFantasma2);
+		modelMatrixColliderPortalFantasma2 = glm::translate(modelMatrixColliderPortalFantasma2, glm::vec3(portalFantasma2Model.getObb().c.x, portalFantasma2Model.getObb().c.y, portalFantasma2Model.getObb().c.z));
+		portalFantasmaCollider.e = portalFantasma2Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+		portalFantasmaCollider.c = glm::vec3(modelMatrixColliderPortalFantasma2[3]);
+		addOrUpdateColliders(collidersOBB, "portalFantasma2", portalFantasmaCollider, modelMatrixPortalFantasma2);
+
+		// Portal pacman
+		AbstractModel::OBB portalPacmanCollider;
+		glm::mat4 modelMatrixColliderPortalPacman1 = glm::mat4(modelMatrixPortalPacman1);
+		modelMatrixColliderPortalPacman1 = glm::scale(modelMatrixColliderPortalPacman1, glm::vec3(0.5, 0.5, 0.5));
+		portalPacmanCollider.u = glm::quat_cast(modelMatrixColliderPortalPacman1);
+		modelMatrixColliderPortalPacman1 = glm::translate(modelMatrixColliderPortalPacman1, glm::vec3(portalPacman1Model.getObb().c.x, portalPacman1Model.getObb().c.y, portalPacman1Model.getObb().c.z));
+		portalPacmanCollider.e = portalPacman1Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+		portalPacmanCollider.c = glm::vec3(modelMatrixColliderPortalPacman1[3]);
+		addOrUpdateColliders(collidersOBB, "portalPacman1", portalPacmanCollider, modelMatrixPortalPacman1);
+
+		glm::mat4 modelMatrixColliderPortalPacman2 = glm::mat4(modelMatrixPortalPacman2);
+		modelMatrixColliderPortalPacman2 = glm::scale(modelMatrixColliderPortalPacman2, glm::vec3(0.5, 0.5, 0.5));
+		portalPacmanCollider.u = glm::quat_cast(modelMatrixColliderPortalPacman2);
+		modelMatrixColliderPortalPacman2 = glm::translate(modelMatrixColliderPortalPacman2, glm::vec3(portalPacman2Model.getObb().c.x, portalPacman2Model.getObb().c.y, portalPacman2Model.getObb().c.z));
+		portalPacmanCollider.e = portalPacman2Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+		portalPacmanCollider.c = glm::vec3(modelMatrixColliderPortalPacman2[3]);
+		addOrUpdateColliders(collidersOBB, "portalPacman2", portalPacmanCollider, modelMatrixPortalPacman2);
+
+		// Piso Antrocha
+		AbstractModel::OBB pisoAntorchaCollider;
+		glm::mat4 modelMatrixColliderPisoAntorcha1 = glm::mat4(modelMatrixPisoAntorcha1);
+		modelMatrixColliderPisoAntorcha1 = glm::scale(modelMatrixColliderPisoAntorcha1, glm::vec3(0.5, 0.5, 0.5));
+		pisoAntorchaCollider.u = glm::quat_cast(modelMatrixColliderPisoAntorcha1);
+		modelMatrixColliderPisoAntorcha1 = glm::translate(modelMatrixColliderPisoAntorcha1, glm::vec3(pisoAntorcha1Model.getObb().c.x, pisoAntorcha1Model.getObb().c.y, pisoAntorcha1Model.getObb().c.z));
+		pisoAntorchaCollider.e = pisoAntorcha1Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+		pisoAntorchaCollider.c = glm::vec3(modelMatrixColliderPisoAntorcha1[3]);
+		addOrUpdateColliders(collidersOBB, "pisoAntorcha1", pisoAntorchaCollider, modelMatrixPisoAntorcha1);
+
+		glm::mat4 modelMatrixColliderPisoAntorcha2 = glm::mat4(modelMatrixPisoAntorcha2);
+		modelMatrixColliderPisoAntorcha2 = glm::scale(modelMatrixColliderPisoAntorcha2, glm::vec3(0.5, 0.5, 0.5));
+		pisoAntorchaCollider.u = glm::quat_cast(modelMatrixColliderPisoAntorcha2);
+		modelMatrixColliderPisoAntorcha2 = glm::translate(modelMatrixColliderPisoAntorcha2, glm::vec3(pisoAntorcha2Model.getObb().c.x, pisoAntorcha2Model.getObb().c.y, pisoAntorcha2Model.getObb().c.z));
+		pisoAntorchaCollider.e = pisoAntorcha2Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+		pisoAntorchaCollider.c = glm::vec3(modelMatrixColliderPisoAntorcha2[3]);
+		addOrUpdateColliders(collidersOBB, "pisoAntorcha2", pisoAntorchaCollider, modelMatrixPisoAntorcha2);
+
+		glm::mat4 modelMatrixColliderPisoAntorcha3 = glm::mat4(modelMatrixPisoAntorcha3);
+		modelMatrixColliderPisoAntorcha3 = glm::scale(modelMatrixColliderPisoAntorcha3, glm::vec3(0.5, 0.5, 0.5));
+		pisoAntorchaCollider.u = glm::quat_cast(modelMatrixColliderPisoAntorcha3);
+		modelMatrixColliderPisoAntorcha3 = glm::translate(modelMatrixColliderPisoAntorcha3, glm::vec3(pisoAntorcha3Model.getObb().c.x, pisoAntorcha3Model.getObb().c.y, pisoAntorcha3Model.getObb().c.z));
+		pisoAntorchaCollider.e = pisoAntorcha3Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+		pisoAntorchaCollider.c = glm::vec3(modelMatrixColliderPisoAntorcha3[3]);
+		addOrUpdateColliders(collidersOBB, "pisoAntorcha3", pisoAntorchaCollider, modelMatrixPisoAntorcha3);
+
+		glm::mat4 modelMatrixColliderPisoAntorcha4 = glm::mat4(modelMatrixPisoAntorcha4);
+		modelMatrixColliderPisoAntorcha4 = glm::scale(modelMatrixColliderPisoAntorcha4, glm::vec3(0.5, 0.5, 0.5));
+		pisoAntorchaCollider.u = glm::quat_cast(modelMatrixColliderPisoAntorcha4);
+		modelMatrixColliderPisoAntorcha4 = glm::translate(modelMatrixColliderPisoAntorcha4, glm::vec3(pisoAntorcha4Model.getObb().c.x, pisoAntorcha4Model.getObb().c.y, pisoAntorcha4Model.getObb().c.z));
+		pisoAntorchaCollider.e = pisoAntorcha4Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+		pisoAntorchaCollider.c = glm::vec3(modelMatrixColliderPisoAntorcha4[3]);
+		addOrUpdateColliders(collidersOBB, "pisoAntorcha4", pisoAntorchaCollider, modelMatrixPisoAntorcha4);
 
 		//Laberinto
 		AbstractModel::OBB LECollider;
@@ -2017,7 +2232,7 @@ void applicationLoop() {
 		LECollider.e = LE38ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
 		LECollider.c = glm::vec3(modelmatrixColliderLE38[3]);
 		addOrUpdateColliders(collidersOBB, "LE38", LECollider, modelMatrixLE38);
-		
+
 		glm::mat4 modelmatrixColliderLE39 = glm::mat4(modelMatrixLE39);
 		modelmatrixColliderLE39 = glm::scale(modelmatrixColliderLE39, glm::vec3(0.5, 0.5, 0.5));
 		LECollider.u = glm::quat_cast(modelmatrixColliderLE39);
@@ -2025,14 +2240,6 @@ void applicationLoop() {
 		LECollider.e = LE39ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
 		LECollider.c = glm::vec3(modelmatrixColliderLE39[3]);
 		addOrUpdateColliders(collidersOBB, "LE39", LECollider, modelMatrixLE39);
-		
-		glm::mat4 modelmatrixColliderLE40 = glm::mat4(modelMatrixLE40);
-		modelmatrixColliderLE40 = glm::scale(modelmatrixColliderLE40, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE40);
-		modelmatrixColliderLE40 = glm::translate(modelmatrixColliderLE40, glm::vec3(LE40ModelAnimate.getObb().c.x, LE40ModelAnimate.getObb().c.y, LE40ModelAnimate.getObb().c.z));
-		LECollider.e = LE40ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE40[3]);
-		addOrUpdateColliders(collidersOBB, "LE40", LECollider, modelMatrixLE40);
 		
 		/*******************************************
 		 * Render de colliders
@@ -2069,8 +2276,46 @@ void applicationLoop() {
 					std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >::iterator jt =
 					collidersOBB.begin(); jt != collidersOBB.end(); jt++) {
 				if (it != jt && testOBBOBB(std::get<0>(it->second), std::get<0>(jt->second))) {
+					// Se verifica la colision de un fantasma con alguna pared
+					if (it->first.compare("fantasmaRojo") == 0 && jt->first[0] != 'f') {
+						if (verificaMoveFantasmaRojo == 1){
+							moveIzqFantasmaRojo = 1;
+						}
+						else if (verificaMoveFantasmaRojo == 3){
+							moveDerFantasmaRojo = 1;
+						}
+					}
+					if (it->first.compare("fantasmaRosa") == 0 && jt->first[0] != 'f') {
+						if (verificaMoveFantasmaRosa == 1) {
+							moveIzqFantasmaRosa = 1;
+						}
+						else if (verificaMoveFantasmaRosa == 3) {
+							moveDerFantasmaRosa = 1;
+						}
+					}
+					if (it->first.compare("fantasmaCian") == 0 && jt->first[0] != 'f') {
+						if (verificaMoveFantasmaCian == 1) {
+							moveIzqFantasmaCian = 1;
+						}
+						else if (verificaMoveFantasmaCian == 3) {
+							moveDerFantasmaCian = 1;
+						}
+					}
+					if (it->first.compare("fantasmaNaranja") == 0 && jt->first[0] != 'f') {
+						if (verificaMoveFantasmaNaranja == 1) {
+							moveIzqFantasmaNaranja = 1;
+						}
+						else if (verificaMoveFantasmaNaranja == 3) {
+							moveDerFantasmaNaranja = 1;
+						}
+					}
+					
 					//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
-					isCollision = true;
+
+					if (it->first[0] == 'f' && jt->first[0] == 'f')
+						isCollision = false;
+					else
+						isCollision = true;
 				}
 			}
 			addOrUpdateCollisionDetection(collisionDetection, it->first, isCollision);
@@ -2084,7 +2329,8 @@ void applicationLoop() {
 					std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> >::iterator jt =
 					collidersSBB.begin(); jt != collidersSBB.end(); jt++) {
 				if (it != jt && testSphereSphereIntersection(std::get<0>(it->second), std::get<0>(jt->second))) {
-					std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
+					//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
+					// Se verifica colision entre un punto y Pacman
 					if (it->first[0] == 'p' && it->first[1] == 'u') {
 						std::get<1>(puntosPosition.find(it->first)->second) = 1;
 						puntoObtenido.insert(std::pair<std::string, int>(it->first, 1));
@@ -2104,9 +2350,26 @@ void applicationLoop() {
 					collidersOBB.begin();
 			for (; jt != collidersOBB.end(); jt++) {
 				if (testSphereOBox(std::get<0>(it->second), std::get<0>(jt->second))) {
-					std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
-					isCollision = true;
-					addOrUpdateCollisionDetection(collisionDetection, jt->first, isCollision);
+					// Se evita detectar la colision entre un PUNTO y un FANTASMA
+					if (it->first[1] != 'u' && jt->first[0] != 'f') {
+						isCollision = true;
+						addOrUpdateCollisionDetection(collisionDetection, jt->first, isCollision);
+					}
+					// Se detecta colision entre PACMAN y FANTASMA
+					if (it->first[1] == 'a' && jt->first[0] == 'f') {
+						if (vidaPacman >= 2) {
+							vidaPacman = vidaPacman - 1;
+							std::cout << "Puntos -> " << puntosPacman << std::endl;
+							std::cout << "Vida -> " << vidaPacman << std::endl;
+						}
+						else {
+							psi = false;
+							std::cout << "******** FIN DEL JUEGO, SIN VIDAD ********" << std::endl;
+							break;
+						}
+						isCollision = true;
+						addOrUpdateCollisionDetection(collisionDetection, jt->first, isCollision);
+					}
 				}
 			}
 			addOrUpdateCollisionDetection(collisionDetection, it->first, isCollision);
@@ -2132,6 +2395,14 @@ void applicationLoop() {
 				if (!colIt->second)
 					addOrUpdateColliders(collidersOBB, jt->first);
 				else {
+					if (jt->first.compare("fantasmaRojo") == 0)
+						modelMatrixFantasmaRojo = std::get<1>(jt->second);
+					if (jt->first.compare("fantasmaRosa") == 0)
+						modelMatrixFantasmaRosa = std::get<1>(jt->second);
+					if (jt->first.compare("fantasmaCian") == 0)
+						modelMatrixFantasmaCian = std::get<1>(jt->second);
+					if (jt->first.compare("fantasmaNaranja") == 0)
+						modelMatrixFantasmaNaranja = std::get<1>(jt->second);
 					if (jt->first.compare("LE1") == 0)
 						modelMatrixLE1 = std::get<1>(jt->second);
 					if (jt->first.compare("LE2") == 0)
@@ -2210,8 +2481,23 @@ void applicationLoop() {
 						modelMatrixLE38 = std::get<1>(jt->second);
 					if (jt->first.compare("LE39") == 0)
 						modelMatrixLE39 = std::get<1>(jt->second);
-					if (jt->first.compare("LE40") == 0)
-						modelMatrixLE40 = std::get<1>(jt->second);
+					if (jt->first.compare("portalFantasma1") == 0)
+						modelMatrixPortalFantasma1 = std::get<1>(jt->second);
+					if (jt->first.compare("portalFantasma2") == 0)
+						modelMatrixPortalFantasma1 = std::get<1>(jt->second);
+					if (jt->first.compare("portalPacman1") == 0)
+						modelMatrixPortalPacman1 = std::get<1>(jt->second);
+					if (jt->first.compare("portalPacman2") == 0)
+						modelMatrixPortalPacman2 = std::get<1>(jt->second);
+					if (jt->first.compare("pisoAntorcha1") == 0)
+						modelMatrixPisoAntorcha1 = std::get<1>(jt->second);
+					if (jt->first.compare("pisoAntorcha2") == 0)
+						modelMatrixPisoAntorcha2 = std::get<1>(jt->second);
+					if (jt->first.compare("pisoAntorcha3") == 0)
+						modelMatrixPisoAntorcha3 = std::get<1>(jt->second);
+					if (jt->first.compare("pisoAntorcha4") == 0)
+						modelMatrixPisoAntorcha4 = std::get<1>(jt->second);
+
 				}
 			}
 		}
@@ -2219,6 +2505,8 @@ void applicationLoop() {
 		for (std::map<std::string, int>::iterator p = puntoObtenido.begin(); p != puntoObtenido.end(); p++) {
 			collidersSBB.erase(collidersSBB.find(p->first));
 			puntosPacman = puntosPacman + p->second;
+			std::cout << "Puntos -> " << puntosPacman << std::endl;
+			std::cout << "Vida -> " << vidaPacman << std::endl;
 		}
 
 		puntoObtenido.clear();
@@ -2229,6 +2517,179 @@ void applicationLoop() {
 		/*******************************************
 		 * State machines
 		 *******************************************/
+		// Movimiento fantasma 
+		// Para poder recorrer más dinamicamente el laberinto
+		// verificamos los posibles caminos para ver la posibilidad
+		// de algun giro al avanzar hacia al frente
+
+		/********************************/
+		// Movimiento fantasma ROJO
+		/********************************/
+		// Verificamos si chocamos con alguna pared a la izquierda
+		if (verificaMoveFantasmaRojo == 0) {
+			modelMatrixFantasmaRojo = glm::translate(modelMatrixFantasmaRojo, glm::vec3(-0.5625, 0.0, 0.0));
+			verificaMoveFantasmaRojo = 1;
+		}
+		// Esperamos un tiempo
+		else if (verificaMoveFantasmaRojo == 1)
+			verificaMoveFantasmaRojo = 2;
+		// Verificamos si chocamos con alguna pared a la derecha
+		else if (verificaMoveFantasmaRojo == 2) {
+			modelMatrixFantasmaRojo = glm::translate(modelMatrixFantasmaRojo, glm::vec3(0.5625, 0, 0.0));
+			verificaMoveFantasmaRojo = 3;
+		}
+		// Esperamos un tiempo
+		else if (verificaMoveFantasmaRojo == 3)
+			verificaMoveFantasmaRojo = 4;
+		// Avanzamos hacia al frente
+		else if (verificaMoveFantasmaRojo == 4) {
+			if (moveIzqFantasmaRojo == 1 && moveDerFantasmaRojo == 0) 
+				modelMatrixFantasmaRojo = glm::rotate(modelMatrixFantasmaRojo, glm::radians(90.0f), glm::vec3(0, 1, 0));
+			else if (moveIzqFantasmaRojo == 0 && moveDerFantasmaRojo == 1) 
+				modelMatrixFantasmaRojo = glm::rotate(modelMatrixFantasmaRojo, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			else if (moveIzqFantasmaRojo == 0 && moveDerFantasmaRojo == 0) {
+				auxGiro = rand() % 10;
+				if (auxGiro == 0 || auxGiro == 2 || auxGiro == 4 || auxGiro == 6 || auxGiro == 8)
+					modelMatrixFantasmaRojo = glm::rotate(modelMatrixFantasmaRojo, glm::radians(90.0f), glm::vec3(0, 1, 0));
+				else
+					modelMatrixFantasmaRojo = glm::rotate(modelMatrixFantasmaRojo, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			}
+			if (auxGiroFantasmaRojo == 1) {
+				modelMatrixFantasmaRojo = glm::rotate(modelMatrixFantasmaRojo, glm::radians(180.0f), glm::vec3(0, 1, 0));
+				auxGiroFantasmaRojo = 0;
+			}
+			modelMatrixFantasmaRojo = glm::translate(modelMatrixFantasmaRojo, glm::vec3(0.0, 0, 0.5625));
+			verificaMoveFantasmaRojo = 0;
+			moveIzqFantasmaRojo = 0;
+			moveDerFantasmaRojo = 0;
+		}
+
+		/********************************/
+		// Movimiento fantasma ROSA
+		/********************************/
+		// Verificamos si chocamos con alguna pared a la izquierda
+		if (verificaMoveFantasmaRosa == 0) {
+			modelMatrixFantasmaRosa = glm::translate(modelMatrixFantasmaRosa, glm::vec3(-0.5625, 0.0, 0.0));
+			verificaMoveFantasmaRosa = 1;
+		}
+		// Esperamos un tiempo
+		else if (verificaMoveFantasmaRosa == 1)
+			verificaMoveFantasmaRosa = 2;
+		// Verificamos si chocamos con alguna pared a la derecha
+		else if (verificaMoveFantasmaRosa == 2) {
+			modelMatrixFantasmaRosa = glm::translate(modelMatrixFantasmaRosa, glm::vec3(0.5625, 0, 0.0));
+			verificaMoveFantasmaRosa = 3;
+		}
+		// Esperamos un tiempo
+		else if (verificaMoveFantasmaRosa == 3)
+			verificaMoveFantasmaRosa = 4;
+		// Avanzamos hacia al frente
+		else if (verificaMoveFantasmaRosa == 4) {
+			if (moveIzqFantasmaRosa == 1 && moveDerFantasmaRosa == 0)
+				modelMatrixFantasmaRosa = glm::rotate(modelMatrixFantasmaRosa, glm::radians(90.0f), glm::vec3(0, 1, 0));
+			else if (moveIzqFantasmaRosa == 0 && moveDerFantasmaRosa == 1)
+				modelMatrixFantasmaRosa = glm::rotate(modelMatrixFantasmaRosa, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			else if (moveIzqFantasmaRosa == 0 && moveDerFantasmaRosa == 0) {
+				auxGiro = rand() % 10;
+				if (auxGiro == 0 || auxGiro == 2 || auxGiro == 4 || auxGiro == 6 || auxGiro == 8)
+					modelMatrixFantasmaRosa = glm::rotate(modelMatrixFantasmaRosa, glm::radians(90.0f), glm::vec3(0, 1, 0));
+				else
+					modelMatrixFantasmaRosa = glm::rotate(modelMatrixFantasmaRosa, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			}
+			if (auxGiroFantasmaRosa == 1) {
+				modelMatrixFantasmaRosa = glm::rotate(modelMatrixFantasmaRosa, glm::radians(180.0f), glm::vec3(0, 1, 0));
+				auxGiroFantasmaRosa = 0;
+			}
+			modelMatrixFantasmaRosa = glm::translate(modelMatrixFantasmaRosa, glm::vec3(0.0, 0, 0.5625));
+			verificaMoveFantasmaRosa = 0;
+			moveIzqFantasmaRosa = 0;
+			moveDerFantasmaRosa = 0;
+		}
+
+		/********************************/
+		// Movimiento fantasma CIAN
+		/********************************/
+		// Verificamos si chocamos con alguna pared a la izquierda
+		if (verificaMoveFantasmaCian == 0) {
+			modelMatrixFantasmaCian = glm::translate(modelMatrixFantasmaCian, glm::vec3(-0.5625, 0.0, 0.0));
+			verificaMoveFantasmaCian = 1;
+		}
+		// Esperamos un tiempo
+		else if (verificaMoveFantasmaCian == 1)
+			verificaMoveFantasmaCian = 2;
+		// Verificamos si chocamos con alguna pared a la derecha
+		else if (verificaMoveFantasmaCian == 2) {
+			modelMatrixFantasmaCian = glm::translate(modelMatrixFantasmaCian, glm::vec3(0.5625, 0, 0.0));
+			verificaMoveFantasmaCian = 3;
+		}
+		// Esperamos un tiempo
+		else if (verificaMoveFantasmaCian == 3)
+			verificaMoveFantasmaCian = 4;
+		// Avanzamos hacia al frente
+		else if (verificaMoveFantasmaCian == 4) {
+			if (moveIzqFantasmaCian == 1 && moveDerFantasmaCian == 0)
+				modelMatrixFantasmaCian = glm::rotate(modelMatrixFantasmaCian, glm::radians(90.0f), glm::vec3(0, 1, 0));
+			else if (moveIzqFantasmaCian == 0 && moveDerFantasmaCian == 1)
+				modelMatrixFantasmaCian = glm::rotate(modelMatrixFantasmaCian, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			else if (moveIzqFantasmaCian == 0 && moveDerFantasmaCian == 0) {
+				auxGiro = rand() % 10;
+				if (auxGiro == 0 || auxGiro == 2 || auxGiro == 4 || auxGiro == 6 || auxGiro == 8)
+					modelMatrixFantasmaCian = glm::rotate(modelMatrixFantasmaCian, glm::radians(90.0f), glm::vec3(0, 1, 0));
+				else
+					modelMatrixFantasmaCian = glm::rotate(modelMatrixFantasmaCian, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			}
+			if (auxGiroFantasmaCian == 1) {
+				modelMatrixFantasmaCian = glm::rotate(modelMatrixFantasmaCian, glm::radians(180.0f), glm::vec3(0, 1, 0));
+				auxGiroFantasmaCian = 0;
+			}
+			modelMatrixFantasmaCian = glm::translate(modelMatrixFantasmaCian, glm::vec3(0.0, 0, 0.5625));
+			verificaMoveFantasmaCian = 0;
+			moveIzqFantasmaCian = 0;
+			moveDerFantasmaCian = 0;
+		}
+
+		/********************************/
+		// Movimiento fantasma NARANJA
+		/********************************/
+		// Verificamos si chocamos con alguna pared a la izquierda
+		if (verificaMoveFantasmaNaranja == 0) {
+			modelMatrixFantasmaNaranja = glm::translate(modelMatrixFantasmaNaranja, glm::vec3(-0.5625, 0.0, 0.0));
+			verificaMoveFantasmaNaranja = 1;
+		}
+		// Esperamos un tiempo
+		else if (verificaMoveFantasmaNaranja == 1)
+			verificaMoveFantasmaNaranja = 2;
+		// Verificamos si chocamos con alguna pared a la derecha
+		else if (verificaMoveFantasmaNaranja == 2) {
+			modelMatrixFantasmaNaranja = glm::translate(modelMatrixFantasmaNaranja, glm::vec3(0.5625, 0, 0.0));
+			verificaMoveFantasmaNaranja = 3;
+		}
+		// Esperamos un tiempo
+		else if (verificaMoveFantasmaNaranja == 3)
+			verificaMoveFantasmaNaranja = 4;
+		// Avanzamos hacia al frente
+		else if (verificaMoveFantasmaNaranja == 4) {
+			if (moveIzqFantasmaNaranja == 1 && moveDerFantasmaNaranja == 0)
+				modelMatrixFantasmaNaranja = glm::rotate(modelMatrixFantasmaNaranja, glm::radians(90.0f), glm::vec3(0, 1, 0));
+			else if (moveIzqFantasmaNaranja == 0 && moveDerFantasmaNaranja == 1)
+				modelMatrixFantasmaNaranja = glm::rotate(modelMatrixFantasmaNaranja, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			else if (moveIzqFantasmaNaranja == 0 && moveDerFantasmaNaranja == 0) {
+				auxGiro = rand() % 10;
+				if (auxGiro == 0 || auxGiro == 2 || auxGiro == 4 || auxGiro == 6 || auxGiro == 8)
+					modelMatrixFantasmaNaranja = glm::rotate(modelMatrixFantasmaNaranja, glm::radians(90.0f), glm::vec3(0, 1, 0));
+				else
+					modelMatrixFantasmaNaranja = glm::rotate(modelMatrixFantasmaNaranja, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			}
+			if (auxGiroFantasmaNaranja == 1) {
+				modelMatrixFantasmaNaranja = glm::rotate(modelMatrixFantasmaNaranja, glm::radians(180.0f), glm::vec3(0, 1, 0));
+				auxGiroFantasmaNaranja = 0;
+			}
+			modelMatrixFantasmaNaranja = glm::translate(modelMatrixFantasmaNaranja, glm::vec3(0.0, 0, 0.5625));
+			verificaMoveFantasmaNaranja = 0;
+			moveIzqFantasmaNaranja = 0;
+			moveDerFantasmaNaranja = 0;
+		}
+
 		glfwSwapBuffers(window);
 
 		/****************************+
@@ -2288,6 +2749,7 @@ void prepareDepthScene(){
 }
 
 void renderScene(bool renderParticles){
+
 	/*******************************************
 	 * Terrain Cesped
 	 *******************************************/
@@ -2330,6 +2792,49 @@ void renderScene(bool renderParticles){
 			puntoModel.render();
 		}
 	}
+
+	// Portal fantasma
+	modelMatrixPortalFantasma1[3][1] = terrain.getHeightTerrain(modelMatrixPortalFantasma1[3][0], modelMatrixPortalFantasma1[3][2]);
+	glm::mat4 modelMatrixPortalFantasma1Body = glm::mat4(modelMatrixPortalFantasma1);
+	modelMatrixPortalFantasma1Body = glm::scale(modelMatrixPortalFantasma1Body, glm::vec3(0.5, 0.5, 0.5));
+	portalFantasma1Model.render(modelMatrixPortalFantasma1Body);
+
+	modelMatrixPortalFantasma2[3][1] = terrain.getHeightTerrain(modelMatrixPortalFantasma2[3][0], modelMatrixPortalFantasma2[3][2]);
+	glm::mat4 modelMatrixPortalFantasma2Body = glm::mat4(modelMatrixPortalFantasma2);
+	modelMatrixPortalFantasma2Body = glm::scale(modelMatrixPortalFantasma2Body, glm::vec3(0.5, 0.5, 0.5));
+	portalFantasma2Model.render(modelMatrixPortalFantasma2Body);
+
+	// Portal pacman
+	modelMatrixPortalPacman1[3][1] = terrain.getHeightTerrain(modelMatrixPortalPacman1[3][0], modelMatrixPortalPacman1[3][2]);
+	glm::mat4 modelMatrixPortalPacman1Body = glm::mat4(modelMatrixPortalPacman1);
+	modelMatrixPortalPacman1Body = glm::scale(modelMatrixPortalPacman1Body, glm::vec3(0.5, 0.5, 0.5));
+	portalPacman1Model.render(modelMatrixPortalPacman1Body);
+
+	modelMatrixPortalPacman2[3][1] = terrain.getHeightTerrain(modelMatrixPortalPacman2[3][0], modelMatrixPortalPacman2[3][2]);
+	glm::mat4 modelMatrixPortalPacman2Body = glm::mat4(modelMatrixPortalPacman2);
+	modelMatrixPortalPacman2Body = glm::scale(modelMatrixPortalPacman2Body, glm::vec3(0.5, 0.5, 0.5));
+	portalPacman2Model.render(modelMatrixPortalPacman2Body);
+
+	// Piso antorcha
+	modelMatrixPisoAntorcha1[3][1] = terrain.getHeightTerrain(modelMatrixPisoAntorcha1[3][0], modelMatrixPisoAntorcha1[3][2]);
+	glm::mat4 modelMatrixPisoAntorcha1Body = glm::mat4(modelMatrixPisoAntorcha1);
+	modelMatrixPisoAntorcha1Body = glm::scale(modelMatrixPisoAntorcha1Body, glm::vec3(0.5, 0.5, 0.5));
+	pisoAntorcha1Model.render(modelMatrixPisoAntorcha1Body);
+
+	modelMatrixPisoAntorcha2[3][1] = terrain.getHeightTerrain(modelMatrixPisoAntorcha2[3][0], modelMatrixPisoAntorcha2[3][2]);
+	glm::mat4 modelMatrixPisoAntorcha2Body = glm::mat4(modelMatrixPisoAntorcha2);
+	modelMatrixPisoAntorcha2Body = glm::scale(modelMatrixPisoAntorcha2Body, glm::vec3(0.5, 0.5, 0.5));
+	pisoAntorcha2Model.render(modelMatrixPisoAntorcha2Body);
+
+	modelMatrixPisoAntorcha3[3][1] = terrain.getHeightTerrain(modelMatrixPisoAntorcha3[3][0], modelMatrixPisoAntorcha3[3][2]);
+	glm::mat4 modelMatrixPisoAntorcha3Body = glm::mat4(modelMatrixPisoAntorcha3);
+	modelMatrixPisoAntorcha3Body = glm::scale(modelMatrixPisoAntorcha3Body, glm::vec3(0.5, 0.5, 0.5));
+	pisoAntorcha3Model.render(modelMatrixPisoAntorcha3Body);
+
+	modelMatrixPisoAntorcha4[3][1] = terrain.getHeightTerrain(modelMatrixPisoAntorcha4[3][0], modelMatrixPisoAntorcha1[3][2]);
+	glm::mat4 modelMatrixPisoAntorcha4Body = glm::mat4(modelMatrixPisoAntorcha4);
+	modelMatrixPisoAntorcha4Body = glm::scale(modelMatrixPisoAntorcha4Body, glm::vec3(0.5, 0.5, 0.5));
+	pisoAntorcha4Model.render(modelMatrixPisoAntorcha4Body);
 
 	/*******************************************
 	 * Custom Anim objects obj
@@ -2499,10 +3004,6 @@ void renderScene(bool renderParticles){
 	glm::mat4 modelMatrixLE39Body = glm::mat4(modelMatrixLE39);
 	modelMatrixLE39Body = glm::scale(modelMatrixLE39Body, glm::vec3(0.5, 0.5, 0.5));
 	LE39ModelAnimate.render(modelMatrixLE39Body);
-	modelMatrixLE40[3][1] = terrain.getHeightTerrain(modelMatrixLE40[3][0], modelMatrixLE40[3][2]);
-	glm::mat4 modelMatrixLE40Body = glm::mat4(modelMatrixLE40);
-	modelMatrixLE40Body = glm::scale(modelMatrixLE40Body, glm::vec3(0.5, 0.5, 0.5));
-	LE40ModelAnimate.render(modelMatrixLE40Body);
 	
 	/**********
 	 * Update the position with alpha objects
@@ -2545,38 +3046,42 @@ void renderScene(bool renderParticles){
 		}
 		else if (it->second.first.compare("fantasmaRojo") == 0) {
 			glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
+			glBlendEquation(GL_FUNC_ADD);
 			glBlendColor(1.0, 0.0, 0.0, 1.0);
 			//Fantasma Rojo
 			glm::mat4 modelMatrixFantasmaRojoBlend = glm::mat4(modelMatrixFantasmaRojo);
 			modelMatrixFantasmaRojoBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaRojoBlend[3][0], modelMatrixFantasmaRojoBlend[3][2]);
-			modelMatrixFantasmaRojoBlend = glm::scale(modelMatrixFantasmaRojoBlend, glm::vec3(0.065, 0.065, 0.065));
+			modelMatrixFantasmaRojoBlend = glm::scale(modelMatrixFantasmaRojoBlend, glm::vec3(0.074, 0.074, 0.074));
 			fantasmaModel.render(modelMatrixFantasmaRojoBlend);
 		}
 		else if (it->second.first.compare("fantasmaRosa") == 0) {
 			glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
+			glBlendEquation(GL_FUNC_ADD);
 			glBlendColor(1.0, 0.078431, 0.576470, 1.0);
 			//Fantasma Rosa
 			glm::mat4 modelMatrixFantasmaRosaBlend = glm::mat4(modelMatrixFantasmaRosa);
 			modelMatrixFantasmaRosaBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaRosaBlend[3][0], modelMatrixFantasmaRosaBlend[3][2]);
-			modelMatrixFantasmaRosaBlend = glm::scale(modelMatrixFantasmaRosaBlend, glm::vec3(0.065, 0.065, 0.065));
+			modelMatrixFantasmaRosaBlend = glm::scale(modelMatrixFantasmaRosaBlend, glm::vec3(0.074, 0.074, 0.074));
 			fantasmaModel.render(modelMatrixFantasmaRosaBlend);
 		}
 		else if (it->second.first.compare("fantasmaCian") == 0) {
 			glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
+			glBlendEquation(GL_FUNC_ADD);
 			glBlendColor(0.0, 1.0, 1.0, 1.0);
 			//Fantasma Cian
 			glm::mat4 modelMatrixFantasmaCianBlend = glm::mat4(modelMatrixFantasmaCian);
 			modelMatrixFantasmaCianBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaCianBlend[3][0], modelMatrixFantasmaCianBlend[3][2]);
-			modelMatrixFantasmaCianBlend = glm::scale(modelMatrixFantasmaCianBlend, glm::vec3(0.065, 0.065, 0.065));
+			modelMatrixFantasmaCianBlend = glm::scale(modelMatrixFantasmaCianBlend, glm::vec3(0.074, 0.074, 0.074));
 			fantasmaModel.render(modelMatrixFantasmaCianBlend);
 		}
 		else if (it->second.first.compare("fantasmaNaranja") == 0) {
 			glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
+			glBlendEquation(GL_FUNC_ADD);
 			glBlendColor(1.0, 0.549019, 0.0, 1.0);
 			//Fantasma Naranja
 			glm::mat4 modelMatrixFantasmaNaranjaBlend = glm::mat4(modelMatrixFantasmaNaranja);
 			modelMatrixFantasmaNaranjaBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaNaranjaBlend[3][0], modelMatrixFantasmaNaranjaBlend[3][2]);
-			modelMatrixFantasmaNaranjaBlend = glm::scale(modelMatrixFantasmaNaranjaBlend, glm::vec3(0.065, 0.065, 0.065));
+			modelMatrixFantasmaNaranjaBlend = glm::scale(modelMatrixFantasmaNaranjaBlend, glm::vec3(0.074, 0.074, 0.074));
 			fantasmaModel.render(modelMatrixFantasmaNaranjaBlend);
 		}
 		else if(renderParticles && it->second.first.compare("fountain") == 0){
@@ -2670,11 +3175,13 @@ void renderScene(bool renderParticles){
 			 */
 		}
 	}
+	glDisable(GL_BLEND);
 	glEnable(GL_CULL_FACE);
 }
 
 int main(int argc, char **argv) {
 	init(800, 700, "Window GLFW", false);
+	srand(time(NULL));
 	applicationLoop();
 	destroy();
 	return 1;
