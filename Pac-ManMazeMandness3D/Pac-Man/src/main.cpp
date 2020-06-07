@@ -1693,15 +1693,15 @@ void updateUI_Text() {
 
 	//Points
 	str = "Points: ";
-	RenderText(textShader,str + std::to_string(puntosPacman), screenWidth - 120, screenHeight - 10, 0.5f, hex2rgb("ef233c"));
+	RenderText(textShader,str + std::to_string(puntosPacman), screenWidth - 120, screenHeight - 20, 0.5f, hex2rgb("ef233c"));
 
 	//Lives
 	str = "Lives: ";
-	RenderText(textShader, str + std::to_string(vidaPacman), 12, screenHeight - 10, 0.5f, hex2rgb("ef233c"));
+	RenderText(textShader, str + std::to_string(vidaPacman), 12, screenHeight - 20, 0.5f, hex2rgb("ef233c"));
 
 	//Time Left
 	str = "Time Left: ";
-	RenderText(textShader,str + std::to_string(tiempoJuego), screenWidth/2 -50 , screenHeight - 10, 0.5f, hex2rgb("ef233c"));
+	RenderText(textShader,str + std::to_string(tiempoJuego), screenWidth/2 -50 , screenHeight - 20, 0.5f, hex2rgb("ef233c"));
 }
 
 void applicationLoop() {
