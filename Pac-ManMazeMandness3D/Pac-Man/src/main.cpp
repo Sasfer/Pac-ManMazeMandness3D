@@ -108,6 +108,13 @@ std::map<std::string, int> puntoObtenido;
 Model pacmanModelAnimate;
 Model fantasmaModel;
 
+
+//Model Antorcha
+Model modelAntorcha1;
+Model modelAntorcha2;
+Model modelAntorcha3;
+Model modelAntorcha4;
+
 Model portalFantasma1Model;
 Model portalFantasma2Model;
 Model portalPacman1Model;
@@ -117,6 +124,12 @@ Model pisoAntorcha1Model;
 Model pisoAntorcha2Model;
 Model pisoAntorcha3Model;
 Model pisoAntorcha4Model;
+
+//Model Frutas
+Model modelCherry;
+Model modelOrange;
+Model modelStrawberry;
+
 
 // Laberinto
 Model LE1ModelAnimate;
@@ -212,10 +225,25 @@ glm::mat4 modelMatrixPortalFantasma2 = glm::mat4(1.0);
 glm::mat4 modelMatrixPortalPacman1 = glm::mat4(1.0);
 glm::mat4 modelMatrixPortalPacman2 = glm::mat4(1.0);
 
+//Pisos Antorchas
 glm::mat4 modelMatrixPisoAntorcha1 = glm::mat4(1.0);
 glm::mat4 modelMatrixPisoAntorcha2 = glm::mat4(1.0);
 glm::mat4 modelMatrixPisoAntorcha3 = glm::mat4(1.0);
 glm::mat4 modelMatrixPisoAntorcha4 = glm::mat4(1.0);
+
+
+//Antorchas
+glm::mat4 modelMatrixAntorcha1 = glm::mat4(1.0f);
+glm::mat4 modelMatrixAntorcha2 = glm::mat4(1.0f);
+glm::mat4 modelMatrixAntorcha3 = glm::mat4(1.0f);
+glm::mat4 modelMatrixAntorcha4 = glm::mat4(1.0f);
+
+
+//Frutas
+glm::mat4 modelMatrixCherry = glm::mat4(1.0f);
+glm::mat4 modelMatrixOrange = glm::mat4(1.0f);
+glm::mat4 modelMatrixStrawberry = glm::mat4(1.0f);
+
 
 // Laberinto
 glm::mat4 modelMatrixLE1 = glm::mat4(1.0f);
@@ -272,7 +300,11 @@ std::map<std::string, glm::vec3> blendingUnsorted = {
 	{"fantasmaRosa", glm::vec3(0.0, 0.05, 0.5)},
 	{"fantasmaCian", glm::vec3(0.0, 0.05, -1.0)},
 	{"fantasmaNaranja", glm::vec3(0.0, 0.05, -2.5)},
-	{"grass", glm::vec3(0.0, 5.0, 0.0)}
+	{"grass", glm::vec3(0.0, 5.0, 0.0)},
+	{"antorcha",glm::vec3(-18.2f, 5.0f, 17.5f)},
+	{"antorcha2",glm::vec3(17.8f, 5.0f, 17.5f)},
+	{"antorcha3",glm::vec3(-18.2f, 5.0f, -17.5f)},
+	{"antorcha4",glm::vec3(17.8f, 5.0f, -17.5f)}
 };
 
 double deltaTime;
@@ -730,6 +762,31 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	//Fantasmas
 	fantasmaModel.loadModel("../models/Fantasma/fantasma.obj");
 	fantasmaModel.setShader(&shaderMulLighting);
+
+	//Antorcha1
+	modelAntorcha1.loadModel("../models/Antorcha/antorcha.obj");
+	modelAntorcha1.setShader(&shaderMulLighting);
+	//Antorcha2
+	modelAntorcha2.loadModel("../models/Antorcha/antorcha.obj");
+	modelAntorcha2.setShader(&shaderMulLighting);
+	//Antorcha3
+	modelAntorcha3.loadModel("../models/Antorcha/antorcha.obj");
+	modelAntorcha3.setShader(&shaderMulLighting);
+	//Antorcha 4
+	modelAntorcha4.loadModel("../models/Antorcha/antorcha.obj");
+	modelAntorcha4.setShader(&shaderMulLighting);
+
+	//Frutas
+	modelCherry.loadModel("../models/Frutas/cherryO.obj");
+	modelCherry.setShader(&shaderMulLighting);
+
+
+	modelOrange.loadModel("../models/Frutas/orangeO.obj");
+	modelOrange.setShader(&shaderMulLighting);
+
+	modelStrawberry.loadModel("../models/Frutas/strawberry.obj");
+	modelStrawberry.setShader(&shaderMulLighting);
+
 
 	// Punto
 	puntoModel.loadModel("../models/Pacman/punto.obj");
@@ -1222,6 +1279,13 @@ void destroy() {
 	pisoAntorcha2Model.destroy();
 	pisoAntorcha3Model.destroy();
 	pisoAntorcha4Model.destroy();
+	modelAntorcha1.destroy();
+	modelAntorcha2.destroy();
+	modelAntorcha3.destroy();
+	modelAntorcha4.destroy();
+	modelCherry.destroy();
+	modelOrange.destroy();
+	modelStrawberry.destroy();
 
 	// Custom objects animate
 	pacmanModelAnimate.destroy();
@@ -1462,6 +1526,19 @@ void applicationLoop() {
 
 	// Pacman
 	modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0.0f, 0.05f, -2.25f));
+
+	//Antorchas
+	modelMatrixAntorcha1 = glm::translate(modelMatrixAntorcha1, glm::vec3(-18.0f, -8.0f, 17.5f));
+	modelMatrixAntorcha2 = glm::translate(modelMatrixAntorcha2, glm::vec3(18.0f, -8.0f, 17.5f));
+	modelMatrixAntorcha3 = glm::translate(modelMatrixAntorcha3, glm::vec3(-18.0f, -8.0f, -17.5f));
+	modelMatrixAntorcha4 = glm::translate(modelMatrixAntorcha4, glm::vec3(18.0f, -8.0f, -17.5f));
+
+	// Frutas
+	modelMatrixCherry = glm::translate(modelMatrixCherry, glm::vec3(-20.2f, 5.5f, 18.0f));
+	modelMatrixOrange = glm::translate(modelMatrixOrange, glm::vec3(20.0f, 5.5f, -18.0f));
+	modelMatrixStrawberry = glm::translate(modelMatrixStrawberry, glm::vec3(1.3f, 3.0f,-2.0f));
+	//modelMatrixStrawberry = glm::translate(modelMatrixStrawberry, glm::vec3(1.3f, 3.0f, -2.0f));
+
 
 	// Fantasma azul
 	modelMatrixFantasmaRojo = glm::translate(modelMatrixFantasmaRojo, glm::vec3(-20.25f, 0.05f, 0.0f));
@@ -1764,6 +1841,40 @@ void applicationLoop() {
 		pacmanCollider.c = glm::vec3(modelMatrixColliderPacman[3]);
 		pacmanCollider.ratio = pacmanModelAnimate.getSbb().ratio * 0.005;
 		addOrUpdateColliders(collidersSBB, "pacman", pacmanCollider, modelMatrixPacman);
+
+
+		//Collider cereza 
+		AbstractModel::SBB cherryCollider;
+		glm::mat4 modelMatrixColliderCherry = glm::mat4(modelMatrixCherry);
+		modelMatrixColliderCherry = glm::scale(modelMatrixColliderCherry, glm::vec3(0.005, 0.005, 0.005));
+		modelMatrixColliderCherry = glm::translate(modelMatrixColliderCherry, modelCherry.getSbb().c + glm::vec3(0.0, 70.0, 0.0));
+		cherryCollider.c = glm::vec3(modelMatrixColliderCherry[3]);
+		cherryCollider.ratio = modelCherry.getSbb().ratio * 0.5;
+		addOrUpdateColliders(collidersSBB, "cherry", cherryCollider, modelMatrixCherry);
+
+		//Collider naranja
+		AbstractModel::SBB orangeCollider;
+		glm::mat4 modelMatrixColliderOrange = glm::mat4(modelMatrixOrange);
+		modelMatrixColliderOrange = glm::scale(modelMatrixColliderOrange, glm::vec3(0.05, 0.05, 0.05));
+		modelMatrixColliderOrange = glm::translate(modelMatrixColliderOrange, modelOrange.getSbb().c + glm::vec3(0.0, 8.0, 0.0));
+		orangeCollider.c = glm::vec3(modelMatrixColliderOrange[3]);
+		orangeCollider.ratio = modelOrange.getSbb().ratio * 0.7;
+		addOrUpdateColliders(collidersSBB, "orange", orangeCollider, modelMatrixOrange);
+
+		//Collider fresa
+		AbstractModel::SBB strawberryCollider;
+		glm::mat4 modelMatrixColliderStrawberry = glm::mat4(modelMatrixStrawberry);
+		modelMatrixColliderStrawberry = glm::scale(modelMatrixColliderStrawberry, glm::vec3(0.005, 0.005, 0.005));
+		modelMatrixColliderStrawberry = glm::translate(modelMatrixColliderStrawberry, modelStrawberry.getSbb().c + glm::vec3(0.0, 70.0, 0.0));
+		strawberryCollider.c = glm::vec3(modelMatrixColliderStrawberry[3]);
+		strawberryCollider.ratio = modelStrawberry.getSbb().ratio * 0.7;
+		addOrUpdateColliders(collidersSBB, "fresa", strawberryCollider, modelMatrixStrawberry);
+
+		/*
+
+		
+		
+		*/
 		
 		// Punto
 		for (int i = 0; i < puntosPosition.size(); i++) {
@@ -2733,6 +2844,19 @@ void prepareScene(){
 
 	//Pacman
 	pacmanModelAnimate.setShader(&shaderMulLighting);
+
+	//Antochas
+	modelAntorcha1.setShader(&shaderMulLighting);
+	modelAntorcha2.setShader(&shaderMulLighting);
+	modelAntorcha3.setShader(&shaderMulLighting);
+	modelAntorcha4.setShader(&shaderMulLighting);
+
+	//Frutas
+	modelCherry.setShader(&shaderMulLighting);
+	modelOrange.setShader(&shaderMulLighting);
+	modelStrawberry.setShader(&shaderMulLighting);
+
+
 }
 
 void prepareDepthScene(){
@@ -2845,6 +2969,30 @@ void renderScene(bool renderParticles){
 	modelMatrixPacmanBody = glm::scale(modelMatrixPacmanBody, glm::vec3(0.005, 0.005, 0.005));
 	pacmanModelAnimate.setAnimationIndex(animationIndex);
 	pacmanModelAnimate.render(modelMatrixPacmanBody);
+
+
+	//Antorchas
+
+	modelMatrixAntorcha1[3][1] = terrain.getHeightTerrain(modelMatrixAntorcha1[3][0], modelMatrixAntorcha1[3][2]);
+	modelAntorcha1.render(modelMatrixAntorcha1);
+
+	modelMatrixAntorcha2[3][1] = terrain.getHeightTerrain(modelMatrixAntorcha2[3][0], modelMatrixAntorcha2[3][2]);
+	modelAntorcha2.render(modelMatrixAntorcha2);
+
+	modelMatrixAntorcha3[3][1] = terrain.getHeightTerrain(modelMatrixAntorcha3[3][0], modelMatrixAntorcha3[3][2]);
+	modelAntorcha3.render(modelMatrixAntorcha3);
+
+	modelMatrixAntorcha4[3][1] = terrain.getHeightTerrain(modelMatrixAntorcha4[3][0], modelMatrixAntorcha4[3][2]);
+	modelAntorcha4.render(modelMatrixAntorcha4);
+
+
+	//Frutas
+	modelMatrixCherry[3][1] = terrain.getHeightTerrain(modelMatrixCherry[3][0], modelMatrixCherry[3][2]);
+	modelCherry.render(modelMatrixCherry);
+	modelMatrixOrange[3][1] = terrain.getHeightTerrain(modelMatrixOrange[3][0], modelMatrixOrange[3][2]);
+	modelOrange.render(modelMatrixOrange);
+	modelMatrixStrawberry[3][1] = terrain.getHeightTerrain(modelMatrixStrawberry[3][0], modelMatrixStrawberry[3][2]);
+	modelStrawberry.render(modelMatrixStrawberry);
 	
 	//Laberinto
 	modelMatrixLE1[3][1] = terrain.getHeightTerrain(modelMatrixLE1[3][0], modelMatrixLE1[3][2]);
@@ -3174,6 +3322,256 @@ void renderScene(bool renderParticles){
 			 * End Render particles systems
 			 */
 		}
+
+		else if (renderParticles && it->second.first.compare("antorcha") == 0) {
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		/**********
+		 * Init Render particles systems
+		 */
+		lastTimeParticlesAnimationFire = currTimeParticlesAnimationFire;
+		currTimeParticlesAnimationFire = TimeManager::Instance().GetTime();
+
+		shaderParticlesFire.setInt("Pass", 1);
+		shaderParticlesFire.setFloat("Time", currTimeParticlesAnimationFire);
+		shaderParticlesFire.setFloat("DeltaT", currTimeParticlesAnimationFire - lastTimeParticlesAnimationFire);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_1D, texId);
+		glEnable(GL_RASTERIZER_DISCARD);
+		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback[drawBuf]);
+		glBeginTransformFeedback(GL_POINTS);
+		glBindVertexArray(particleArray[1 - drawBuf]);
+		glVertexAttribDivisor(0, 0);
+		glVertexAttribDivisor(1, 0);
+		glVertexAttribDivisor(2, 0);
+		glDrawArrays(GL_POINTS, 0, nParticlesFire);
+		glEndTransformFeedback();
+		glDisable(GL_RASTERIZER_DISCARD);
+
+		shaderParticlesFire.setInt("Pass", 2);
+		glm::mat4 modelFireParticles = glm::mat4(1.0);
+		modelFireParticles = glm::translate(modelFireParticles, it->second.second);
+		//modelFireParticles[3][1] = terrain.getHeightTerrain(modelFireParticles[3][0], modelFireParticles[3][2]);
+		modelFireParticles = glm::rotate(modelFireParticles, glm::radians(10.0f), glm::vec3(1, 0, 0));
+		modelFireParticles = glm::scale(modelFireParticles, glm::vec3(0.00625, 0.7, 0.00625));;
+		shaderParticlesFire.setMatrix4("model", 1, false, glm::value_ptr(modelFireParticles));
+
+		shaderParticlesFire.turnOn();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureParticleFireID);
+		glDepthMask(GL_FALSE);
+		glBindVertexArray(particleArray[drawBuf]);
+		glVertexAttribDivisor(0, 1);
+		glVertexAttribDivisor(1, 1);
+		glVertexAttribDivisor(2, 1);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, nParticlesFire);
+		glBindVertexArray(0);
+		glDepthMask(GL_TRUE);
+		drawBuf = 1 - drawBuf;
+		shaderParticlesFire.turnOff();
+
+
+		/****************************+
+		 * Open AL sound data
+		 */
+
+		source1Pos[0] = modelFireParticles[3].x;
+		source1Pos[1] = modelFireParticles[3].y;
+		source1Pos[2] = modelFireParticles[3].z;
+		alSourcefv(source[1], AL_POSITION, source1Pos);
+
+		/**********
+		 * End Render particles systems
+		 */
+		}
+
+		else if (renderParticles && it->second.first.compare("antorcha2") == 0) {
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		/**********
+		 * Init Render particles systems
+		 */
+		lastTimeParticlesAnimationFire = currTimeParticlesAnimationFire;
+		currTimeParticlesAnimationFire = TimeManager::Instance().GetTime();
+
+		shaderParticlesFire.setInt("Pass", 1);
+		shaderParticlesFire.setFloat("Time", currTimeParticlesAnimationFire);
+		shaderParticlesFire.setFloat("DeltaT", currTimeParticlesAnimationFire - lastTimeParticlesAnimationFire);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_1D, texId);
+		glEnable(GL_RASTERIZER_DISCARD);
+		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback[drawBuf]);
+		glBeginTransformFeedback(GL_POINTS);
+		glBindVertexArray(particleArray[1 - drawBuf]);
+		glVertexAttribDivisor(0, 0);
+		glVertexAttribDivisor(1, 0);
+		glVertexAttribDivisor(2, 0);
+		glDrawArrays(GL_POINTS, 0, nParticlesFire);
+		glEndTransformFeedback();
+		glDisable(GL_RASTERIZER_DISCARD);
+
+		shaderParticlesFire.setInt("Pass", 2);
+		glm::mat4 modelFireParticles2 = glm::mat4(1.0);
+		modelFireParticles2 = glm::translate(modelFireParticles2, it->second.second);
+		//modelFireParticles[3][1] = terrain.getHeightTerrain(modelFireParticles[3][0], modelFireParticles[3][2]);
+		modelFireParticles2 = glm::rotate(modelFireParticles2, glm::radians(10.0f), glm::vec3(1, 0, 0));
+		modelFireParticles2 = glm::scale(modelFireParticles2, glm::vec3(0.00625, 0.7, 0.00625));;
+		shaderParticlesFire.setMatrix4("model", 1, false, glm::value_ptr(modelFireParticles2));
+
+		shaderParticlesFire.turnOn();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureParticleFireID);
+		glDepthMask(GL_FALSE);
+		glBindVertexArray(particleArray[drawBuf]);
+		glVertexAttribDivisor(0, 1);
+		glVertexAttribDivisor(1, 1);
+		glVertexAttribDivisor(2, 1);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, nParticlesFire);
+		glBindVertexArray(0);
+		glDepthMask(GL_TRUE);
+		drawBuf = 1 - drawBuf;
+		shaderParticlesFire.turnOff();
+
+
+		/****************************+
+		 * Open AL sound data
+		 */
+
+		source1Pos[0] = modelFireParticles2[3].x;
+		source1Pos[1] = modelFireParticles2[3].y;
+		source1Pos[2] = modelFireParticles2[3].z;
+		alSourcefv(source[1], AL_POSITION, source1Pos);
+
+		/**********
+		 * End Render particles systems
+		 */
+		}
+
+		else if (renderParticles && it->second.first.compare("antorcha3") == 0) {
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		/**********
+		 * Init Render particles systems
+		 */
+		lastTimeParticlesAnimationFire = currTimeParticlesAnimationFire;
+		currTimeParticlesAnimationFire = TimeManager::Instance().GetTime();
+
+		shaderParticlesFire.setInt("Pass", 1);
+		shaderParticlesFire.setFloat("Time", currTimeParticlesAnimationFire);
+		shaderParticlesFire.setFloat("DeltaT", currTimeParticlesAnimationFire - lastTimeParticlesAnimationFire);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_1D, texId);
+		glEnable(GL_RASTERIZER_DISCARD);
+		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback[drawBuf]);
+		glBeginTransformFeedback(GL_POINTS);
+		glBindVertexArray(particleArray[1 - drawBuf]);
+		glVertexAttribDivisor(0, 0);
+		glVertexAttribDivisor(1, 0);
+		glVertexAttribDivisor(2, 0);
+		glDrawArrays(GL_POINTS, 0, nParticlesFire);
+		glEndTransformFeedback();
+		glDisable(GL_RASTERIZER_DISCARD);
+
+		shaderParticlesFire.setInt("Pass", 2);
+		glm::mat4 modelFireParticles3 = glm::mat4(1.0);
+		modelFireParticles3 = glm::translate(modelFireParticles3, it->second.second);
+		//modelFireParticles[3][1] = terrain.getHeightTerrain(modelFireParticles[3][0], modelFireParticles[3][2]);
+		modelFireParticles3 = glm::rotate(modelFireParticles3, glm::radians(10.0f), glm::vec3(1, 0, 0));
+		modelFireParticles3 = glm::scale(modelFireParticles3, glm::vec3(0.00625, 0.7, 0.00625));;
+		shaderParticlesFire.setMatrix4("model", 1, false, glm::value_ptr(modelFireParticles3));
+
+		shaderParticlesFire.turnOn();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureParticleFireID);
+		glDepthMask(GL_FALSE);
+		glBindVertexArray(particleArray[drawBuf]);
+		glVertexAttribDivisor(0, 1);
+		glVertexAttribDivisor(1, 1);
+		glVertexAttribDivisor(2, 1);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, nParticlesFire);
+		glBindVertexArray(0);
+		glDepthMask(GL_TRUE);
+		drawBuf = 1 - drawBuf;
+		shaderParticlesFire.turnOff();
+
+
+		/****************************+
+		 * Open AL sound data
+		 */
+
+		source1Pos[0] = modelFireParticles3[3].x;
+		source1Pos[1] = modelFireParticles3[3].y;
+		source1Pos[2] = modelFireParticles3[3].z;
+		alSourcefv(source[1], AL_POSITION, source1Pos);
+
+		/**********
+		 * End Render particles systems
+		 */
+		}
+
+
+		else if (renderParticles && it->second.first.compare("antorcha4") == 0) {
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		/**********
+		 * Init Render particles systems
+		 */
+		lastTimeParticlesAnimationFire = currTimeParticlesAnimationFire;
+		currTimeParticlesAnimationFire = TimeManager::Instance().GetTime();
+
+		shaderParticlesFire.setInt("Pass", 1);
+		shaderParticlesFire.setFloat("Time", currTimeParticlesAnimationFire);
+		shaderParticlesFire.setFloat("DeltaT", currTimeParticlesAnimationFire - lastTimeParticlesAnimationFire);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_1D, texId);
+		glEnable(GL_RASTERIZER_DISCARD);
+		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback[drawBuf]);
+		glBeginTransformFeedback(GL_POINTS);
+		glBindVertexArray(particleArray[1 - drawBuf]);
+		glVertexAttribDivisor(0, 0);
+		glVertexAttribDivisor(1, 0);
+		glVertexAttribDivisor(2, 0);
+		glDrawArrays(GL_POINTS, 0, nParticlesFire);
+		glEndTransformFeedback();
+		glDisable(GL_RASTERIZER_DISCARD);
+
+		shaderParticlesFire.setInt("Pass", 2);
+		glm::mat4 modelFireParticles4 = glm::mat4(1.0);
+		modelFireParticles4 = glm::translate(modelFireParticles4, it->second.second);
+		//modelFireParticles[3][1] = terrain.getHeightTerrain(modelFireParticles[3][0], modelFireParticles[3][2]);
+		modelFireParticles4 = glm::rotate(modelFireParticles4, glm::radians(10.0f), glm::vec3(1, 0, 0));
+		modelFireParticles4 = glm::scale(modelFireParticles4, glm::vec3(0.00625, 0.7, 0.00625));;
+		shaderParticlesFire.setMatrix4("model", 1, false, glm::value_ptr(modelFireParticles4));
+
+		shaderParticlesFire.turnOn();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, textureParticleFireID);
+		glDepthMask(GL_FALSE);
+		glBindVertexArray(particleArray[drawBuf]);
+		glVertexAttribDivisor(0, 1);
+		glVertexAttribDivisor(1, 1);
+		glVertexAttribDivisor(2, 1);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, nParticlesFire);
+		glBindVertexArray(0);
+		glDepthMask(GL_TRUE);
+		drawBuf = 1 - drawBuf;
+		shaderParticlesFire.turnOff();
+
+
+		/****************************+
+		 * Open AL sound data
+		 */
+
+		source1Pos[0] = modelFireParticles4[3].x;
+		source1Pos[1] = modelFireParticles4[3].y;
+		source1Pos[2] = modelFireParticles4[3].z;
+		alSourcefv(source[1], AL_POSITION, source1Pos);
+
+		/**********
+		 * End Render particles systems
+		 */
+		}
+
 	}
 	glDisable(GL_BLEND);
 	glEnable(GL_CULL_FACE);
