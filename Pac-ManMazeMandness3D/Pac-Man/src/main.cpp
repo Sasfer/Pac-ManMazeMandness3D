@@ -1701,7 +1701,7 @@ void updateUI_Text() {
 
 	//Time Left
 	str = "Time Left: ";
-	RenderText(textShader,str + std::to_string(tiempoRestante), screenWidth/2 -50 , screenHeight - 10, 0.5f, hex2rgb("ef233c"));
+	RenderText(textShader,str + std::to_string(tiempoJuego), screenWidth/2 -50 , screenHeight - 10, 0.5f, hex2rgb("ef233c"));
 }
 
 void applicationLoop() {
