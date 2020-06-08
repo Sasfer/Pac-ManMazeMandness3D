@@ -565,15 +565,24 @@ GLuint depthMap, depthMapFBO;
 ALfloat listenerPos[] = { 0.0, 0.0, 4.0 };
 ALfloat listenerVel[] = { 0.0, 0.0, 0.0 };
 ALfloat listenerOri[] = { 0.0, 0.0, 1.0, 0.0, 1.0, 0.0 };
-// Source 0
+// Source 0 Fuego 
 ALfloat source0Pos[] = { -2.0, 8.0, 0.0 };
 ALfloat source0Vel[] = { 0.0, 0.0, 0.0 };
-// Source 1
+// Source 1  Tema Original de Pacaman 
 ALfloat source1Pos[] = { -18.0, 0.0, 17.0 };
 ALfloat source1Vel[] = { -18.0, 0.0, 17.0 };
-// Source 2
+// Source 2 Colision Pacman y puntos
 ALfloat source2Pos[] = { 2.0, 0.0, 0.0 };
 ALfloat source2Vel[] = { 0.0, 0.0, 0.0 };
+//Source 3-Pacman  Game Over
+ALfloat source3Pos[] = { 2.0, 0.0, 0.0 };
+ALfloat source3Vel[] = { 0.0, 0.0, 0.0 };
+//Source 4 Comiendo Fantasma
+ALfloat source4Pos[] = { 0.0, 0.0, 1.0 };
+ALfloat source4Vel[] = { 0.0, 0.0, 0.0 };
+//Source 5 Comiendo fruta
+ALfloat source5Pos[] = { 6.0, 0.0, 0.0 };
+ALfloat source5Vel[] = { 0.0, 0.0, 0.0 };
 // Buffers
 ALuint buffer[NUM_BUFFERS];
 ALuint source[NUM_SOURCES];
@@ -618,7 +627,10 @@ void applicationLoop();
 void prepareScene();
 void prepareDepthScene();
 void renderScene(bool renderParticles = true);
-void suena(bool colsion=true);
+void comePunto(bool colsion=true);
+void comeFantasma(bool colsion = true);
+void comeFruta(bool colsion = true);
+void gameOver(bool colision = true);
 //FreeType
 void RenderText(Shader &shader, std::string text, float x, float y, float scale, glm::vec3 color);
 
@@ -1357,7 +1369,10 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	alGenBuffers(NUM_BUFFERS, buffer);
 	buffer[0] = alutCreateBufferFromFile("../sounds/temaOriginalM.wav");
 	buffer[1] = alutCreateBufferFromFile("../sounds/fire.wav");
-	buffer[2] = alutCreateBufferFromFile("../sounds/comiendo.wav");
+	buffer[2] = alutCreateBufferFromFile("../sounds/wakaWaka.wav");
+	buffer[3]=  alutCreateBufferFromFile("../sounds/gameOver.wav");
+	buffer[4] = alutCreateBufferFromFile("../sounds/eatFantasma.wav");
+	buffer[5] = alutCreateBufferFromFile("../sounds/eatFruta.wav");
 	int errorAlut = alutGetError();
 	if (errorAlut != ALUT_ERROR_NO_ERROR) {
 		printf("- Error open files with alut %d !!\n", errorAlut);
@@ -1375,9 +1390,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 		printf("init - no errors after alGenSources\n");
 	}
 
-
-
-
+	//Tema Fuego
 	alSourcef(source[1], AL_PITCH, 1.0f);
 	alSourcef(source[1], AL_GAIN, 1.8f);
 	alSourcefv(source[1], AL_POSITION, source1Pos);
@@ -1386,6 +1399,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	alSourcei(source[1], AL_LOOPING, AL_TRUE);
 	alSourcef(source[1], AL_MAX_DISTANCE, 1000);
 
+	//Tema Oiginal
 	alSourcef(source[0], AL_PITCH, 1.0f);
 	alSourcef(source[0], AL_GAIN, 1.0f);
 	alSourcefv(source[0], AL_POSITION, source0Pos);
@@ -1394,8 +1408,6 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	//alSourcei(source[0], AL_LOOPING, AL_TRUE);
 	alSourcef(source[0], AL_MAX_DISTANCE, 2000);
 
-
-	
 	/*******************************************
 	 * FreeType init
 	 *******************************************/
@@ -1471,10 +1483,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	glBindVertexArray(0);
 }
 
-
-
-
-void suena(bool colision){
+void comePunto(bool colision){
 	bool col = colision;
 	if (col == true) {
 		alSourcef(source[2], AL_PITCH, 1.0f);
@@ -1485,6 +1494,48 @@ void suena(bool colision){
 		alSourcei(source[2], AL_LOOPING, AL_TRUE);
 		alSourcef(source[2], AL_MAX_DISTANCE, 500);
 	}
+}
+
+
+void comeFantasma(bool colision) {
+	bool col = colision;
+	if (col == true) {
+		alSourcef(source[4], AL_PITCH, 1.0f);
+		alSourcef(source[4], AL_GAIN, 4.3f);
+		alSourcefv(source[4], AL_POSITION, source2Pos);
+		alSourcefv(source[4], AL_VELOCITY, source2Vel);
+		alSourcei(source[4], AL_BUFFER, buffer[4]);
+		alSourcei(source[4], AL_LOOPING, AL_TRUE);
+		alSourcef(source[4], AL_MAX_DISTANCE, 500);
+	}
+}
+
+void comeFruta(bool colision) {
+	bool col = colision;
+	if (col == true) {
+		alSourcef(source[5], AL_PITCH, 1.0f);
+		alSourcef(source[5], AL_GAIN, 4.3f);
+		alSourcefv(source[5], AL_POSITION, source2Pos);
+		alSourcefv(source[5], AL_VELOCITY, source2Vel);
+		alSourcei(source[5], AL_BUFFER, buffer[5]);
+		alSourcei(source[5], AL_LOOPING, AL_TRUE);
+		alSourcef(source[5], AL_MAX_DISTANCE, 500);
+	}
+}
+
+
+void gameOver(bool colision) {
+	bool col = colision;
+	if (col == true) {
+		alSourcef(source[3], AL_PITCH, 1.0f);
+		alSourcef(source[3], AL_GAIN, 4.3f);
+		alSourcefv(source[3], AL_POSITION, source2Pos);
+		alSourcefv(source[3], AL_VELOCITY, source2Vel);
+		alSourcei(source[3], AL_BUFFER, buffer[3]);
+		alSourcei(source[3], AL_LOOPING, AL_TRUE);
+		alSourcef(source[3], AL_MAX_DISTANCE, 500);
+	}
+
 }
 
 
@@ -3149,12 +3200,13 @@ void applicationLoop() {
 					if (it->first[0] == 'p' && it->first[1] == 'u' && jt->first.compare("pacman") == 0) {
 						//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
 						std::get<1>(puntosPosition.find(it->first)->second) = 1;
-						suena(true);
+						comePunto(true);
 						// Si PACMAN come un punto POWER puede comer a alguno de los fantasmas por los 
 						// siguientes 15 segundos, además de que podrá avanzar más rápido
 						if (it->first.compare("punto215") == 0 || it->first.compare("punto216") == 0 ||
 							it->first.compare("punto217") == 0 || it->first.compare("punto218") == 0) {
 							tiempoFantasmaAzulComer = tiempoFantasmaAzulComer + 15;
+							comeFantasma(true);
 						}
 						puntoObtenido.insert(std::pair<std::string, int>(it->first, 1));
 					}
@@ -3163,18 +3215,21 @@ void applicationLoop() {
 						activoCereza = 0;
 						puntosPacman = puntosPacman + 50;
 						std::cout << "Puntos -> " << puntosPacman << std::endl;
+						comeFruta(true);
 					}
 					else if (it->first.compare("fresa") == 0 && jt->first.compare("pacman") == 0) {
 						//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
 						activoFresa = 0;
 						puntosPacman = puntosPacman + 100;
 						std::cout << "Puntos -> " << puntosPacman << std::endl;
+						comeFruta(true);
 					}
 					else if (it->first.compare("naranja") == 0 && jt->first.compare("pacman") == 0) {
 						//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
 						activoNaranja = 0;
 						puntosPacman = puntosPacman + 150;
 						std::cout << "Puntos -> " << puntosPacman << std::endl;
+						comeFruta(true);
 					}
 					
 					if (jt->first[1] == 'u' && (it->first.compare("fresa") == 0 || it->first.compare("cereza") == 0
@@ -3241,6 +3296,7 @@ void applicationLoop() {
 							else {
 								psi = false;
 								std::cout << "******** FIN DEL JUEGO, SIN VIDA ********" << std::endl;
+								gameOver(true);
 								break;
 							}
 						}
