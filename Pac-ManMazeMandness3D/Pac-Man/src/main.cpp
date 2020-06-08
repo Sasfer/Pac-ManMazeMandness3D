@@ -1,5 +1,7 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <map>
+
 //glew include
 #include <GL/glew.h>
 
@@ -54,6 +56,11 @@ using namespace std;
 // OpenAL include
 #include <AL/alut.h>
 
+//FreeType include
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+
 #define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 
 int screenWidth;
@@ -78,6 +85,9 @@ Shader shaderParticlesFire;
 Shader shaderViewDepth;
 //Shader para dibujar el buffer de profunidad
 Shader shaderDepth;
+
+//Shader para FreeType
+Shader textShader;
 
 std::shared_ptr<Camera> camera(new ThirdPersonCamera());
 float distanceFromTarget = 16.0;
@@ -248,6 +258,7 @@ GLuint textureCespedID, textureWallID, textureWindowID, textureHighwayID, textur
 GLuint textureTerrainBackgroundID, textureTerrainRID, textureTerrainGID, textureTerrainBID, textureTerrainBlendMapID;
 GLuint textureParticleFountainID, textureParticleFireID, texId;
 GLuint skyboxTextureID;
+GLuint textTextureID;
 
 GLenum types[6] = {
 GL_TEXTURE_CUBE_MAP_POSITIVE_X,
@@ -572,6 +583,23 @@ int ch;
 ALboolean loop;
 std::vector<bool> sourcesPlay = { true, true, true };
 
+/**********************
+ *  FreeType config   *
+ **********************/
+FT_Library ft;
+
+struct Character {
+	unsigned int TextureID;  // ID handle of the glyph texture
+	glm::ivec2   Size;       // Size of glyph
+	glm::ivec2   Bearing;    // Offset from baseline to left/top of glyph
+	unsigned int Advance;    // Offset to advance to next glyph
+};
+
+glm::mat4 textProjection;
+std::map<GLchar, Character> Characters;
+unsigned int textVAO, textVBO;
+
+
 // Se definen todos las funciones.
 void reshapeCallback(GLFWwindow *Window, int widthRes, int heightRes);
 void keyCallback(GLFWwindow *window, int key, int scancode, int action,
@@ -587,6 +615,8 @@ void applicationLoop();
 void prepareScene();
 void prepareDepthScene();
 void renderScene(bool renderParticles = true);
+//FreeType
+void RenderText(Shader& shader, std::string text, float x, float y, float scale, glm::vec3 color);
 
 void initParticleBuffers() {
 	// Generate the buffers
@@ -803,6 +833,9 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	shaderParticlesFire.initialize("../Shaders/particlesFire.vs", "../Shaders/particlesFire.fs", { "Position", "Velocity", "Age" });
 	shaderViewDepth.initialize("../Shaders/texturizado.vs", "../Shaders/texturizado_depth_view.fs");
 	shaderDepth.initialize("../Shaders/shadow_mapping_depth.vs", "../Shaders/shadow_mapping_depth.fs");
+
+	//FreeType shaders
+	textShader.initialize("../Shaders/text.vs", "../Shaders/text.fs");
 
 	// Inicializacion de los objetos.
 	skyboxSphere.init();
@@ -1361,7 +1394,85 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	alSourcei(source[2], AL_BUFFER, buffer[2]);
 	alSourcei(source[2], AL_LOOPING, AL_TRUE);
 	alSourcef(source[2], AL_MAX_DISTANCE, 500);
+
+	/*******************************************
+	 * FreeType init
+	 *******************************************/
+	//glUniformMatrix4fv(textShader.getUniformLocation("textProjection"), 1, GL_FALSE, glm::value_ptr(textProjection));
+	textProjection = glm::ortho(0.0f, static_cast<float>(screenWidth), 0.0f, static_cast<float>(screenHeight));
+	textShader.setMatrix4("textProjection", 1, false, glm::value_ptr(textProjection));
+
+	if (FT_Init_FreeType(&ft))
+		std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+
+	// load font as face
+	FT_Face face;
+	if (FT_New_Face(ft, "../fonts/ConcertOne-Regular.ttf", 0, &face))
+		std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+
+	// set size to load glyphs as
+	FT_Set_Pixel_Sizes(face, 0, 48);
+	
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	for (unsigned char c = 0; c < 128; c++)
+	{
+		// Load character glyph 
+		if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+		{
+			std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+			continue;
+		}
+		// generate texture
+		unsigned int texture;
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(
+			GL_TEXTURE_2D,
+			0,
+			GL_RED,
+			face->glyph->bitmap.width,
+			face->glyph->bitmap.rows,
+			0,
+			GL_RED,
+			GL_UNSIGNED_BYTE,
+			face->glyph->bitmap.buffer
+		);
+		// set texture options
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		// now store character for later use
+		Character character = {
+			texture,
+			glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+			glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+			face->glyph->advance.x
+		};
+		Characters.insert(std::pair<char, Character>(c, character));
+	}
+
+	glBindTexture(GL_TEXTURE_2D, textTextureID);
+	// destroy FreeType once we're finished
+	FT_Done_Face(face);
+	FT_Done_FreeType(ft);
+
+
+	// configure VAO/VBO for texture quads
+	// -----------------------------------
+	glGenVertexArrays(1, &textVAO);
+	glGenBuffers(1, &textVBO);
+	glBindVertexArray(textVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
 }
+
+
 
 void destroy() {
 	glfwDestroyWindow(window);
@@ -1655,6 +1766,83 @@ bool processInput(bool continueApplication) {
 
 	glfwPollEvents();
 	return continueApplication;
+}
+
+void RenderText(Shader& shader, std::string text, float x, float y, float scale, glm::vec3 color)
+{
+	//glUniform3f(textShader.getUniformLocation("textColor"), color.x, color.y, color.z);
+	shader.setVectorFloat3("textColor", glm::value_ptr(glm::vec3(color.x, color.y, color.z)));
+	glActiveTexture(GL_TEXTURE11);
+	glBindVertexArray(textVAO);
+
+	// iterate through all characters
+	std::string::const_iterator c;
+	for (c = text.begin(); c != text.end(); c++)
+	{
+		Character ch = Characters[*c];
+
+		float xpos = x + ch.Bearing.x * scale;
+		float ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
+
+		float w = ch.Size.x * scale;
+		float h = ch.Size.y * scale;
+		// update VBO for each character
+		float vertices[6][4] = {
+			{ xpos,     ypos + h,   0.0f, 0.0f },
+			{ xpos,     ypos,       0.0f, 1.0f },
+			{ xpos + w, ypos,       1.0f, 1.0f },
+
+			{ xpos,     ypos + h,   0.0f, 0.0f },
+			{ xpos + w, ypos,       1.0f, 1.0f },
+			{ xpos + w, ypos + h,   1.0f, 0.0f }
+		};
+		// render glyph texture over quad
+		glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+		// update content of VBO memory
+		glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // be sure to use glBufferSubData and not glBufferData
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		// render quad
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		// now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+		x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
+	}
+	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, textTextureID);
+	textShader.setInt("text", 11);
+}
+
+glm::vec3 hex2rgb(string hex) {
+	if (hex.at(0) == '#') {
+		hex.erase(0, 1);
+	}
+
+	while (hex.length() != 6) {
+		hex += "0";
+	}
+
+	int r = std::stol(hex.substr(0, 2), nullptr, 16);
+	int g = std::stol(hex.substr(2, 2), nullptr, 16);
+	int b = std::stol(hex.substr(4, 2), nullptr, 16);
+
+	return glm::vec3(r / 255.0f, g / 255.0f, b / 255.0f);
+}
+
+void updateUI_Text() {
+	string str;
+
+	//Points
+	str = "Points: ";
+	RenderText(textShader,str + std::to_string(puntosPacman), screenWidth - 120, screenHeight - 20, 0.5f, hex2rgb("ef233c"));
+
+	//Lives
+	str = "Lives: ";
+	RenderText(textShader, str + std::to_string(vidaPacman), 12, screenHeight - 20, 0.5f, hex2rgb("ef233c"));
+
+	//Time Left
+	str = "Time Left: ";
+	RenderText(textShader,str + std::to_string(tiempoJuego), screenWidth/2 -50 , screenHeight - 20, 0.5f, hex2rgb("ef233c"));
 }
 
 void applicationLoop() {
@@ -4043,6 +4231,11 @@ void renderScene(bool renderParticles) {
 			****************************************/
 		}
 	}
+
+	/*******************************************
+		 * FreeType text Rendering
+	*******************************************/
+	updateUI_Text();
 	glDisable(GL_BLEND);
 	glEnable(GL_CULL_FACE);
 }
