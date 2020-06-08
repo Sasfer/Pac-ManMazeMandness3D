@@ -202,10 +202,10 @@
     <None Include="..\Shaders\texturizado_depth_view.fs">
       <Filter>Archivos de recursos</Filter>
     </None>
-    <None Include="..\Shaders\text.fs">
+    <None Include="..\Shaders\text.vs">
       <Filter>Archivos de recursos</Filter>
     </None>
-    <None Include="..\Shaders\text.vs">
+    <None Include="..\Shaders\text.fs">
       <Filter>Archivos de recursos</Filter>
     </None>
   </ItemGroup>

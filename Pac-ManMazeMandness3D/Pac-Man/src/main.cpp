@@ -616,7 +616,7 @@ void prepareScene();
 void prepareDepthScene();
 void renderScene(bool renderParticles = true);
 //FreeType
-void RenderText(Shader& shader, std::string text, float x, float y, float scale, glm::vec3 color);
+void RenderText(Shader &shader, std::string text, float x, float y, float scale, glm::vec3 color);
 
 void initParticleBuffers() {
 	// Generate the buffers
@@ -1398,7 +1398,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	/*******************************************
 	 * FreeType init
 	 *******************************************/
-	//glUniformMatrix4fv(textShader.getUniformLocation("textProjection"), 1, GL_FALSE, glm::value_ptr(textProjection));
+	 //glUniformMatrix4fv(textShader.getUniformLocation("textProjection"), 1, GL_FALSE, glm::value_ptr(textProjection));
 	textProjection = glm::ortho(0.0f, static_cast<float>(screenWidth), 0.0f, static_cast<float>(screenHeight));
 	textShader.setMatrix4("textProjection", 1, false, glm::value_ptr(textProjection));
 
@@ -1412,7 +1412,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 
 	// set size to load glyphs as
 	FT_Set_Pixel_Sizes(face, 0, 48);
-	
+
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	for (unsigned char c = 0; c < 128; c++)
 	{
@@ -1457,7 +1457,6 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	FT_Done_Face(face);
 	FT_Done_FreeType(ft);
 
-
 	// configure VAO/VBO for texture quads
 	// -----------------------------------
 	glGenVertexArrays(1, &textVAO);
@@ -1469,10 +1468,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-
 }
-
-
 
 void destroy() {
 	glfwDestroyWindow(window);
@@ -1768,7 +1764,7 @@ bool processInput(bool continueApplication) {
 	return continueApplication;
 }
 
-void RenderText(Shader& shader, std::string text, float x, float y, float scale, glm::vec3 color)
+void RenderText(Shader &shader, std::string text, float x, float y, float scale, glm::vec3 color)
 {
 	//glUniform3f(textShader.getUniformLocation("textColor"), color.x, color.y, color.z);
 	shader.setVectorFloat3("textColor", glm::value_ptr(glm::vec3(color.x, color.y, color.z)));
@@ -1834,15 +1830,18 @@ void updateUI_Text() {
 
 	//Points
 	str = "Points: ";
-	RenderText(textShader,str + std::to_string(puntosPacman), screenWidth - 120, screenHeight - 20, 0.5f, hex2rgb("ef233c"));
+	//std::cout << "Funcion texto PUNTOS" << std::endl;
+	RenderText(textShader,str + std::to_string(puntosPacman), screenWidth - 120, screenHeight - 50, 10.0f, hex2rgb("ef233c"));
 
 	//Lives
 	str = "Lives: ";
-	RenderText(textShader, str + std::to_string(vidaPacman), 12, screenHeight - 20, 0.5f, hex2rgb("ef233c"));
+	//std::cout << "Funcion texto VIDA" << std::endl;
+	RenderText(textShader, str + std::to_string(vidaPacman), 12, screenHeight - 50, 10.0f, hex2rgb("ef233c"));
 
 	//Time Left
 	str = "Time Left: ";
-	RenderText(textShader,str + std::to_string(tiempoJuego), screenWidth/2 -50 , screenHeight - 20, 0.5f, hex2rgb("ef233c"));
+	//std::cout << "Funcion texto TIEMPO" << std::endl;
+	RenderText(textShader,str + std::to_string(tiempoJuego), screenWidth/2 -50 , screenHeight - 50, 10.0f, hex2rgb("ef233c"));
 }
 
 void applicationLoop() {
