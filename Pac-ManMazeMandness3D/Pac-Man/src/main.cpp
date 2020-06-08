@@ -583,6 +583,14 @@ ALfloat source4Vel[] = { 0.0, 0.0, 0.0 };
 //Source 5 Comiendo fruta
 ALfloat source5Pos[] = { 6.0, 0.0, 0.0 };
 ALfloat source5Vel[] = { 0.0, 0.0, 0.0 };
+
+//Source Portales pacaman 
+ALfloat source6Pos[] = { 22.5f, -0.3f, 0.0f };
+ALfloat source6Vel[] = { 0.0, 0.0, 0.0 };
+
+ALfloat source7Pos[] = { -22.5f, -0.3f, 0.0f };
+ALfloat source7Vel[] = { 0.0, 0.0, 0.0 };
+
 // Buffers
 ALuint buffer[NUM_BUFFERS];
 ALuint source[NUM_SOURCES];
@@ -1373,6 +1381,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	buffer[3]=  alutCreateBufferFromFile("../sounds/gameOver.wav");
 	buffer[4] = alutCreateBufferFromFile("../sounds/eatFantasma.wav");
 	buffer[5] = alutCreateBufferFromFile("../sounds/eatFruta.wav");
+	buffer[6] = alutCreateBufferFromFile("../sounds/fuente.wav");
 	int errorAlut = alutGetError();
 	if (errorAlut != ALUT_ERROR_NO_ERROR) {
 		printf("- Error open files with alut %d !!\n", errorAlut);
@@ -1389,7 +1398,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	else {
 		printf("init - no errors after alGenSources\n");
 	}
-
+	/*
 	//Tema Fuego
 	alSourcef(source[1], AL_PITCH, 1.0f);
 	alSourcef(source[1], AL_GAIN, 1.8f);
@@ -1397,7 +1406,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	alSourcefv(source[1], AL_VELOCITY, source1Vel);
 	alSourcei(source[1], AL_BUFFER, buffer[1]);
 	alSourcei(source[1], AL_LOOPING, AL_TRUE);
-	alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+	alSourcef(source[1], AL_MAX_DISTANCE, 1000);*/
 
 	//Tema Oiginal
 	alSourcef(source[0], AL_PITCH, 1.0f);
@@ -1407,6 +1416,18 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	alSourcei(source[0], AL_BUFFER, buffer[0]);
 	//alSourcei(source[0], AL_LOOPING, AL_TRUE);
 	alSourcef(source[0], AL_MAX_DISTANCE, 2000);
+
+
+	//Fuente
+	alSourcef(source[6], AL_PITCH, 1.0f);
+	alSourcef(source[6], AL_GAIN, 2.0f);
+	alSourcefv(source[6], AL_POSITION, source6Pos);
+	alSourcefv(source[6], AL_VELOCITY, source6Vel);
+	alSourcei(source[6], AL_BUFFER, buffer[6]);
+	alSourcei(source[6], AL_LOOPING, AL_TRUE);
+	alSourcef(source[6], AL_MAX_DISTANCE, 2000);
+
+
 
 	/*******************************************
 	 * FreeType init
@@ -1492,7 +1513,8 @@ void comePunto(bool colision){
 		alSourcefv(source[2], AL_VELOCITY, source2Vel);
 		alSourcei(source[2], AL_BUFFER, buffer[2]);
 		alSourcei(source[2], AL_LOOPING, AL_TRUE);
-		alSourcef(source[2], AL_MAX_DISTANCE, 500);
+		alSourcef(source[2], AL_MAX_DISTANCE, 5000);
+		
 	}
 }
 
@@ -1522,7 +1544,6 @@ void comeFruta(bool colision) {
 		alSourcef(source[5], AL_MAX_DISTANCE, 500);
 	}
 }
-
 
 void gameOver(bool colision) {
 	bool col = colision;
@@ -3183,6 +3204,7 @@ void applicationLoop() {
 					else
 						isCollision = true;
 				}
+				
 			}
 			addOrUpdateCollisionDetection(collisionDetection, it->first, isCollision);
 		}
@@ -3201,6 +3223,7 @@ void applicationLoop() {
 						//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
 						std::get<1>(puntosPosition.find(it->first)->second) = 1;
 						comePunto(true);
+				
 						// Si PACMAN come un punto POWER puede comer a alguno de los fantasmas por los 
 						// siguientes 15 segundos, además de que podrá avanzar más rápido
 						if (it->first.compare("punto215") == 0 || it->first.compare("punto216") == 0 ||
@@ -3214,8 +3237,9 @@ void applicationLoop() {
 						//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
 						activoCereza = 0;
 						puntosPacman = puntosPacman + 50;
-						std::cout << "Puntos -> " << puntosPacman << std::endl;
 						comeFruta(true);
+						std::cout << "Puntos -> " << puntosPacman << std::endl;
+						
 					}
 					else if (it->first.compare("fresa") == 0 && jt->first.compare("pacman") == 0) {
 						//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
@@ -4236,6 +4260,12 @@ void renderScene(bool renderParticles) {
 			glDepthMask(GL_TRUE);
 			//glEnable(GL_DEPTH_TEST)
 			shaderParticlesFountain.turnOff();
+
+			source6Pos[0] = modelMatrixParticlesPortalPacman[3].x;
+			source6Pos[1] = modelMatrixParticlesPortalPacman[3].y;
+			source6Pos[2] = modelMatrixParticlesPortalPacman[3].z;
+			alSourcefv(source[6], AL_POSITION, source6Pos);
+			
 			/*************************************
 			* End Render particles systems
 			**************************************/
