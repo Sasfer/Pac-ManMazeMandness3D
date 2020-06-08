@@ -251,6 +251,9 @@ int activoFresa = 1;
 int activoCereza = 1;
 int activoNaranja = 1;
 
+
+//Detectar la colision 
+
 // Terrain model instance
 Terrain terrain(-1, -1, 200, 16, "../Textures/heightmap.png");
 
@@ -569,8 +572,8 @@ ALfloat source0Vel[] = { 0.0, 0.0, 0.0 };
 ALfloat source1Pos[] = { -18.0, 0.0, 17.0 };
 ALfloat source1Vel[] = { -18.0, 0.0, 17.0 };
 // Source 2
-//ALfloat source2Pos[] = { 2.0, 0.0, 0.0 };
-//ALfloat source2Vel[] = { 0.0, 0.0, 0.0 };
+ALfloat source2Pos[] = { 2.0, 0.0, 0.0 };
+ALfloat source2Vel[] = { 0.0, 0.0, 0.0 };
 // Buffers
 ALuint buffer[NUM_BUFFERS];
 ALuint source[NUM_SOURCES];
@@ -615,6 +618,7 @@ void applicationLoop();
 void prepareScene();
 void prepareDepthScene();
 void renderScene(bool renderParticles = true);
+void suena(bool colsion=true);
 //FreeType
 void RenderText(Shader &shader, std::string text, float x, float y, float scale, glm::vec3 color);
 
@@ -1351,9 +1355,9 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	// Config source 0
 	// Generate buffers, or else no sound will happen!
 	alGenBuffers(NUM_BUFFERS, buffer);
-	buffer[0] = alutCreateBufferFromFile("../sounds/temaOriginal.wav");
+	buffer[0] = alutCreateBufferFromFile("../sounds/temaOriginalM.wav");
 	buffer[1] = alutCreateBufferFromFile("../sounds/fire.wav");
-	buffer[2] = alutCreateBufferFromFile("../sounds/darth_vader.wav");
+	buffer[2] = alutCreateBufferFromFile("../sounds/comiendo.wav");
 	int errorAlut = alutGetError();
 	if (errorAlut != ALUT_ERROR_NO_ERROR) {
 		printf("- Error open files with alut %d !!\n", errorAlut);
@@ -1373,30 +1377,25 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 
 
 
+
+	alSourcef(source[1], AL_PITCH, 1.0f);
+	alSourcef(source[1], AL_GAIN, 1.8f);
+	alSourcefv(source[1], AL_POSITION, source1Pos);
+	alSourcefv(source[1], AL_VELOCITY, source1Vel);
+	alSourcei(source[1], AL_BUFFER, buffer[1]);
+	alSourcei(source[1], AL_LOOPING, AL_TRUE);
+	alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
 	alSourcef(source[0], AL_PITCH, 1.0f);
 	alSourcef(source[0], AL_GAIN, 1.0f);
 	alSourcefv(source[0], AL_POSITION, source0Pos);
 	alSourcefv(source[0], AL_VELOCITY, source0Vel);
 	alSourcei(source[0], AL_BUFFER, buffer[0]);
-	alSourcei(source[0], AL_LOOPING, AL_TRUE);
+	//alSourcei(source[0], AL_LOOPING, AL_TRUE);
 	alSourcef(source[0], AL_MAX_DISTANCE, 2000);
 
-	alSourcef(source[1], AL_PITCH, 1.0f);
-	alSourcef(source[1], AL_GAIN, 0.2f);
-	alSourcefv(source[1], AL_POSITION, source1Pos);
-	alSourcefv(source[1], AL_VELOCITY, source1Vel);
-	alSourcei(source[1], AL_BUFFER, buffer[1]);
-	alSourcei(source[1], AL_LOOPING, AL_TRUE);
-	alSourcef(source[1], AL_MAX_DISTANCE,1000);
-	/*
-	alSourcef(source[2], AL_PITCH, 1.0f);
-	alSourcef(source[2], AL_GAIN, 0.3f);
-	alSourcefv(source[2], AL_POSITION, source2Pos);
-	alSourcefv(source[2], AL_VELOCITY, source2Vel);
-	alSourcei(source[2], AL_BUFFER, buffer[2]);
-	alSourcei(source[2], AL_LOOPING, AL_TRUE);
-	alSourcef(source[2], AL_MAX_DISTANCE, 500);
-	*/
+
+	
 	/*******************************************
 	 * FreeType init
 	 *******************************************/
@@ -1471,6 +1470,23 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
+
+
+
+
+void suena(bool colision){
+	bool col = colision;
+	if (col == true) {
+		alSourcef(source[2], AL_PITCH, 1.0f);
+		alSourcef(source[2], AL_GAIN, 4.3f);
+		alSourcefv(source[2], AL_POSITION, source2Pos);
+		alSourcefv(source[2], AL_VELOCITY, source2Vel);
+		alSourcei(source[2], AL_BUFFER, buffer[2]);
+		alSourcei(source[2], AL_LOOPING, AL_TRUE);
+		alSourcef(source[2], AL_MAX_DISTANCE, 500);
+	}
+}
+
 
 void destroy() {
 	glfwDestroyWindow(window);
@@ -3133,6 +3149,7 @@ void applicationLoop() {
 					if (it->first[0] == 'p' && it->first[1] == 'u' && jt->first.compare("pacman") == 0) {
 						//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
 						std::get<1>(puntosPosition.find(it->first)->second) = 1;
+						suena(true);
 						// Si PACMAN come un punto POWER puede comer a alguno de los fantasmas por los 
 						// siguientes 15 segundos, además de que podrá avanzar más rápido
 						if (it->first.compare("punto215") == 0 || it->first.compare("punto216") == 0 ||
