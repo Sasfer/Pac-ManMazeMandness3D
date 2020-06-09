@@ -60,7 +60,6 @@ using namespace std;
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-
 #define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 
 int screenWidth;
@@ -190,14 +189,23 @@ Model LE38ModelAnimate;
 Model LE39ModelAnimate;
 
 // Juego
+int menuPrincipal = 1;
+int nivel = 1;
+int pause = 0;
+int activoNivel = 0;
 int vidaPacman = 5;
 int puntosPacman = 0;
+int auxPuntosPacman = 0;
 int auxTiempo = 0;
 int tiempoJuego = 480;
 double anteriorTiempo = 0.0f;
 double actualTiempo = 0.0f;
 glm::vec3 diaNoche = glm::vec3(0.1, 0.1, 0.1);
 
+int reiniciarJuego = 0;
+
+int tiempoMuerto = 0;
+int auxMuerto = 0;
 int tiempoDiaNoche = 0;
 int activoDia = 0;
 
@@ -214,7 +222,7 @@ int auxActivoFantasmaCian = 0;
 int auxActivoFantasmaNaranja = 0;
 
 int tiempoMuertoRojo = 0;
-int tiempoMuertoCian = 0; 
+int tiempoMuertoCian = 0;
 int tiempoMuertoRosa = 0;
 int tiempoMuertoNaranja = 0;
 
@@ -222,7 +230,7 @@ int auxGiro = 0;
 
 // Fantasmas movimiento
 int moveIzqFantasmaRojo = 0;
-int moveDerFantasmaRojo = 0; 
+int moveDerFantasmaRojo = 0;
 int verificaMoveFantasmaRojo = 0;
 int auxGiroFantasmaRojo = 0;
 
@@ -250,9 +258,6 @@ glm::vec3 posFantasmaRojo, posFantasmaRosa, posFantasmaCian, posFantasmaNaranja;
 int activoFresa = 1;
 int activoCereza = 1;
 int activoNaranja = 1;
-
-
-//Detectar la colision 
 
 // Terrain model instance
 Terrain terrain(-1, -1, 200, 16, "../Textures/heightmap.png");
@@ -558,7 +563,7 @@ GLuint depthMap, depthMapFBO;
  */
 
  // OpenAL Defines
-#define NUM_BUFFERS 3
+#define NUM_BUFFERS 8
 #define NUM_SOURCES 3
 #define NUM_ENVIRONMENTS 1
 // Listener
@@ -619,7 +624,6 @@ glm::mat4 textProjection;
 std::map<GLchar, Character> Characters;
 unsigned int textVAO, textVBO;
 
-
 // Se definen todos las funciones.
 void reshapeCallback(GLFWwindow *Window, int widthRes, int heightRes);
 void keyCallback(GLFWwindow *window, int key, int scancode, int action,
@@ -635,10 +639,6 @@ void applicationLoop();
 void prepareScene();
 void prepareDepthScene();
 void renderScene(bool renderParticles = true);
-void comePunto(bool colsion=true);
-void comeFantasma(bool colsion = true);
-void comeFruta(bool colsion = true);
-void gameOver(bool colision = true);
 //FreeType
 void RenderText(Shader &shader, std::string text, float x, float y, float scale, glm::vec3 color);
 
@@ -1378,7 +1378,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	buffer[0] = alutCreateBufferFromFile("../sounds/temaOriginalM.wav");
 	buffer[1] = alutCreateBufferFromFile("../sounds/fire.wav");
 	buffer[2] = alutCreateBufferFromFile("../sounds/wakaWaka.wav");
-	buffer[3]=  alutCreateBufferFromFile("../sounds/gameOver.wav");
+	buffer[3] = alutCreateBufferFromFile("../sounds/gameOver.wav");
 	buffer[4] = alutCreateBufferFromFile("../sounds/eatFantasma.wav");
 	buffer[5] = alutCreateBufferFromFile("../sounds/eatFruta.wav");
 	buffer[6] = alutCreateBufferFromFile("../sounds/fuente.wav");
@@ -1398,6 +1398,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	else {
 		printf("init - no errors after alGenSources\n");
 	}
+
 	/*
 	//Tema Fuego
 	alSourcef(source[1], AL_PITCH, 1.0f);
@@ -1426,8 +1427,6 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	alSourcei(source[6], AL_BUFFER, buffer[6]);
 	alSourcei(source[6], AL_LOOPING, AL_TRUE);
 	alSourcef(source[6], AL_MAX_DISTANCE, 2000);
-
-
 
 	/*******************************************
 	 * FreeType init
@@ -1504,7 +1503,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	glBindVertexArray(0);
 }
 
-void comePunto(bool colision){
+void comePunto(bool colision) {
 	bool col = colision;
 	if (col == true) {
 		alSourcef(source[2], AL_PITCH, 1.0f);
@@ -1514,7 +1513,7 @@ void comePunto(bool colision){
 		alSourcei(source[2], AL_BUFFER, buffer[2]);
 		alSourcei(source[2], AL_LOOPING, AL_TRUE);
 		alSourcef(source[2], AL_MAX_DISTANCE, 5000);
-		
+
 	}
 }
 
@@ -1758,22 +1757,52 @@ bool processInput(bool continueApplication) {
 	else if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_RELEASE)
 		enableCountSelected = true;
 
+	// En caso de querer regresa  menu principal
+	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS) {
+		menuPrincipal = 1;
+		reiniciarJuego = 1;
+	}
+
+	// En caso de querer pausar el juego
+	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
+		if (menuPrincipal == 0)
+			pause = 1;
+	}
+
+	// En caso de querer reanudar el juego despues de una pausa
+	if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS) {
+		if (menuPrincipal == 0)
+			pause = 0;
+	}
+
+	// Para iniciar el juego, al estar en el menu principal
+	if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
+		if (menuPrincipal == 1) {
+			menuPrincipal = 0;
+			activoNivel = 2;
+		}
+	}
+
 	// Si se presiona la tecla V, se cambia a vista area para tener 
 	// un panorama general del laberinto, el tiempo no se pausa, sigue corriendo
 	if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) {
-		vistaAerea = 1;
+		if (menuPrincipal == 0)
+			vistaAerea = 1;
+		camera->setAngleAroundTarget(glm::radians(0.0f));
 	}
 
 	// Si se presiona la tecla C, se cambia a vista en tercera 
 	// persona del personaje de Pac-Man en el laberinto
 	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) {
-		vistaAerea = 0;
+		if (menuPrincipal == 0)
+			vistaAerea = 0;
 	}
 
 	// Mientras no se este en vista área se tiene control de los
 	// movimiento del Pac-Man dentro del laberinto, en cada caso 
 	// se valida su orientación con respecto al desplazamiento
-	if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS && vistaAerea == 0) {
+	if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS && vistaAerea == 0
+		&& tiempoJuego > 0 && vidaPacman > 0 && menuPrincipal == 0 && pause == 0) {
 		if (anteriorMove != 1)
 			rotarMove = 0;
 		if (rotarMove == 0 && anteriorMove != 1) {
@@ -1792,7 +1821,8 @@ bool processInput(bool continueApplication) {
 			modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.28125));
 		animationIndex = 3;
 	}
-	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS && vistaAerea == 0) {
+	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS && vistaAerea == 0
+		&& tiempoJuego > 0 && vidaPacman > 0 && menuPrincipal == 0 && pause == 0) {
 		if (anteriorMove != 2)
 			rotarMove = 0;
 		if (rotarMove == 0 && anteriorMove != 2) {
@@ -1811,7 +1841,8 @@ bool processInput(bool continueApplication) {
 			modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.28125));
 		animationIndex = 3;
 	}
-	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS && vistaAerea == 0) {
+	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS && vistaAerea == 0
+		&& tiempoJuego > 0 && vidaPacman > 0 && menuPrincipal == 0 && pause == 0) {
 		if (anteriorMove != 3)
 			rotarMove = 0;
 		if (rotarMove == 0 && anteriorMove != 3) {
@@ -1830,7 +1861,8 @@ bool processInput(bool continueApplication) {
 			modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.28125));
 		animationIndex = 3;
 	}
-	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS && vistaAerea == 0) {
+	else if (modelSelected == 0 && glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS && vistaAerea == 0
+		&& tiempoJuego > 0 && vidaPacman > 0 && menuPrincipal == 0 && pause == 0) {
 		if (anteriorMove != 4)
 			rotarMove = 0;
 		if (rotarMove == 0 && anteriorMove != 4) {
@@ -1843,7 +1875,7 @@ bool processInput(bool continueApplication) {
 			anteriorMove = 4;
 			rotarMove = 1;
 		}
-		if(tiempoFantasmaAzulComer > 0 )
+		if (tiempoFantasmaAzulComer > 0)
 			modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.5625));
 		else
 			modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0, 0, 0.28125));
@@ -1918,20 +1950,61 @@ glm::vec3 hex2rgb(string hex) {
 void updateUI_Text() {
 	string str;
 
-	//Points
-	str = "Points: ";
-	//std::cout << "Funcion texto PUNTOS" << std::endl;
-	RenderText(textShader,str + std::to_string(puntosPacman), screenWidth - 120, screenHeight - 20, 0.5f, hex2rgb("ef233c"));
+	// Se muestra el texto del juego
+	if (menuPrincipal == 0) {
+		//Points
+		str = "Points-> ";
+		RenderText(textShader, str + std::to_string(puntosPacman), screenWidth - 240, screenHeight - 35, 0.8f, hex2rgb("01a9db"));
 
-	//Lives
-	str = "Lives: ";
-	//std::cout << "Funcion texto VIDA" << std::endl;
-	RenderText(textShader, str + std::to_string(vidaPacman), 12, screenHeight - 20, 0.5f, hex2rgb("ef233c"));
+		//Lives
+		str = "Lives-> ";
+		RenderText(textShader, str + std::to_string(vidaPacman), 12, screenHeight - 30, 0.8f, hex2rgb("ff0040"));
 
-	//Time Left
-	str = "Time Left: ";
-	//std::cout << "Funcion texto TIEMPO" << std::endl;
-	RenderText(textShader,str + std::to_string(tiempoJuego), screenWidth/2 -50 , screenHeight - 20, 0.5f, hex2rgb("ef233c"));
+		//Level
+		if (activoNivel == 0) {
+			str = "Level ";
+			RenderText(textShader, str + std::to_string(nivel), 12, screenHeight - 685, 0.6f, hex2rgb("facc2e"));
+		}
+
+		//Time Left
+		str = "Time-> ";
+		if (tiempoJuego >= 30)
+			RenderText(textShader, str + std::to_string(tiempoJuego), screenWidth / 2 - 150, screenHeight - 35, 0.8f, hex2rgb("bfff00"));
+		else
+			RenderText(textShader, str + std::to_string(tiempoJuego), screenWidth / 2 - 150, screenHeight - 35, 0.8f, hex2rgb("ff0000"));
+	}
+
+	// Se muestra el texto del menu principal
+	if (menuPrincipal == 1) {
+		RenderText(textShader, "Pac-Man", screenWidth / 2 - 300, screenHeight - 70, 1.8f, hex2rgb("ff800"));
+
+		RenderText(textShader, "Maze Madness 3D", screenWidth / 2 - 280, screenHeight - 140, 1.6f, hex2rgb("ffbf00"));
+
+		RenderText(textShader, "Iniciar [i]", screenWidth / 2 - 330, screenHeight / 2 - 60, 0.9f, hex2rgb("0040ff"));
+		RenderText(textShader, "Salir [esc]", screenWidth / 2 + 150, screenHeight / 2 - 60, 0.9f, hex2rgb("0040ff"));
+
+		RenderText(textShader, "CGA - 2020-2  >>>> IGYE - OFMF - RRLR <<<<", screenWidth / 2 - 120, screenHeight - 680, 0.5f, hex2rgb("81f7d8"));
+	}
+
+	// Se muestra el texto cuando se esta en pause
+	if (pause == 1) {
+		RenderText(textShader, "Continue [o]", screenWidth / 2 + 120, screenHeight / 2, 0.7f, hex2rgb("0040ff"));
+		RenderText(textShader, "Main menu [m]", screenWidth / 2 + 120, screenHeight / 2 - 40, 0.7f, hex2rgb("0040ff"));
+		RenderText(textShader, "Exit [esc]", screenWidth / 2 + 120, screenHeight / 2 - 80, 0.7f, hex2rgb("0040ff"));
+	}
+
+	// Se muestra el texto cuando se pierde por que se termino el tiempo o las vidas
+	if (tiempoJuego == 0 || vidaPacman == 0)
+		RenderText(textShader, "Game Over", screenWidth / 2 - 50, screenHeight - 160, 1.2f, hex2rgb("fa58f4"));
+
+	// Texto inicio de nivel
+	if (activoNivel > 0) {
+		if (nivel == 1)
+			RenderText(textShader, "Level 1", screenWidth / 2 - 50, screenHeight / 2, 1.2f, hex2rgb("f7fe2e"));
+		else if (nivel == 2)
+			RenderText(textShader, "Level 2", screenWidth / 2 - 50, screenHeight / 2, 1.2f, hex2rgb("f7fe2e"));
+	}
+
 }
 
 void applicationLoop() {
@@ -2037,9 +2110,128 @@ void applicationLoop() {
 	shadowBox = new ShadowBox(-lightPos, camera.get(), 15.0f, 0.1f, 45.0f);
 
 	while (psi) {
-		if (tiempoJuego == 0) {
-			exitApp = true;
-			std::cout << " ********** Se termino el tiempo ********** " << std::endl;
+		if (tiempoJuego == 0 && tiempoMuerto >= 20) {
+			std::cout << " ********** Se termino el TIEMPO ********** " << std::endl;
+			reiniciarJuego = 1;
+		}
+
+		if (vidaPacman == 0 && tiempoMuerto >= 20) {
+			std::cout << " ********** Se terminaron las VIDAS ********** " << std::endl;
+			reiniciarJuego = 1;
+		}
+
+		if (auxPuntosPacman == 219) {
+			nivel = 2;
+			reiniciarJuego = 1;
+			activoNivel = 2;
+		}
+
+		// En caso de perder o cambiar de nivel se reinician los valores
+		if (reiniciarJuego == 1) {
+			collidersOBB.clear();
+			collidersSBB.clear();
+
+			// Model matrix definitions
+			//Pacman
+			modelMatrixPacman = glm::mat4(1.0f);
+			modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(0.0f, 0.05f, -2.25f));
+
+			//Fantasma
+			modelMatrixFantasmaRojo = glm::mat4(1.0f);
+			modelMatrixFantasmaRosa = glm::mat4(1.0f);
+			modelMatrixFantasmaCian = glm::mat4(1.0f);
+			modelMatrixFantasmaNaranja = glm::mat4(1.0f);
+
+			// Fantasmas
+			modelMatrixFantasmaRojo = glm::translate(modelMatrixFantasmaRojo, glm::vec3(-20.25f, 0.05f, 0.0f));
+			modelMatrixFantasmaRosa = glm::translate(modelMatrixFantasmaRosa, glm::vec3(20.25f, 0.05f, 0.0f));
+			modelMatrixFantasmaCian = glm::translate(modelMatrixFantasmaCian, glm::vec3(0.0f, 0.05, 20.25f));
+			modelMatrixFantasmaNaranja = glm::translate(modelMatrixFantasmaNaranja, glm::vec3(0.0f, 0.05, -20.25f));
+
+			// Juego
+			vidaPacman = 5;
+			puntosPacman = 0;
+			auxTiempo = 0;
+			tiempoJuego = 480;
+			anteriorTiempo = 0.0f;
+			actualTiempo = 0.0f;
+			diaNoche = glm::vec3(0.1, 0.1, 0.1);
+
+			menuPrincipal = 1;
+
+			pause = 0;
+			activoNivel = 0;
+
+			auxPuntosPacman = 0;
+
+			reiniciarJuego = 0;
+
+			tiempoMuerto = 0;
+			auxMuerto = 0;
+			tiempoDiaNoche = 0;
+			activoDia = 0;
+
+			tiempoFantasmaAzulComer = 0;
+
+			activoFantasmaRojo = 1;
+			activoFantasmaRosa = 1;
+			activoFantasmaCian = 1;
+			activoFantasmaNaranja = 1;
+
+			auxActivoFantasmaRojo = 0;
+			auxActivoFantasmaRosa = 0;
+			auxActivoFantasmaCian = 0;
+			auxActivoFantasmaNaranja = 0;
+
+			tiempoMuertoRojo = 0;
+			tiempoMuertoCian = 0;
+			tiempoMuertoRosa = 0;
+			tiempoMuertoNaranja = 0;
+
+			auxGiro = 0;
+
+			// Fantasmas movimiento
+			moveIzqFantasmaRojo = 0;
+			moveDerFantasmaRojo = 0;
+			verificaMoveFantasmaRojo = 0;
+			auxGiroFantasmaRojo = 0;
+
+			moveIzqFantasmaRosa = 0;
+			moveDerFantasmaRosa = 0;
+			verificaMoveFantasmaRosa = 0;
+			auxGiroFantasmaRosa = 0;
+
+			moveIzqFantasmaCian = 0;
+			moveDerFantasmaCian = 0;
+			verificaMoveFantasmaCian = 0;
+			auxGiroFantasmaCian = 0;
+
+			moveIzqFantasmaNaranja = 0;
+			moveDerFantasmaNaranja = 0;
+			verificaMoveFantasmaNaranja = 0;
+			auxGiroFantasmaNaranja = 0;
+
+			auxPortalPacman1 = 0;
+			auxPortalPacman2 = 0;
+
+			// Frutas
+			activoFresa = 1;
+			activoCereza = 1;
+			activoNaranja = 1;
+
+			animationIndex = 1;
+			// Para controlar la orientación 
+			// del Pacman mientras se mueve
+			anteriorMove = 1;
+			rotarMove = 0;
+			modelSelected = 0;
+			enableCountSelected = true;
+
+			for (std::map<std::string, std::tuple<glm::vec3, int>>::iterator it = puntosPosition.begin(); it != puntosPosition.end(); ++it)
+				std::get<1>(puntosPosition.find(it->first)->second) = 0;
+
+			camera->setDistanceFromTarget(16.0f);
+			camera->setPitch(glm::radians(25.0f));
 		}
 
 		// Se verifica si PACMAN ha pasado por un portal para trasladarlo
@@ -2069,7 +2261,7 @@ void applicationLoop() {
 		}
 
 		currTime = TimeManager::Instance().GetTime();
-		if (currTime - lastTime < 0.016666667) {
+		if (currTime - lastTime < 0.0041666667) {
 			glfwPollEvents();
 			continue;
 		}
@@ -2085,33 +2277,49 @@ void applicationLoop() {
 		// Se obtiene el tiempo actual
 		actualTiempo = TimeManager::Instance().GetTime();
 		// Si acaba de iniciar la aejecución el tiempo anterior es igual al actual
-		if (auxTiempo == 0) {
+		if (auxTiempo == 0 && menuPrincipal == 0) {
 			anteriorTiempo = TimeManager::Instance().GetTime();
 			auxTiempo = 1;
 		}
 		// Si ha transcurrido ya un segundo, se resta uno al valor total de la duración del juego
-		if ((actualTiempo - anteriorTiempo) >= 1.0f) {
-			tiempoJuego -= 1;
-			anteriorTiempo = actualTiempo;
-			std::cout << "Tiempo -> " << tiempoJuego << std::endl;
+		if ((actualTiempo - anteriorTiempo) >= 1.0f && menuPrincipal == 0) {
+			if (tiempoJuego > 0 && vidaPacman > 0 && pause == 0) {
+				tiempoJuego -= 1;
+				anteriorTiempo = actualTiempo;
+				std::cout << "Tiempo -> " << tiempoJuego << std::endl;
+			}
+
+			// En caso de que termine el tiempo o se terminen las vidas
+			if (tiempoJuego == 0 || vidaPacman == 0) {
+				std::cout << "Tiempo MUERTO -> " << tiempoMuerto << std::endl;
+				if (tiempoMuerto < 21)
+					tiempoMuerto += 1;
+			}
+
 			// Contabilizamos el tiempo para tener el control del dia y la noche
-			if (tiempoDiaNoche == 120)
-				tiempoDiaNoche = 0;
-			else
-				tiempoDiaNoche += 1;
+			if (menuPrincipal == 0) {
+				if (tiempoDiaNoche == 120)
+					tiempoDiaNoche = 0;
+				else
+					tiempoDiaNoche += 1;
+			}
 			// Se controla el tiempo en el que los fantasmas pueden ser comidos
-			if (tiempoFantasmaAzulComer > 0)
+			if (tiempoFantasmaAzulComer > 0 && pause == 0)
 				tiempoFantasmaAzulComer -= 1;
-			if (tiempoMuertoRojo > 0)
+			// Tiempo que los fantasmas estaran muertos
+			if (tiempoMuertoRojo > 0 && pause == 0)
 				tiempoMuertoRojo -= 1;
-			if (tiempoMuertoRosa > 0)
+			if (tiempoMuertoRosa > 0 && pause == 0)
 				tiempoMuertoRosa -= 1;
-			if (tiempoMuertoCian > 0)
+			if (tiempoMuertoCian > 0 && pause == 0)
 				tiempoMuertoCian -= 1;
-			if (tiempoMuertoNaranja > 0)
+			if (tiempoMuertoNaranja > 0 && pause == 0)
 				tiempoMuertoNaranja -= 1;
+
+			if (activoNivel > 0)
+				activoNivel -= 1;
 		}
-		
+
 		// Se verifica si un fantasma ha sido comido, se reinician sus parametros de movimiento
 		if (activoFantasmaRojo == 0 && auxActivoFantasmaRojo == 0) {
 			auxActivoFantasmaRojo = 1;
@@ -2119,7 +2327,7 @@ void applicationLoop() {
 			modelMatrixFantasmaRojo = glm::translate(modelMatrixFantasmaRojo, glm::vec3(-20.25f, 0.05f, 0.0f));
 			collidersOBB.erase(collidersOBB.find("fantasmaRojo"));
 			moveIzqFantasmaRojo = 0;
-			moveDerFantasmaRojo = 0; 
+			moveDerFantasmaRojo = 0;
 			verificaMoveFantasmaRojo = 0;
 			auxGiroFantasmaRojo = 0;
 		}
@@ -2140,8 +2348,8 @@ void applicationLoop() {
 			modelMatrixFantasmaCian = glm::mat4(1.0f);
 			modelMatrixFantasmaCian = glm::translate(modelMatrixFantasmaCian, glm::vec3(0.0f, 0.05, 20.25f));
 			collidersOBB.erase(collidersOBB.find("fantasmaCian"));
-			moveIzqFantasmaCian = 0; 
-			moveDerFantasmaCian = 0; 
+			moveIzqFantasmaCian = 0;
+			moveDerFantasmaCian = 0;
 			verificaMoveFantasmaCian = 0;
 			auxGiroFantasmaCian = 0;
 		}
@@ -2177,14 +2385,18 @@ void applicationLoop() {
 			auxActivoFantasmaNaranja = 0;
 			activoFantasmaNaranja = 1;
 		}
-		
+
 		// Para variar la luz direccional y del terreno
 		// y crear el efecto de dia y noche
-		if (tiempoDiaNoche <= 12) {
+		if (menuPrincipal == 1) {
+			diaNoche = glm::vec3(0.42, 0.42, 0.42);
+			activoDia = 1;
+		}
+		else if (tiempoDiaNoche <= 12) {
 			diaNoche = glm::vec3(0.07, 0.07, 0.07);
 			activoDia = 0;
 		}
-			
+
 		else if (tiempoDiaNoche <= 24) {
 			diaNoche = glm::vec3(0.14, 0.14, 0.14);
 			activoDia = 0;
@@ -2265,6 +2477,15 @@ void applicationLoop() {
 
 		camera->updateCamera();
 		view = camera->getViewMatrix();
+
+		// En caso de que termine el tiempo o se terminen las vidas
+		if (tiempoJuego == 0 || vidaPacman == 0) {
+			if (auxMuerto == 0) {
+				camera->setPitch(glm::radians(60.0f));
+				camera->setDistanceFromTarget(8.0f);
+				auxMuerto = 1;
+			}
+		}
 
 		shadowBox->update(screenWidth, screenHeight);
 		glm::vec3 centerBox = shadowBox->getCenter();
@@ -2350,128 +2571,128 @@ void applicationLoop() {
 		/*******************************************
 		* Propiedades PointLights
 		*******************************************/
-	/*
-		shaderMulLighting.setInt("pointLightCount", 17);
-		shaderTerrain.setInt("pointLightCount", 17);
-		
-		// Luces antorcha, se controla si emitan o no luz dependiendo si es de dia o es de noche
-		for (int i = 4; i < 17; i++) {
-			if (activoDia == 0) {
-				glm::mat4 matrixAdjustLuzAntorcha = glm::mat4(1.0f);
-				matrixAdjustLuzAntorcha = glm::translate(matrixAdjustLuzAntorcha, blendingUnsorted.find("antorcha" + std::to_string(i - 3))->second);
-				glm::vec3 puntoPowerPosition = glm::vec3(matrixAdjustLuzAntorcha[3]);
-				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
-					glm::value_ptr(glm::vec3(0.6, 0.6, 0.6)));
-				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
-					glm::value_ptr(glm::vec3(1.0, 1.0, 0.5)));
-				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
-					glm::value_ptr(glm::vec3(1.0, 1.0, 0.5)));
-				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
-					glm::value_ptr(puntoPowerPosition));
-				shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
-				shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.2);
-				shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.2);
-				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
-					glm::value_ptr(glm::vec3(0.6, 0.6, 0.6)));
-				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
-					glm::value_ptr(glm::vec3(1.0, 1.0, 0.5)));
-				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
-					glm::value_ptr(glm::vec3(1.0, 1.0, 0.5)));
-				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
-					glm::value_ptr(puntoPowerPosition));
-				shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
-				shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.2);
-				shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.2);
-			}
-			else {
-				glm::mat4 matrixAdjustLuzAntorcha = glm::mat4(1.0f);
-				matrixAdjustLuzAntorcha = glm::translate(matrixAdjustLuzAntorcha, blendingUnsorted.find("antorcha" + std::to_string(i - 3))->second);
-				glm::vec3 puntoPowerPosition = glm::vec3(matrixAdjustLuzAntorcha[3]);
-				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
-					glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
-					glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
-					glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
-					glm::value_ptr(puntoPowerPosition));
-				shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
-				shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
-				shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
-				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
-					glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
-					glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
-					glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
-					glm::value_ptr(puntoPowerPosition));
-				shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
-				shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
-				shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
-			}
-		}
+		/*
+			shaderMulLighting.setInt("pointLightCount", 17);
+			shaderTerrain.setInt("pointLightCount", 17);
 
-		// Luces colocadas a los puntos POWER para hacerlos resaltar
-		for (int i = 0; i < 4; i++) {
-			if (std::get<1>(puntosPosition.find("punto" + std::to_string(i + 215))->second) == 0) {
-				glm::mat4 matrixAdjustLuzPuntoPower = glm::mat4(1.0f);
-				matrixAdjustLuzPuntoPower = glm::translate(matrixAdjustLuzPuntoPower,
-					std::get<0>(puntosPosition.find("punto" + std::to_string(i + 215))->second));
-				glm::vec3 puntoPowerPosition = glm::vec3(matrixAdjustLuzPuntoPower[3]);
-				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
-					glm::value_ptr(glm::vec3(0.5, 0.5, 0.5)));
-				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
-					glm::value_ptr(glm::vec3(1.0, 1.0, 0.0)));
-				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
-					glm::value_ptr(glm::vec3(1.0, 1.0, 0.0)));
-				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
-					glm::value_ptr(puntoPowerPosition));
-				shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
-				shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
-				shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
-				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
-					glm::value_ptr(glm::vec3(0.5, 0.5, 0.5)));
-				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
-					glm::value_ptr(glm::vec3(1.0, 1.0, 0.0)));
-				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
-					glm::value_ptr(glm::vec3(1.0, 1.0, 0.0)));
-				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
-					glm::value_ptr(puntoPowerPosition));
-				shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
-				shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
-				shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
+			// Luces antorcha, se controla si emitan o no luz dependiendo si es de dia o es de noche
+			for (int i = 4; i < 17; i++) {
+				if (activoDia == 0) {
+					glm::mat4 matrixAdjustLuzAntorcha = glm::mat4(1.0f);
+					matrixAdjustLuzAntorcha = glm::translate(matrixAdjustLuzAntorcha, blendingUnsorted.find("antorcha" + std::to_string(i - 3))->second);
+					glm::vec3 puntoPowerPosition = glm::vec3(matrixAdjustLuzAntorcha[3]);
+					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
+						glm::value_ptr(glm::vec3(0.6, 0.6, 0.6)));
+					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
+						glm::value_ptr(glm::vec3(1.0, 1.0, 0.5)));
+					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
+						glm::value_ptr(glm::vec3(1.0, 1.0, 0.5)));
+					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
+						glm::value_ptr(puntoPowerPosition));
+					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
+					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.2);
+					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.2);
+					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
+						glm::value_ptr(glm::vec3(0.6, 0.6, 0.6)));
+					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
+						glm::value_ptr(glm::vec3(1.0, 1.0, 0.5)));
+					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
+						glm::value_ptr(glm::vec3(1.0, 1.0, 0.5)));
+					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
+						glm::value_ptr(puntoPowerPosition));
+					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
+					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.2);
+					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.2);
+				}
+				else {
+					glm::mat4 matrixAdjustLuzAntorcha = glm::mat4(1.0f);
+					matrixAdjustLuzAntorcha = glm::translate(matrixAdjustLuzAntorcha, blendingUnsorted.find("antorcha" + std::to_string(i - 3))->second);
+					glm::vec3 puntoPowerPosition = glm::vec3(matrixAdjustLuzAntorcha[3]);
+					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
+						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
+						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
+						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
+						glm::value_ptr(puntoPowerPosition));
+					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
+					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
+					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
+					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
+						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
+						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
+						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
+						glm::value_ptr(puntoPowerPosition));
+					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
+					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
+					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
+				}
 			}
-			else {
-				glm::mat4 matrixAdjustLuzPuntoPower = glm::mat4(1.0f);
-				matrixAdjustLuzPuntoPower = glm::translate(matrixAdjustLuzPuntoPower,
-					std::get<0>(puntosPosition.find("punto" + std::to_string(i + 215))->second));
-				glm::vec3 puntoPowerPosition = glm::vec3(matrixAdjustLuzPuntoPower[3]);
-				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
-					glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
-					glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
-					glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-				shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
-					glm::value_ptr(puntoPowerPosition));
-				shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
-				shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
-				shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
-				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
-					glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
-					glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
-					glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-				shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
-					glm::value_ptr(puntoPowerPosition));
-				shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
-				shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
-				shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
+
+			// Luces colocadas a los puntos POWER para hacerlos resaltar
+			for (int i = 0; i < 4; i++) {
+				if (std::get<1>(puntosPosition.find("punto" + std::to_string(i + 215))->second) == 0) {
+					glm::mat4 matrixAdjustLuzPuntoPower = glm::mat4(1.0f);
+					matrixAdjustLuzPuntoPower = glm::translate(matrixAdjustLuzPuntoPower,
+						std::get<0>(puntosPosition.find("punto" + std::to_string(i + 215))->second));
+					glm::vec3 puntoPowerPosition = glm::vec3(matrixAdjustLuzPuntoPower[3]);
+					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
+						glm::value_ptr(glm::vec3(0.5, 0.5, 0.5)));
+					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
+						glm::value_ptr(glm::vec3(1.0, 1.0, 0.0)));
+					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
+						glm::value_ptr(glm::vec3(1.0, 1.0, 0.0)));
+					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
+						glm::value_ptr(puntoPowerPosition));
+					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
+					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
+					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
+					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
+						glm::value_ptr(glm::vec3(0.5, 0.5, 0.5)));
+					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
+						glm::value_ptr(glm::vec3(1.0, 1.0, 0.0)));
+					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
+						glm::value_ptr(glm::vec3(1.0, 1.0, 0.0)));
+					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
+						glm::value_ptr(puntoPowerPosition));
+					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
+					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
+					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
+				}
+				else {
+					glm::mat4 matrixAdjustLuzPuntoPower = glm::mat4(1.0f);
+					matrixAdjustLuzPuntoPower = glm::translate(matrixAdjustLuzPuntoPower,
+						std::get<0>(puntosPosition.find("punto" + std::to_string(i + 215))->second));
+					glm::vec3 puntoPowerPosition = glm::vec3(matrixAdjustLuzPuntoPower[3]);
+					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
+						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
+						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
+						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
+						glm::value_ptr(puntoPowerPosition));
+					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
+					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
+					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
+					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
+						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
+						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
+						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
+						glm::value_ptr(puntoPowerPosition));
+					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
+					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
+					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
+				}
 			}
-		}
-	*/	
+		*/
 		/*******************************************
 		 * 1.- We render the depth buffer
 		 *******************************************/
@@ -2643,7 +2864,7 @@ void applicationLoop() {
 
 		//Collider Fantasma Rosa
 		if (activoFantasmaRosa == 1) {
-		AbstractModel::OBB fantasmaRosaCollider;
+			AbstractModel::OBB fantasmaRosaCollider;
 			glm::mat4 modelMatrixColliderFantasmaRosa = glm::mat4(modelMatrixFantasmaRosa);
 			modelMatrixColliderFantasmaRosa[3][1] = terrain.getHeightTerrain(modelMatrixColliderFantasmaRosa[3][0], modelMatrixColliderFantasmaRosa[3][2]);
 			fantasmaRosaCollider.u = glm::quat_cast(modelMatrixColliderFantasmaRosa);
@@ -2692,7 +2913,7 @@ void applicationLoop() {
 		/*********************************/
 		// Calculo distancia entre fantasmas
 		/*********************************/
-		
+
 		if (activoFantasmaRojo == 1 && activoFantasmaRosa == 1) {
 			if (glm::distance(posFantasmaRojo, posFantasmaRosa) <= 4.5f) {
 				auxGiroFantasmaRojo = 1;
@@ -2734,7 +2955,7 @@ void applicationLoop() {
 				auxGiroFantasmaNaranja = 1;
 			}
 		}
-		
+
 		// Portal fantasma
 		AbstractModel::OBB portalFantasmaCollider;
 		glm::mat4 modelMatrixColliderPortalFantasma1 = glm::mat4(modelMatrixPortalFantasma1);
@@ -3122,31 +3343,31 @@ void applicationLoop() {
 		/*******************************************
 		 * Render de colliders
 		 *******************************************/
-		/*
-		for (std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >::iterator it =
-			collidersOBB.begin(); it != collidersOBB.end(); it++) {
-			glm::mat4 matrixCollider = glm::mat4(1.0);
-			matrixCollider = glm::translate(matrixCollider, std::get<0>(it->second).c);
-			matrixCollider = matrixCollider * glm::mat4(std::get<0>(it->second).u);
-			matrixCollider = glm::scale(matrixCollider, std::get<0>(it->second).e * 2.0f);
-			boxCollider.setColor(glm::vec4(1.0, 1.0, 1.0, 1.0));
-			boxCollider.enableWireMode();
-			boxCollider.render(matrixCollider);
-		}
+		 /*
+		 for (std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >::iterator it =
+			 collidersOBB.begin(); it != collidersOBB.end(); it++) {
+			 glm::mat4 matrixCollider = glm::mat4(1.0);
+			 matrixCollider = glm::translate(matrixCollider, std::get<0>(it->second).c);
+			 matrixCollider = matrixCollider * glm::mat4(std::get<0>(it->second).u);
+			 matrixCollider = glm::scale(matrixCollider, std::get<0>(it->second).e * 2.0f);
+			 boxCollider.setColor(glm::vec4(1.0, 1.0, 1.0, 1.0));
+			 boxCollider.enableWireMode();
+			 boxCollider.render(matrixCollider);
+		 }
 
-		for (std::map<std::string, std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> >::iterator it =
-			collidersSBB.begin(); it != collidersSBB.end(); it++) {
-			glm::mat4 matrixCollider = glm::mat4(1.0);
-			matrixCollider = glm::translate(matrixCollider, std::get<0>(it->second).c);
-			matrixCollider = glm::scale(matrixCollider, glm::vec3(std::get<0>(it->second).ratio * 2.0f));
-			sphereCollider.setColor(glm::vec4(1.0, 1.0, 1.0, 1.0));
-			sphereCollider.enableWireMode();
-			sphereCollider.render(matrixCollider);
-		}
-		*/
-		/*******************************************
-		 * Test Colisions
-		 *******************************************/
+		 for (std::map<std::string, std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> >::iterator it =
+			 collidersSBB.begin(); it != collidersSBB.end(); it++) {
+			 glm::mat4 matrixCollider = glm::mat4(1.0);
+			 matrixCollider = glm::translate(matrixCollider, std::get<0>(it->second).c);
+			 matrixCollider = glm::scale(matrixCollider, glm::vec3(std::get<0>(it->second).ratio * 2.0f));
+			 sphereCollider.setColor(glm::vec4(1.0, 1.0, 1.0, 1.0));
+			 sphereCollider.enableWireMode();
+			 sphereCollider.render(matrixCollider);
+		 }
+		 */
+		 /*******************************************
+		  * Test Colisions
+		  *******************************************/
 		for (std::map<std::string,
 			std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >::iterator it =
 			collidersOBB.begin(); it != collidersOBB.end(); it++) {
@@ -3164,7 +3385,7 @@ void applicationLoop() {
 							else if (verificaMoveFantasmaRojo == 3) {
 								moveDerFantasmaRojo = 1;
 							}
-						}	
+						}
 					}
 					if (it->first.compare("fantasmaRosa") == 0 && jt->first[0] != 'f') {
 						if (activoFantasmaRosa == 1) {
@@ -3194,7 +3415,7 @@ void applicationLoop() {
 							else if (verificaMoveFantasmaNaranja == 3) {
 								moveDerFantasmaNaranja = 1;
 							}
-						}	
+						}
 					}
 
 					//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
@@ -3204,7 +3425,6 @@ void applicationLoop() {
 					else
 						isCollision = true;
 				}
-				
 			}
 			addOrUpdateCollisionDetection(collisionDetection, it->first, isCollision);
 		}
@@ -3222,47 +3442,46 @@ void applicationLoop() {
 					if (it->first[0] == 'p' && it->first[1] == 'u' && jt->first.compare("pacman") == 0) {
 						//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
 						std::get<1>(puntosPosition.find(it->first)->second) = 1;
-						comePunto(true);
-				
+						//comePunto(true);
 						// Si PACMAN come un punto POWER puede comer a alguno de los fantasmas por los 
 						// siguientes 15 segundos, además de que podrá avanzar más rápido
 						if (it->first.compare("punto215") == 0 || it->first.compare("punto216") == 0 ||
 							it->first.compare("punto217") == 0 || it->first.compare("punto218") == 0) {
 							tiempoFantasmaAzulComer = tiempoFantasmaAzulComer + 15;
-							comeFantasma(true);
+							//comeFantasma(true);
 						}
+						auxPuntosPacman += 1;
 						puntoObtenido.insert(std::pair<std::string, int>(it->first, 1));
 					}
 					else if (it->first.compare("cereza") == 0 && jt->first.compare("pacman") == 0) {
 						//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
 						activoCereza = 0;
 						puntosPacman = puntosPacman + 50;
-						comeFruta(true);
+						//comeFruta(true);
 						std::cout << "Puntos -> " << puntosPacman << std::endl;
-						
 					}
 					else if (it->first.compare("fresa") == 0 && jt->first.compare("pacman") == 0) {
 						//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
 						activoFresa = 0;
 						puntosPacman = puntosPacman + 100;
+						//comeFruta(true);
 						std::cout << "Puntos -> " << puntosPacman << std::endl;
-						comeFruta(true);
 					}
 					else if (it->first.compare("naranja") == 0 && jt->first.compare("pacman") == 0) {
 						//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
 						activoNaranja = 0;
 						puntosPacman = puntosPacman + 150;
+						//comeFruta(true);
 						std::cout << "Puntos -> " << puntosPacman << std::endl;
-						comeFruta(true);
 					}
-					
+
 					if (jt->first[1] == 'u' && (it->first.compare("fresa") == 0 || it->first.compare("cereza") == 0
 						|| it->first.compare("naranja") == 0)) {
 						isCollision = false;
 					}
 					else {
 						isCollision = true;
-					}					
+					}
 				}
 			}
 			addOrUpdateCollisionDetection(collisionDetection, it->first, isCollision);
@@ -3318,9 +3537,11 @@ void applicationLoop() {
 								std::cout << "Vida -> " << vidaPacman << std::endl;
 							}
 							else {
-								psi = false;
-								std::cout << "******** FIN DEL JUEGO, SIN VIDA ********" << std::endl;
-								gameOver(true);
+								if (vidaPacman == 1) {
+									vidaPacman = vidaPacman - 1;
+									//gameOver(true);
+									std::cout << "******** FIN DEL JUEGO, SIN VIDA ********" << std::endl;
+								}
 								break;
 							}
 						}
@@ -3470,7 +3691,25 @@ void applicationLoop() {
 		puntoObtenido.clear();
 
 		// Constantes de animaciones
-		animationIndex = 2;
+		if (menuPrincipal == 1) {
+			animationIndex = 1;
+			camera->setPitch(glm::radians(32.0f));
+			camera->setDistanceFromTarget(8.0f);
+			camera->setAngleAroundTarget(glm::radians(180.0f));
+		}
+		else {
+			if (tiempoJuego == 0 || vidaPacman == 0)
+				animationIndex = 0;
+			else if (pause == 1)
+				animationIndex = 1;
+			else {
+				camera->setPitch(glm::radians(26.0f));
+				camera->setDistanceFromTarget(15.0f);
+				camera->setAngleAroundTarget(glm::radians(8.0f));
+				animationIndex = 2;
+			}
+
+		}
 
 		/*******************************************
 		 * State machines
@@ -3484,7 +3723,7 @@ void applicationLoop() {
 		 // Movimiento fantasma ROJO
 		 /********************************/
 
-		 if (activoFantasmaRojo == 1) {
+		if (activoFantasmaRojo == 1 && tiempoJuego > 0 && vidaPacman > 0 && menuPrincipal == 0 && pause == 0) {
 			// Verificamos si chocamos con alguna pared a la izquierda
 			if (verificaMoveFantasmaRojo == 0) {
 				modelMatrixFantasmaRojo = glm::translate(modelMatrixFantasmaRojo, glm::vec3(-0.5625, 0.0, 0.0));
@@ -3523,14 +3762,13 @@ void applicationLoop() {
 				moveIzqFantasmaRojo = 0;
 				moveDerFantasmaRojo = 0;
 			}
-	 	 }
-
+		}
 
 		/********************************/
 		// Movimiento fantasma ROSA
 		/********************************/
 
-		if (activoFantasmaRosa == 1) {
+		if (activoFantasmaRosa == 1 && tiempoJuego > 0 && vidaPacman > 0 && menuPrincipal == 0 && pause == 0) {
 			// Verificamos si chocamos con alguna pared a la izquierda
 			if (verificaMoveFantasmaRosa == 0) {
 				modelMatrixFantasmaRosa = glm::translate(modelMatrixFantasmaRosa, glm::vec3(-0.5625, 0.0, 0.0));
@@ -3575,7 +3813,7 @@ void applicationLoop() {
 		// Movimiento fantasma CIAN
 		/********************************/
 
-		if (activoFantasmaCian == 1) {
+		if (activoFantasmaCian == 1 && tiempoJuego > 0 && vidaPacman > 0 && menuPrincipal == 0 && pause == 0) {
 			// Verificamos si chocamos con alguna pared a la izquierda
 			if (verificaMoveFantasmaCian == 0) {
 				modelMatrixFantasmaCian = glm::translate(modelMatrixFantasmaCian, glm::vec3(-0.5625, 0.0, 0.0));
@@ -3620,7 +3858,7 @@ void applicationLoop() {
 		// Movimiento fantasma NARANJA
 		/********************************/
 
-		if (activoFantasmaNaranja == 1) {
+		if (activoFantasmaNaranja == 1 && tiempoJuego > 0 && vidaPacman > 0 && menuPrincipal == 0 && pause == 0) {
 			// Verificamos si chocamos con alguna pared a la izquierda
 			if (verificaMoveFantasmaNaranja == 0) {
 				modelMatrixFantasmaNaranja = glm::translate(modelMatrixFantasmaNaranja, glm::vec3(-0.5625, 0.0, 0.0));
@@ -3817,10 +4055,15 @@ void renderScene(bool renderParticles) {
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, textureTerrainRID);
 	shaderTerrain.setInt("rTexture", 1);
-	// Se activa la textura de arena
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, textureTerrainGID);
-	shaderTerrain.setInt("gTexture", 2);
+	if (nivel == 1) {
+		// Se activa la textura de arena
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, textureTerrainGID);
+		shaderTerrain.setInt("gTexture", 2);
+	}
+	else if (nivel == 2) {
+
+	}
 	// Se activa la textura de agua
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture(GL_TEXTURE_2D, textureTerrainBID);
@@ -3838,73 +4081,75 @@ void renderScene(bool renderParticles) {
 	 * Custom objects obj
 	 *******************************************/
 
-	 // Puntos
-	for (int i = 0; i < puntosPosition.size(); i++) {
-		if (std::get<1>(puntosPosition.find("punto" + std::to_string(i))->second) == 0) {
-			// Puntos NORMALES
-			if (i <= 214) {
-				std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second).y =
-					terrain.getHeightTerrain(std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second).x,
-						std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second).z);
-				puntoModel.setPosition(std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second));
-				puntoModel.setScale(glm::vec3(1.0, 1.0, 1.0));
-				puntoModel.render();
-			}
-			// Puntos POWER
-			else {
-				std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second).y =
-					terrain.getHeightTerrain(std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second).x,
-						std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second).z);
-				puntoModel.setPosition(std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second));
-				puntoModel.setScale(glm::vec3(1.3, 1.3, 1.3));
-				puntoModel.render();
-			}
+	if (menuPrincipal == 0) {
+		// Puntos
+		for (int i = 0; i < puntosPosition.size(); i++) {
+			if (std::get<1>(puntosPosition.find("punto" + std::to_string(i))->second) == 0) {
+				// Puntos NORMALES
+				if (i <= 214) {
+					std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second).y =
+						terrain.getHeightTerrain(std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second).x,
+							std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second).z);
+					puntoModel.setPosition(std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second));
+					puntoModel.setScale(glm::vec3(1.0, 1.0, 1.0));
+					puntoModel.render();
+				}
+				// Puntos POWER
+				else {
+					std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second).y =
+						terrain.getHeightTerrain(std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second).x,
+							std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second).z);
+					puntoModel.setPosition(std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second));
+					puntoModel.setScale(glm::vec3(1.3, 1.3, 1.3));
+					puntoModel.render();
+				}
 
+			}
 		}
+
+		// Portal fantasma
+		modelMatrixPortalFantasma1[3][1] = terrain.getHeightTerrain(modelMatrixPortalFantasma1[3][0], modelMatrixPortalFantasma1[3][2]);
+		glm::mat4 modelMatrixPortalFantasma1Body = glm::mat4(modelMatrixPortalFantasma1);
+		modelMatrixPortalFantasma1Body = glm::scale(modelMatrixPortalFantasma1Body, glm::vec3(0.5, 0.5, 0.5));
+		portalFantasma1Model.render(modelMatrixPortalFantasma1Body);
+
+		modelMatrixPortalFantasma2[3][1] = terrain.getHeightTerrain(modelMatrixPortalFantasma2[3][0], modelMatrixPortalFantasma2[3][2]);
+		glm::mat4 modelMatrixPortalFantasma2Body = glm::mat4(modelMatrixPortalFantasma2);
+		modelMatrixPortalFantasma2Body = glm::scale(modelMatrixPortalFantasma2Body, glm::vec3(0.5, 0.5, 0.5));
+		portalFantasma2Model.render(modelMatrixPortalFantasma2Body);
+
+		// Portal pacman
+		modelMatrixPortalPacman1[3][1] = terrain.getHeightTerrain(modelMatrixPortalPacman1[3][0], modelMatrixPortalPacman1[3][2]);
+		glm::mat4 modelMatrixPortalPacman1Body = glm::mat4(modelMatrixPortalPacman1);
+		modelMatrixPortalPacman1Body = glm::scale(modelMatrixPortalPacman1Body, glm::vec3(0.5, 0.5, 0.5));
+		portalPacman1Model.render(modelMatrixPortalPacman1Body);
+
+		modelMatrixPortalPacman2[3][1] = terrain.getHeightTerrain(modelMatrixPortalPacman2[3][0], modelMatrixPortalPacman2[3][2]);
+		glm::mat4 modelMatrixPortalPacman2Body = glm::mat4(modelMatrixPortalPacman2);
+		modelMatrixPortalPacman2Body = glm::scale(modelMatrixPortalPacman2Body, glm::vec3(0.5, 0.5, 0.5));
+		portalPacman2Model.render(modelMatrixPortalPacman2Body);
+
+		// Piso antorcha
+		modelMatrixPisoAntorcha1[3][1] = terrain.getHeightTerrain(modelMatrixPisoAntorcha1[3][0], modelMatrixPisoAntorcha1[3][2]);
+		glm::mat4 modelMatrixPisoAntorcha1Body = glm::mat4(modelMatrixPisoAntorcha1);
+		modelMatrixPisoAntorcha1Body = glm::scale(modelMatrixPisoAntorcha1Body, glm::vec3(0.5, 0.5, 0.5));
+		pisoAntorcha1Model.render(modelMatrixPisoAntorcha1Body);
+
+		modelMatrixPisoAntorcha2[3][1] = terrain.getHeightTerrain(modelMatrixPisoAntorcha2[3][0], modelMatrixPisoAntorcha2[3][2]);
+		glm::mat4 modelMatrixPisoAntorcha2Body = glm::mat4(modelMatrixPisoAntorcha2);
+		modelMatrixPisoAntorcha2Body = glm::scale(modelMatrixPisoAntorcha2Body, glm::vec3(0.5, 0.5, 0.5));
+		pisoAntorcha2Model.render(modelMatrixPisoAntorcha2Body);
+
+		modelMatrixPisoAntorcha3[3][1] = terrain.getHeightTerrain(modelMatrixPisoAntorcha3[3][0], modelMatrixPisoAntorcha3[3][2]);
+		glm::mat4 modelMatrixPisoAntorcha3Body = glm::mat4(modelMatrixPisoAntorcha3);
+		modelMatrixPisoAntorcha3Body = glm::scale(modelMatrixPisoAntorcha3Body, glm::vec3(0.5, 0.5, 0.5));
+		pisoAntorcha3Model.render(modelMatrixPisoAntorcha3Body);
+
+		modelMatrixPisoAntorcha4[3][1] = terrain.getHeightTerrain(modelMatrixPisoAntorcha4[3][0], modelMatrixPisoAntorcha1[3][2]);
+		glm::mat4 modelMatrixPisoAntorcha4Body = glm::mat4(modelMatrixPisoAntorcha4);
+		modelMatrixPisoAntorcha4Body = glm::scale(modelMatrixPisoAntorcha4Body, glm::vec3(0.5, 0.5, 0.5));
+		pisoAntorcha4Model.render(modelMatrixPisoAntorcha4Body);
 	}
-
-	// Portal fantasma
-	modelMatrixPortalFantasma1[3][1] = terrain.getHeightTerrain(modelMatrixPortalFantasma1[3][0], modelMatrixPortalFantasma1[3][2]);
-	glm::mat4 modelMatrixPortalFantasma1Body = glm::mat4(modelMatrixPortalFantasma1);
-	modelMatrixPortalFantasma1Body = glm::scale(modelMatrixPortalFantasma1Body, glm::vec3(0.5, 0.5, 0.5));
-	portalFantasma1Model.render(modelMatrixPortalFantasma1Body);
-
-	modelMatrixPortalFantasma2[3][1] = terrain.getHeightTerrain(modelMatrixPortalFantasma2[3][0], modelMatrixPortalFantasma2[3][2]);
-	glm::mat4 modelMatrixPortalFantasma2Body = glm::mat4(modelMatrixPortalFantasma2);
-	modelMatrixPortalFantasma2Body = glm::scale(modelMatrixPortalFantasma2Body, glm::vec3(0.5, 0.5, 0.5));
-	portalFantasma2Model.render(modelMatrixPortalFantasma2Body);
-
-	// Portal pacman
-	modelMatrixPortalPacman1[3][1] = terrain.getHeightTerrain(modelMatrixPortalPacman1[3][0], modelMatrixPortalPacman1[3][2]);
-	glm::mat4 modelMatrixPortalPacman1Body = glm::mat4(modelMatrixPortalPacman1);
-	modelMatrixPortalPacman1Body = glm::scale(modelMatrixPortalPacman1Body, glm::vec3(0.5, 0.5, 0.5));
-	portalPacman1Model.render(modelMatrixPortalPacman1Body);
-
-	modelMatrixPortalPacman2[3][1] = terrain.getHeightTerrain(modelMatrixPortalPacman2[3][0], modelMatrixPortalPacman2[3][2]);
-	glm::mat4 modelMatrixPortalPacman2Body = glm::mat4(modelMatrixPortalPacman2);
-	modelMatrixPortalPacman2Body = glm::scale(modelMatrixPortalPacman2Body, glm::vec3(0.5, 0.5, 0.5));
-	portalPacman2Model.render(modelMatrixPortalPacman2Body);
-
-	// Piso antorcha
-	modelMatrixPisoAntorcha1[3][1] = terrain.getHeightTerrain(modelMatrixPisoAntorcha1[3][0], modelMatrixPisoAntorcha1[3][2]);
-	glm::mat4 modelMatrixPisoAntorcha1Body = glm::mat4(modelMatrixPisoAntorcha1);
-	modelMatrixPisoAntorcha1Body = glm::scale(modelMatrixPisoAntorcha1Body, glm::vec3(0.5, 0.5, 0.5));
-	pisoAntorcha1Model.render(modelMatrixPisoAntorcha1Body);
-
-	modelMatrixPisoAntorcha2[3][1] = terrain.getHeightTerrain(modelMatrixPisoAntorcha2[3][0], modelMatrixPisoAntorcha2[3][2]);
-	glm::mat4 modelMatrixPisoAntorcha2Body = glm::mat4(modelMatrixPisoAntorcha2);
-	modelMatrixPisoAntorcha2Body = glm::scale(modelMatrixPisoAntorcha2Body, glm::vec3(0.5, 0.5, 0.5));
-	pisoAntorcha2Model.render(modelMatrixPisoAntorcha2Body);
-
-	modelMatrixPisoAntorcha3[3][1] = terrain.getHeightTerrain(modelMatrixPisoAntorcha3[3][0], modelMatrixPisoAntorcha3[3][2]);
-	glm::mat4 modelMatrixPisoAntorcha3Body = glm::mat4(modelMatrixPisoAntorcha3);
-	modelMatrixPisoAntorcha3Body = glm::scale(modelMatrixPisoAntorcha3Body, glm::vec3(0.5, 0.5, 0.5));
-	pisoAntorcha3Model.render(modelMatrixPisoAntorcha3Body);
-
-	modelMatrixPisoAntorcha4[3][1] = terrain.getHeightTerrain(modelMatrixPisoAntorcha4[3][0], modelMatrixPisoAntorcha1[3][2]);
-	glm::mat4 modelMatrixPisoAntorcha4Body = glm::mat4(modelMatrixPisoAntorcha4);
-	modelMatrixPisoAntorcha4Body = glm::scale(modelMatrixPisoAntorcha4Body, glm::vec3(0.5, 0.5, 0.5));
-	pisoAntorcha4Model.render(modelMatrixPisoAntorcha4Body);
 
 	/*******************************************
 	 * Custom Anim objects obj
@@ -3916,429 +4161,437 @@ void renderScene(bool renderParticles) {
 	pacmanModelAnimate.setAnimationIndex(animationIndex);
 	pacmanModelAnimate.render(modelMatrixPacmanBody);
 
-	//Antorchas
-	modelMatrixAntorcha1[3][1] = terrain.getHeightTerrain(modelMatrixAntorcha1[3][0], modelMatrixAntorcha1[3][2]);
-	modelAntorcha1.render(modelMatrixAntorcha1);
+	if (menuPrincipal == 0) {
+		//Antorchas
+		modelMatrixAntorcha1[3][1] = terrain.getHeightTerrain(modelMatrixAntorcha1[3][0], modelMatrixAntorcha1[3][2]);
+		modelAntorcha1.render(modelMatrixAntorcha1);
 
-	modelMatrixAntorcha2[3][1] = terrain.getHeightTerrain(modelMatrixAntorcha2[3][0], modelMatrixAntorcha2[3][2]);
-	modelAntorcha2.render(modelMatrixAntorcha2);
+		modelMatrixAntorcha2[3][1] = terrain.getHeightTerrain(modelMatrixAntorcha2[3][0], modelMatrixAntorcha2[3][2]);
+		modelAntorcha2.render(modelMatrixAntorcha2);
 
-	modelMatrixAntorcha3[3][1] = terrain.getHeightTerrain(modelMatrixAntorcha3[3][0], modelMatrixAntorcha3[3][2]);
-	modelAntorcha3.render(modelMatrixAntorcha3);
+		modelMatrixAntorcha3[3][1] = terrain.getHeightTerrain(modelMatrixAntorcha3[3][0], modelMatrixAntorcha3[3][2]);
+		modelAntorcha3.render(modelMatrixAntorcha3);
 
-	modelMatrixAntorcha4[3][1] = terrain.getHeightTerrain(modelMatrixAntorcha4[3][0], modelMatrixAntorcha4[3][2]);
-	modelAntorcha4.render(modelMatrixAntorcha4);
+		modelMatrixAntorcha4[3][1] = terrain.getHeightTerrain(modelMatrixAntorcha4[3][0], modelMatrixAntorcha4[3][2]);
+		modelAntorcha4.render(modelMatrixAntorcha4);
 
-	modelAntorcha5.render(modelMatrixAntorcha5);
+		modelAntorcha5.render(modelMatrixAntorcha5);
 
-	modelAntorcha6.render(modelMatrixAntorcha6);
+		modelAntorcha6.render(modelMatrixAntorcha6);
 
-	modelAntorcha7.render(modelMatrixAntorcha7);
+		modelAntorcha7.render(modelMatrixAntorcha7);
 
-	modelAntorcha8.render(modelMatrixAntorcha8);
+		modelAntorcha8.render(modelMatrixAntorcha8);
 
-	modelAntorcha9.render(modelMatrixAntorcha9);
+		modelAntorcha9.render(modelMatrixAntorcha9);
 
-	modelAntorcha10.render(modelMatrixAntorcha10);
+		modelAntorcha10.render(modelMatrixAntorcha10);
 
-	modelAntorcha11.render(modelMatrixAntorcha11);
+		modelAntorcha11.render(modelMatrixAntorcha11);
 
-	modelAntorcha12.render(modelMatrixAntorcha12);
+		modelAntorcha12.render(modelMatrixAntorcha12);
 
-	modelAntorcha13.render(modelMatrixAntorcha13);
+		modelAntorcha13.render(modelMatrixAntorcha13);
 
-	//Frutas
-	if (activoCereza == 1) {
-		modelMatrixCherry[3][1] = terrain.getHeightTerrain(modelMatrixCherry[3][0], modelMatrixCherry[3][2]);
-		modelCherry.setScale(glm::vec3(2.0, 2.0, 2.0));
-		modelCherry.render(modelMatrixCherry);
-	}
-	
-	if (activoNaranja == 1) {
-		modelMatrixOrange[3][1] = terrain.getHeightTerrain(modelMatrixOrange[3][0], modelMatrixOrange[3][2]);
-		modelOrange.setScale(glm::vec3(1.5, 1.5, 1.5));
-		modelOrange.render(modelMatrixOrange);
-	}
-	
-	if (activoFresa == 1) {
-		modelMatrixStrawberry[3][1] = terrain.getHeightTerrain(modelMatrixStrawberry[3][0], modelMatrixStrawberry[3][2]);
-		modelStrawberry.setScale(glm::vec3(2.0, 2.0, 2.0));
-		modelStrawberry.render(modelMatrixStrawberry);
-	}
-	
-	//Laberinto
-	modelMatrixLE1[3][1] = terrain.getHeightTerrain(modelMatrixLE1[3][0], modelMatrixLE1[3][2]);
-	glm::mat4 modelMatrixLE1Body = glm::mat4(modelMatrixLE1);
-	modelMatrixLE1Body = glm::scale(modelMatrixLE1Body, glm::vec3(0.5, 0.5, 0.5));
-	LE1ModelAnimate.render(modelMatrixLE1Body);
-
-	modelMatrixLE2[3][1] = terrain.getHeightTerrain(modelMatrixLE2[3][0], modelMatrixLE2[3][2]);
-	glm::mat4 modelMatrixLE2Body = glm::mat4(modelMatrixLE2);
-	modelMatrixLE2Body = glm::scale(modelMatrixLE2Body, glm::vec3(0.5, 0.5, 0.5));
-	LE2ModelAnimate.render(modelMatrixLE2Body);
-	modelMatrixLE3[3][1] = terrain.getHeightTerrain(modelMatrixLE3[3][0], modelMatrixLE3[3][2]);
-	glm::mat4 modelMatrixLE3Body = glm::mat4(modelMatrixLE3);
-	modelMatrixLE3Body = glm::scale(modelMatrixLE3Body, glm::vec3(0.5, 0.5, 0.5));
-	LE3ModelAnimate.render(modelMatrixLE3Body);
-	modelMatrixLE4[3][1] = terrain.getHeightTerrain(modelMatrixLE4[3][0], modelMatrixLE4[3][2]);
-	glm::mat4 modelMatrixLE4Body = glm::mat4(modelMatrixLE4);
-	modelMatrixLE4Body = glm::scale(modelMatrixLE4Body, glm::vec3(0.5, 0.5, 0.5));
-	LE4ModelAnimate.render(modelMatrixLE4Body);
-	modelMatrixLE5[3][1] = terrain.getHeightTerrain(modelMatrixLE5[3][0], modelMatrixLE5[3][2]);
-	glm::mat4 modelMatrixLE5Body = glm::mat4(modelMatrixLE5);
-	modelMatrixLE5Body = glm::scale(modelMatrixLE5Body, glm::vec3(0.5, 0.5, 0.5));
-	LE5ModelAnimate.render(modelMatrixLE5Body);
-	modelMatrixLE6[3][1] = terrain.getHeightTerrain(modelMatrixLE6[3][0], modelMatrixLE6[3][2]);
-	glm::mat4 modelMatrixLE6Body = glm::mat4(modelMatrixLE6);
-	modelMatrixLE6Body = glm::scale(modelMatrixLE6Body, glm::vec3(0.5, 0.5, 0.5));
-	LE6ModelAnimate.render(modelMatrixLE6Body);
-	modelMatrixLE7[3][1] = terrain.getHeightTerrain(modelMatrixLE7[3][0], modelMatrixLE7[3][2]);
-	glm::mat4 modelMatrixLE7Body = glm::mat4(modelMatrixLE7);
-	modelMatrixLE7Body = glm::scale(modelMatrixLE7Body, glm::vec3(0.5, 0.5, 0.5));
-	LE7ModelAnimate.render(modelMatrixLE7Body);
-	modelMatrixLE8[3][1] = terrain.getHeightTerrain(modelMatrixLE8[3][0], modelMatrixLE8[3][2]);
-	glm::mat4 modelMatrixLE8Body = glm::mat4(modelMatrixLE8);
-	modelMatrixLE8Body = glm::scale(modelMatrixLE8Body, glm::vec3(0.5, 0.5, 0.5));
-	LE8ModelAnimate.render(modelMatrixLE8Body);
-	modelMatrixLE9[3][1] = terrain.getHeightTerrain(modelMatrixLE9[3][0], modelMatrixLE9[3][2]);
-	glm::mat4 modelMatrixLE9Body = glm::mat4(modelMatrixLE9);
-	modelMatrixLE9Body = glm::scale(modelMatrixLE9Body, glm::vec3(0.5, 0.5, 0.5));
-	LE9ModelAnimate.render(modelMatrixLE9Body);
-	modelMatrixLE10[3][1] = terrain.getHeightTerrain(modelMatrixLE10[3][0], modelMatrixLE10[3][2]);
-	glm::mat4 modelMatrixLE10Body = glm::mat4(modelMatrixLE10);
-	modelMatrixLE10Body = glm::scale(modelMatrixLE10Body, glm::vec3(0.5, 0.5, 0.5));
-	LE10ModelAnimate.render(modelMatrixLE10Body);
-	modelMatrixLE11[3][1] = terrain.getHeightTerrain(modelMatrixLE11[3][0], modelMatrixLE11[3][2]);
-	glm::mat4 modelMatrixLE11Body = glm::mat4(modelMatrixLE11);
-	modelMatrixLE11Body = glm::scale(modelMatrixLE11Body, glm::vec3(0.5, 0.5, 0.5));
-	LE11ModelAnimate.render(modelMatrixLE11Body);
-	modelMatrixLE12[3][1] = terrain.getHeightTerrain(modelMatrixLE12[3][0], modelMatrixLE12[3][2]);
-	glm::mat4 modelMatrixLE12Body = glm::mat4(modelMatrixLE12);
-	modelMatrixLE12Body = glm::scale(modelMatrixLE12Body, glm::vec3(0.5, 0.5, 0.5));
-	LE12ModelAnimate.render(modelMatrixLE12Body);
-	modelMatrixLE13[3][1] = terrain.getHeightTerrain(modelMatrixLE13[3][0], modelMatrixLE13[3][2]);
-	glm::mat4 modelMatrixLE13Body = glm::mat4(modelMatrixLE13);
-	modelMatrixLE13Body = glm::scale(modelMatrixLE13Body, glm::vec3(0.5, 0.5, 0.5));
-	LE13ModelAnimate.render(modelMatrixLE13Body);
-	modelMatrixLE14[3][1] = terrain.getHeightTerrain(modelMatrixLE14[3][0], modelMatrixLE14[3][2]);
-	glm::mat4 modelMatrixLE14Body = glm::mat4(modelMatrixLE14);
-	modelMatrixLE14Body = glm::scale(modelMatrixLE14Body, glm::vec3(0.5, 0.5, 0.5));
-	LE14ModelAnimate.render(modelMatrixLE14Body);
-	modelMatrixLE15[3][1] = terrain.getHeightTerrain(modelMatrixLE15[3][0], modelMatrixLE15[3][2]);
-	glm::mat4 modelMatrixLE15Body = glm::mat4(modelMatrixLE15);
-	modelMatrixLE15Body = glm::scale(modelMatrixLE15Body, glm::vec3(0.5, 0.5, 0.5));
-	LE15ModelAnimate.render(modelMatrixLE15Body);
-	modelMatrixLE16[3][1] = terrain.getHeightTerrain(modelMatrixLE16[3][0], modelMatrixLE16[3][2]);
-	glm::mat4 modelMatrixLE16Body = glm::mat4(modelMatrixLE16);
-	modelMatrixLE16Body = glm::scale(modelMatrixLE16Body, glm::vec3(0.5, 0.5, 0.5));
-	LE16ModelAnimate.render(modelMatrixLE16Body);
-	modelMatrixLE17[3][1] = terrain.getHeightTerrain(modelMatrixLE17[3][0], modelMatrixLE17[3][2]);
-	glm::mat4 modelMatrixLE17Body = glm::mat4(modelMatrixLE17);
-	modelMatrixLE17Body = glm::scale(modelMatrixLE17Body, glm::vec3(0.5, 0.5, 0.5));
-	LE17ModelAnimate.render(modelMatrixLE17Body);
-	modelMatrixLE18[3][1] = terrain.getHeightTerrain(modelMatrixLE18[3][0], modelMatrixLE18[3][2]);
-	glm::mat4 modelMatrixLE18Body = glm::mat4(modelMatrixLE18);
-	modelMatrixLE18Body = glm::scale(modelMatrixLE18Body, glm::vec3(0.5, 0.5, 0.5));
-	LE18ModelAnimate.render(modelMatrixLE18Body);
-	modelMatrixLE19[3][1] = terrain.getHeightTerrain(modelMatrixLE19[3][0], modelMatrixLE19[3][2]);
-	glm::mat4 modelMatrixLE19Body = glm::mat4(modelMatrixLE19);
-	modelMatrixLE19Body = glm::scale(modelMatrixLE19Body, glm::vec3(0.5, 0.5, 0.5));
-	LE19ModelAnimate.render(modelMatrixLE19Body);
-	modelMatrixLE20[3][1] = terrain.getHeightTerrain(modelMatrixLE20[3][0], modelMatrixLE20[3][2]);
-	glm::mat4 modelMatrixLE20Body = glm::mat4(modelMatrixLE20);
-	modelMatrixLE20Body = glm::scale(modelMatrixLE20Body, glm::vec3(0.5, 0.5, 0.5));
-	LE20ModelAnimate.render(modelMatrixLE20Body);
-	modelMatrixLE21[3][1] = terrain.getHeightTerrain(modelMatrixLE21[3][0], modelMatrixLE21[3][2]);
-	glm::mat4 modelMatrixLE21Body = glm::mat4(modelMatrixLE21);
-	modelMatrixLE21Body = glm::scale(modelMatrixLE21Body, glm::vec3(0.5, 0.5, 0.5));
-	LE21ModelAnimate.render(modelMatrixLE21Body);
-	modelMatrixLE22[3][1] = terrain.getHeightTerrain(modelMatrixLE22[3][0], modelMatrixLE22[3][2]);
-	glm::mat4 modelMatrixLE22Body = glm::mat4(modelMatrixLE22);
-	modelMatrixLE22Body = glm::scale(modelMatrixLE22Body, glm::vec3(0.5, 0.5, 0.5));
-	LE22ModelAnimate.render(modelMatrixLE22Body);
-	modelMatrixLE23[3][1] = terrain.getHeightTerrain(modelMatrixLE23[3][0], modelMatrixLE23[3][2]);
-	glm::mat4 modelMatrixLE23Body = glm::mat4(modelMatrixLE23);
-	modelMatrixLE23Body = glm::scale(modelMatrixLE23Body, glm::vec3(0.5, 0.5, 0.5));
-	LE23ModelAnimate.render(modelMatrixLE23Body);
-	modelMatrixLE24[3][1] = terrain.getHeightTerrain(modelMatrixLE24[3][0], modelMatrixLE24[3][2]);
-	glm::mat4 modelMatrixLE24Body = glm::mat4(modelMatrixLE24);
-	modelMatrixLE24Body = glm::scale(modelMatrixLE24Body, glm::vec3(0.5, 0.5, 0.5));
-	LE24ModelAnimate.render(modelMatrixLE24Body);
-	modelMatrixLE25[3][1] = terrain.getHeightTerrain(modelMatrixLE25[3][0], modelMatrixLE25[3][2]);
-	glm::mat4 modelMatrixLE25Body = glm::mat4(modelMatrixLE25);
-	modelMatrixLE25Body = glm::scale(modelMatrixLE25Body, glm::vec3(0.5, 0.5, 0.5));
-	LE25ModelAnimate.render(modelMatrixLE25Body);
-	modelMatrixLE26[3][1] = terrain.getHeightTerrain(modelMatrixLE26[3][0], modelMatrixLE26[3][2]);
-	glm::mat4 modelMatrixLE26Body = glm::mat4(modelMatrixLE26);
-	modelMatrixLE26Body = glm::scale(modelMatrixLE26Body, glm::vec3(0.5, 0.5, 0.5));
-	LE26ModelAnimate.render(modelMatrixLE26Body);
-	modelMatrixLE27[3][1] = terrain.getHeightTerrain(modelMatrixLE27[3][0], modelMatrixLE27[3][2]);
-	glm::mat4 modelMatrixLE27Body = glm::mat4(modelMatrixLE27);
-	modelMatrixLE27Body = glm::scale(modelMatrixLE27Body, glm::vec3(0.5, 0.5, 0.5));
-	LE27ModelAnimate.render(modelMatrixLE27Body);
-	modelMatrixLE28[3][1] = terrain.getHeightTerrain(modelMatrixLE28[3][0], modelMatrixLE28[3][2]);
-	glm::mat4 modelMatrixLE28Body = glm::mat4(modelMatrixLE28);
-	modelMatrixLE28Body = glm::scale(modelMatrixLE28Body, glm::vec3(0.5, 0.5, 0.5));
-	LE28ModelAnimate.render(modelMatrixLE28Body);
-	modelMatrixLE29[3][1] = terrain.getHeightTerrain(modelMatrixLE29[3][0], modelMatrixLE29[3][2]);
-	glm::mat4 modelMatrixLE29Body = glm::mat4(modelMatrixLE29);
-	modelMatrixLE29Body = glm::scale(modelMatrixLE29Body, glm::vec3(0.5, 0.5, 0.5));
-	LE29ModelAnimate.render(modelMatrixLE29Body);
-	modelMatrixLE30[3][1] = terrain.getHeightTerrain(modelMatrixLE30[3][0], modelMatrixLE30[3][2]);
-	glm::mat4 modelMatrixLE30Body = glm::mat4(modelMatrixLE30);
-	modelMatrixLE30Body = glm::scale(modelMatrixLE30Body, glm::vec3(0.5, 0.5, 0.5));
-	LE30ModelAnimate.render(modelMatrixLE30Body);
-	modelMatrixLE31[3][1] = terrain.getHeightTerrain(modelMatrixLE31[3][0], modelMatrixLE31[3][2]);
-	glm::mat4 modelMatrixLE31Body = glm::mat4(modelMatrixLE31);
-	modelMatrixLE31Body = glm::scale(modelMatrixLE31Body, glm::vec3(0.5, 0.5, 0.5));
-	LE31ModelAnimate.render(modelMatrixLE31Body);
-	modelMatrixLE32[3][1] = terrain.getHeightTerrain(modelMatrixLE32[3][0], modelMatrixLE32[3][2]);
-	glm::mat4 modelMatrixLE32Body = glm::mat4(modelMatrixLE32);
-	modelMatrixLE32Body = glm::scale(modelMatrixLE32Body, glm::vec3(0.5, 0.5, 0.5));
-	LE32ModelAnimate.render(modelMatrixLE32Body);
-	modelMatrixLE33[3][1] = terrain.getHeightTerrain(modelMatrixLE33[3][0], modelMatrixLE33[3][2]);
-	glm::mat4 modelMatrixLE33Body = glm::mat4(modelMatrixLE33);
-	modelMatrixLE33Body = glm::scale(modelMatrixLE33Body, glm::vec3(0.5, 0.5, 0.5));
-	LE33ModelAnimate.render(modelMatrixLE33Body);
-	modelMatrixLE34[3][1] = terrain.getHeightTerrain(modelMatrixLE34[3][0], modelMatrixLE34[3][2]);
-	glm::mat4 modelMatrixLE34Body = glm::mat4(modelMatrixLE34);
-	modelMatrixLE34Body = glm::scale(modelMatrixLE34Body, glm::vec3(0.5, 0.5, 0.5));
-	LE34ModelAnimate.render(modelMatrixLE34Body);
-	modelMatrixLE35[3][1] = terrain.getHeightTerrain(modelMatrixLE35[3][0], modelMatrixLE35[3][2]);
-	glm::mat4 modelMatrixLE35Body = glm::mat4(modelMatrixLE35);
-	modelMatrixLE35Body = glm::scale(modelMatrixLE35Body, glm::vec3(0.5, 0.5, 0.5));
-	LE35ModelAnimate.render(modelMatrixLE35Body);
-	modelMatrixLE36[3][1] = terrain.getHeightTerrain(modelMatrixLE36[3][0], modelMatrixLE36[3][2]);
-	glm::mat4 modelMatrixLE36Body = glm::mat4(modelMatrixLE36);
-	modelMatrixLE36Body = glm::scale(modelMatrixLE36Body, glm::vec3(0.5, 0.5, 0.5));
-	LE36ModelAnimate.render(modelMatrixLE36Body);
-	modelMatrixLE37[3][1] = terrain.getHeightTerrain(modelMatrixLE37[3][0], modelMatrixLE37[3][2]);
-	glm::mat4 modelMatrixLE37Body = glm::mat4(modelMatrixLE37);
-	modelMatrixLE37Body = glm::scale(modelMatrixLE37Body, glm::vec3(0.5, 0.5, 0.5));
-	LE37ModelAnimate.render(modelMatrixLE37Body);
-	modelMatrixLE38[3][1] = terrain.getHeightTerrain(modelMatrixLE38[3][0], modelMatrixLE38[3][2]);
-	glm::mat4 modelMatrixLE38Body = glm::mat4(modelMatrixLE38);
-	modelMatrixLE38Body = glm::scale(modelMatrixLE38Body, glm::vec3(0.5, 0.5, 0.5));
-	LE38ModelAnimate.render(modelMatrixLE38Body);
-	modelMatrixLE39[3][1] = terrain.getHeightTerrain(modelMatrixLE39[3][0], modelMatrixLE39[3][2]);
-	glm::mat4 modelMatrixLE39Body = glm::mat4(modelMatrixLE39);
-	modelMatrixLE39Body = glm::scale(modelMatrixLE39Body, glm::vec3(0.5, 0.5, 0.5));
-	LE39ModelAnimate.render(modelMatrixLE39Body);
-
-	/**********
-	 * Update the position with alpha objects
-	 */
-	if (activoFantasmaRojo == 1) {
-		// Update Fantasma Rojo
-		blendingUnsorted.find("fantasmaRojo")->second = glm::vec3(modelMatrixFantasmaRojo[3]);
-	}
-	if (activoFantasmaRosa == 1) {
-		// Update Fantasma Rosa
-		blendingUnsorted.find("fantasmaRosa")->second = glm::vec3(modelMatrixFantasmaRosa[3]);
-	}
-	if (activoFantasmaCian) {
-		// Update Fantasma Cian
-		blendingUnsorted.find("fantasmaCian")->second = glm::vec3(modelMatrixFantasmaCian[3]);
-	}
-	if (activoFantasmaNaranja == 1) {
-		// Update Fantasma Naranja
-		blendingUnsorted.find("fantasmaNaranja")->second = glm::vec3(modelMatrixFantasmaNaranja[3]);
-	}
-
-	// Update Grass
-	glm::vec3 grassPosition = blendingUnsorted.find("grass")->second;
-	grassPosition[1] = terrain.getHeightTerrain(grassPosition[0], grassPosition[2]);
-	blendingUnsorted.find("grass")->second = grassPosition;
-
-	/**********
-	 * Sorter with alpha objects
-	 */
-	std::map<float, std::pair<std::string, glm::vec3>> blendingSorted;
-	std::map<std::string, glm::vec3>::iterator itblend;
-	for (itblend = blendingUnsorted.begin(); itblend != blendingUnsorted.end(); itblend++) {
-		float distanceFromView = glm::length(camera->getPosition() - itblend->second);
-		blendingSorted[distanceFromView] = std::make_pair(itblend->first, itblend->second);
-	}
-
-	/**********
-	 * Render de las transparencias
-	 */
-	glEnable(GL_BLEND);
-	glDisable(GL_CULL_FACE);
-	for (std::map<float, std::pair<std::string, glm::vec3> >::reverse_iterator it = blendingSorted.rbegin(); it != blendingSorted.rend(); it++) {
-		if (it->second.first.compare("grass") == 0) {
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			modelGrass.setPosition(it->second.second);
-			modelGrass.render();
+		//Frutas
+		if (activoCereza == 1) {
+			modelMatrixCherry[3][1] = terrain.getHeightTerrain(modelMatrixCherry[3][0], modelMatrixCherry[3][2]);
+			modelCherry.setScale(glm::vec3(2.0, 2.0, 2.0));
+			modelCherry.render(modelMatrixCherry);
 		}
-		else if (it->second.first.compare("fantasmaRojo") == 0) {
-			if (activoFantasmaRojo == 1) {
-				glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
-				glBlendEquation(GL_FUNC_ADD);
-				if (tiempoFantasmaAzulComer > 0)
-					glBlendColor(0.0, 0.0, 1.0, 1.0);
-				else
-					glBlendColor(1.0, 0.0, 0.0, 1.0);
-				//Fantasma Rojo
-				glm::mat4 modelMatrixFantasmaRojoBlend = glm::mat4(modelMatrixFantasmaRojo);
-				modelMatrixFantasmaRojoBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaRojoBlend[3][0], modelMatrixFantasmaRojoBlend[3][2]);
-				modelMatrixFantasmaRojoBlend = glm::scale(modelMatrixFantasmaRojoBlend, glm::vec3(0.074, 0.074, 0.074));
-				fantasmaModel.render(modelMatrixFantasmaRojoBlend);
+
+		if (activoNaranja == 1) {
+			modelMatrixOrange[3][1] = terrain.getHeightTerrain(modelMatrixOrange[3][0], modelMatrixOrange[3][2]);
+			modelOrange.setScale(glm::vec3(1.5, 1.5, 1.5));
+			modelOrange.render(modelMatrixOrange);
+		}
+
+		if (activoFresa == 1) {
+			modelMatrixStrawberry[3][1] = terrain.getHeightTerrain(modelMatrixStrawberry[3][0], modelMatrixStrawberry[3][2]);
+			modelStrawberry.setScale(glm::vec3(2.0, 2.0, 2.0));
+			modelStrawberry.render(modelMatrixStrawberry);
+		}
+
+		//Laberinto
+		modelMatrixLE1[3][1] = terrain.getHeightTerrain(modelMatrixLE1[3][0], modelMatrixLE1[3][2]);
+		glm::mat4 modelMatrixLE1Body = glm::mat4(modelMatrixLE1);
+		modelMatrixLE1Body = glm::scale(modelMatrixLE1Body, glm::vec3(0.5, 0.5, 0.5));
+		LE1ModelAnimate.render(modelMatrixLE1Body);
+
+		modelMatrixLE2[3][1] = terrain.getHeightTerrain(modelMatrixLE2[3][0], modelMatrixLE2[3][2]);
+		glm::mat4 modelMatrixLE2Body = glm::mat4(modelMatrixLE2);
+		modelMatrixLE2Body = glm::scale(modelMatrixLE2Body, glm::vec3(0.5, 0.5, 0.5));
+		LE2ModelAnimate.render(modelMatrixLE2Body);
+		modelMatrixLE3[3][1] = terrain.getHeightTerrain(modelMatrixLE3[3][0], modelMatrixLE3[3][2]);
+		glm::mat4 modelMatrixLE3Body = glm::mat4(modelMatrixLE3);
+		modelMatrixLE3Body = glm::scale(modelMatrixLE3Body, glm::vec3(0.5, 0.5, 0.5));
+		LE3ModelAnimate.render(modelMatrixLE3Body);
+		modelMatrixLE4[3][1] = terrain.getHeightTerrain(modelMatrixLE4[3][0], modelMatrixLE4[3][2]);
+		glm::mat4 modelMatrixLE4Body = glm::mat4(modelMatrixLE4);
+		modelMatrixLE4Body = glm::scale(modelMatrixLE4Body, glm::vec3(0.5, 0.5, 0.5));
+		LE4ModelAnimate.render(modelMatrixLE4Body);
+		modelMatrixLE5[3][1] = terrain.getHeightTerrain(modelMatrixLE5[3][0], modelMatrixLE5[3][2]);
+		glm::mat4 modelMatrixLE5Body = glm::mat4(modelMatrixLE5);
+		modelMatrixLE5Body = glm::scale(modelMatrixLE5Body, glm::vec3(0.5, 0.5, 0.5));
+		LE5ModelAnimate.render(modelMatrixLE5Body);
+		modelMatrixLE6[3][1] = terrain.getHeightTerrain(modelMatrixLE6[3][0], modelMatrixLE6[3][2]);
+		glm::mat4 modelMatrixLE6Body = glm::mat4(modelMatrixLE6);
+		modelMatrixLE6Body = glm::scale(modelMatrixLE6Body, glm::vec3(0.5, 0.5, 0.5));
+		LE6ModelAnimate.render(modelMatrixLE6Body);
+		modelMatrixLE7[3][1] = terrain.getHeightTerrain(modelMatrixLE7[3][0], modelMatrixLE7[3][2]);
+		glm::mat4 modelMatrixLE7Body = glm::mat4(modelMatrixLE7);
+		modelMatrixLE7Body = glm::scale(modelMatrixLE7Body, glm::vec3(0.5, 0.5, 0.5));
+		LE7ModelAnimate.render(modelMatrixLE7Body);
+		modelMatrixLE8[3][1] = terrain.getHeightTerrain(modelMatrixLE8[3][0], modelMatrixLE8[3][2]);
+		glm::mat4 modelMatrixLE8Body = glm::mat4(modelMatrixLE8);
+		modelMatrixLE8Body = glm::scale(modelMatrixLE8Body, glm::vec3(0.5, 0.5, 0.5));
+		LE8ModelAnimate.render(modelMatrixLE8Body);
+		modelMatrixLE9[3][1] = terrain.getHeightTerrain(modelMatrixLE9[3][0], modelMatrixLE9[3][2]);
+		glm::mat4 modelMatrixLE9Body = glm::mat4(modelMatrixLE9);
+		modelMatrixLE9Body = glm::scale(modelMatrixLE9Body, glm::vec3(0.5, 0.5, 0.5));
+		LE9ModelAnimate.render(modelMatrixLE9Body);
+		modelMatrixLE10[3][1] = terrain.getHeightTerrain(modelMatrixLE10[3][0], modelMatrixLE10[3][2]);
+		glm::mat4 modelMatrixLE10Body = glm::mat4(modelMatrixLE10);
+		modelMatrixLE10Body = glm::scale(modelMatrixLE10Body, glm::vec3(0.5, 0.5, 0.5));
+		LE10ModelAnimate.render(modelMatrixLE10Body);
+		modelMatrixLE11[3][1] = terrain.getHeightTerrain(modelMatrixLE11[3][0], modelMatrixLE11[3][2]);
+		glm::mat4 modelMatrixLE11Body = glm::mat4(modelMatrixLE11);
+		modelMatrixLE11Body = glm::scale(modelMatrixLE11Body, glm::vec3(0.5, 0.5, 0.5));
+		LE11ModelAnimate.render(modelMatrixLE11Body);
+		modelMatrixLE12[3][1] = terrain.getHeightTerrain(modelMatrixLE12[3][0], modelMatrixLE12[3][2]);
+		glm::mat4 modelMatrixLE12Body = glm::mat4(modelMatrixLE12);
+		modelMatrixLE12Body = glm::scale(modelMatrixLE12Body, glm::vec3(0.5, 0.5, 0.5));
+		LE12ModelAnimate.render(modelMatrixLE12Body);
+		modelMatrixLE13[3][1] = terrain.getHeightTerrain(modelMatrixLE13[3][0], modelMatrixLE13[3][2]);
+		glm::mat4 modelMatrixLE13Body = glm::mat4(modelMatrixLE13);
+		modelMatrixLE13Body = glm::scale(modelMatrixLE13Body, glm::vec3(0.5, 0.5, 0.5));
+		LE13ModelAnimate.render(modelMatrixLE13Body);
+		modelMatrixLE14[3][1] = terrain.getHeightTerrain(modelMatrixLE14[3][0], modelMatrixLE14[3][2]);
+		glm::mat4 modelMatrixLE14Body = glm::mat4(modelMatrixLE14);
+		modelMatrixLE14Body = glm::scale(modelMatrixLE14Body, glm::vec3(0.5, 0.5, 0.5));
+		LE14ModelAnimate.render(modelMatrixLE14Body);
+		modelMatrixLE15[3][1] = terrain.getHeightTerrain(modelMatrixLE15[3][0], modelMatrixLE15[3][2]);
+		glm::mat4 modelMatrixLE15Body = glm::mat4(modelMatrixLE15);
+		modelMatrixLE15Body = glm::scale(modelMatrixLE15Body, glm::vec3(0.5, 0.5, 0.5));
+		LE15ModelAnimate.render(modelMatrixLE15Body);
+		modelMatrixLE16[3][1] = terrain.getHeightTerrain(modelMatrixLE16[3][0], modelMatrixLE16[3][2]);
+		glm::mat4 modelMatrixLE16Body = glm::mat4(modelMatrixLE16);
+		modelMatrixLE16Body = glm::scale(modelMatrixLE16Body, glm::vec3(0.5, 0.5, 0.5));
+		LE16ModelAnimate.render(modelMatrixLE16Body);
+		modelMatrixLE17[3][1] = terrain.getHeightTerrain(modelMatrixLE17[3][0], modelMatrixLE17[3][2]);
+		glm::mat4 modelMatrixLE17Body = glm::mat4(modelMatrixLE17);
+		modelMatrixLE17Body = glm::scale(modelMatrixLE17Body, glm::vec3(0.5, 0.5, 0.5));
+		LE17ModelAnimate.render(modelMatrixLE17Body);
+		modelMatrixLE18[3][1] = terrain.getHeightTerrain(modelMatrixLE18[3][0], modelMatrixLE18[3][2]);
+		glm::mat4 modelMatrixLE18Body = glm::mat4(modelMatrixLE18);
+		modelMatrixLE18Body = glm::scale(modelMatrixLE18Body, glm::vec3(0.5, 0.5, 0.5));
+		LE18ModelAnimate.render(modelMatrixLE18Body);
+		modelMatrixLE19[3][1] = terrain.getHeightTerrain(modelMatrixLE19[3][0], modelMatrixLE19[3][2]);
+		glm::mat4 modelMatrixLE19Body = glm::mat4(modelMatrixLE19);
+		modelMatrixLE19Body = glm::scale(modelMatrixLE19Body, glm::vec3(0.5, 0.5, 0.5));
+		LE19ModelAnimate.render(modelMatrixLE19Body);
+		modelMatrixLE20[3][1] = terrain.getHeightTerrain(modelMatrixLE20[3][0], modelMatrixLE20[3][2]);
+		glm::mat4 modelMatrixLE20Body = glm::mat4(modelMatrixLE20);
+		modelMatrixLE20Body = glm::scale(modelMatrixLE20Body, glm::vec3(0.5, 0.5, 0.5));
+		LE20ModelAnimate.render(modelMatrixLE20Body);
+		modelMatrixLE21[3][1] = terrain.getHeightTerrain(modelMatrixLE21[3][0], modelMatrixLE21[3][2]);
+		glm::mat4 modelMatrixLE21Body = glm::mat4(modelMatrixLE21);
+		modelMatrixLE21Body = glm::scale(modelMatrixLE21Body, glm::vec3(0.5, 0.5, 0.5));
+		LE21ModelAnimate.render(modelMatrixLE21Body);
+		modelMatrixLE22[3][1] = terrain.getHeightTerrain(modelMatrixLE22[3][0], modelMatrixLE22[3][2]);
+		glm::mat4 modelMatrixLE22Body = glm::mat4(modelMatrixLE22);
+		modelMatrixLE22Body = glm::scale(modelMatrixLE22Body, glm::vec3(0.5, 0.5, 0.5));
+		LE22ModelAnimate.render(modelMatrixLE22Body);
+		modelMatrixLE23[3][1] = terrain.getHeightTerrain(modelMatrixLE23[3][0], modelMatrixLE23[3][2]);
+		glm::mat4 modelMatrixLE23Body = glm::mat4(modelMatrixLE23);
+		modelMatrixLE23Body = glm::scale(modelMatrixLE23Body, glm::vec3(0.5, 0.5, 0.5));
+		LE23ModelAnimate.render(modelMatrixLE23Body);
+		modelMatrixLE24[3][1] = terrain.getHeightTerrain(modelMatrixLE24[3][0], modelMatrixLE24[3][2]);
+		glm::mat4 modelMatrixLE24Body = glm::mat4(modelMatrixLE24);
+		modelMatrixLE24Body = glm::scale(modelMatrixLE24Body, glm::vec3(0.5, 0.5, 0.5));
+		LE24ModelAnimate.render(modelMatrixLE24Body);
+		modelMatrixLE25[3][1] = terrain.getHeightTerrain(modelMatrixLE25[3][0], modelMatrixLE25[3][2]);
+		glm::mat4 modelMatrixLE25Body = glm::mat4(modelMatrixLE25);
+		modelMatrixLE25Body = glm::scale(modelMatrixLE25Body, glm::vec3(0.5, 0.5, 0.5));
+		LE25ModelAnimate.render(modelMatrixLE25Body);
+		modelMatrixLE26[3][1] = terrain.getHeightTerrain(modelMatrixLE26[3][0], modelMatrixLE26[3][2]);
+		glm::mat4 modelMatrixLE26Body = glm::mat4(modelMatrixLE26);
+		modelMatrixLE26Body = glm::scale(modelMatrixLE26Body, glm::vec3(0.5, 0.5, 0.5));
+		LE26ModelAnimate.render(modelMatrixLE26Body);
+		modelMatrixLE27[3][1] = terrain.getHeightTerrain(modelMatrixLE27[3][0], modelMatrixLE27[3][2]);
+		glm::mat4 modelMatrixLE27Body = glm::mat4(modelMatrixLE27);
+		modelMatrixLE27Body = glm::scale(modelMatrixLE27Body, glm::vec3(0.5, 0.5, 0.5));
+		LE27ModelAnimate.render(modelMatrixLE27Body);
+		modelMatrixLE28[3][1] = terrain.getHeightTerrain(modelMatrixLE28[3][0], modelMatrixLE28[3][2]);
+		glm::mat4 modelMatrixLE28Body = glm::mat4(modelMatrixLE28);
+		modelMatrixLE28Body = glm::scale(modelMatrixLE28Body, glm::vec3(0.5, 0.5, 0.5));
+		LE28ModelAnimate.render(modelMatrixLE28Body);
+		modelMatrixLE29[3][1] = terrain.getHeightTerrain(modelMatrixLE29[3][0], modelMatrixLE29[3][2]);
+		glm::mat4 modelMatrixLE29Body = glm::mat4(modelMatrixLE29);
+		modelMatrixLE29Body = glm::scale(modelMatrixLE29Body, glm::vec3(0.5, 0.5, 0.5));
+		LE29ModelAnimate.render(modelMatrixLE29Body);
+		modelMatrixLE30[3][1] = terrain.getHeightTerrain(modelMatrixLE30[3][0], modelMatrixLE30[3][2]);
+		glm::mat4 modelMatrixLE30Body = glm::mat4(modelMatrixLE30);
+		modelMatrixLE30Body = glm::scale(modelMatrixLE30Body, glm::vec3(0.5, 0.5, 0.5));
+		LE30ModelAnimate.render(modelMatrixLE30Body);
+		modelMatrixLE31[3][1] = terrain.getHeightTerrain(modelMatrixLE31[3][0], modelMatrixLE31[3][2]);
+		glm::mat4 modelMatrixLE31Body = glm::mat4(modelMatrixLE31);
+		modelMatrixLE31Body = glm::scale(modelMatrixLE31Body, glm::vec3(0.5, 0.5, 0.5));
+		LE31ModelAnimate.render(modelMatrixLE31Body);
+		modelMatrixLE32[3][1] = terrain.getHeightTerrain(modelMatrixLE32[3][0], modelMatrixLE32[3][2]);
+		glm::mat4 modelMatrixLE32Body = glm::mat4(modelMatrixLE32);
+		modelMatrixLE32Body = glm::scale(modelMatrixLE32Body, glm::vec3(0.5, 0.5, 0.5));
+		LE32ModelAnimate.render(modelMatrixLE32Body);
+		modelMatrixLE33[3][1] = terrain.getHeightTerrain(modelMatrixLE33[3][0], modelMatrixLE33[3][2]);
+		glm::mat4 modelMatrixLE33Body = glm::mat4(modelMatrixLE33);
+		modelMatrixLE33Body = glm::scale(modelMatrixLE33Body, glm::vec3(0.5, 0.5, 0.5));
+		LE33ModelAnimate.render(modelMatrixLE33Body);
+		modelMatrixLE34[3][1] = terrain.getHeightTerrain(modelMatrixLE34[3][0], modelMatrixLE34[3][2]);
+		glm::mat4 modelMatrixLE34Body = glm::mat4(modelMatrixLE34);
+		modelMatrixLE34Body = glm::scale(modelMatrixLE34Body, glm::vec3(0.5, 0.5, 0.5));
+		LE34ModelAnimate.render(modelMatrixLE34Body);
+		modelMatrixLE35[3][1] = terrain.getHeightTerrain(modelMatrixLE35[3][0], modelMatrixLE35[3][2]);
+		glm::mat4 modelMatrixLE35Body = glm::mat4(modelMatrixLE35);
+		modelMatrixLE35Body = glm::scale(modelMatrixLE35Body, glm::vec3(0.5, 0.5, 0.5));
+		LE35ModelAnimate.render(modelMatrixLE35Body);
+		modelMatrixLE36[3][1] = terrain.getHeightTerrain(modelMatrixLE36[3][0], modelMatrixLE36[3][2]);
+		glm::mat4 modelMatrixLE36Body = glm::mat4(modelMatrixLE36);
+		modelMatrixLE36Body = glm::scale(modelMatrixLE36Body, glm::vec3(0.5, 0.5, 0.5));
+		LE36ModelAnimate.render(modelMatrixLE36Body);
+		modelMatrixLE37[3][1] = terrain.getHeightTerrain(modelMatrixLE37[3][0], modelMatrixLE37[3][2]);
+		glm::mat4 modelMatrixLE37Body = glm::mat4(modelMatrixLE37);
+		modelMatrixLE37Body = glm::scale(modelMatrixLE37Body, glm::vec3(0.5, 0.5, 0.5));
+		LE37ModelAnimate.render(modelMatrixLE37Body);
+		modelMatrixLE38[3][1] = terrain.getHeightTerrain(modelMatrixLE38[3][0], modelMatrixLE38[3][2]);
+		glm::mat4 modelMatrixLE38Body = glm::mat4(modelMatrixLE38);
+		modelMatrixLE38Body = glm::scale(modelMatrixLE38Body, glm::vec3(0.5, 0.5, 0.5));
+		LE38ModelAnimate.render(modelMatrixLE38Body);
+		modelMatrixLE39[3][1] = terrain.getHeightTerrain(modelMatrixLE39[3][0], modelMatrixLE39[3][2]);
+		glm::mat4 modelMatrixLE39Body = glm::mat4(modelMatrixLE39);
+		modelMatrixLE39Body = glm::scale(modelMatrixLE39Body, glm::vec3(0.5, 0.5, 0.5));
+		LE39ModelAnimate.render(modelMatrixLE39Body);
+
+		/**********
+		 * Update the position with alpha objects
+		 */
+		if (activoFantasmaRojo == 1) {
+			// Update Fantasma Rojo
+			blendingUnsorted.find("fantasmaRojo")->second = glm::vec3(modelMatrixFantasmaRojo[3]);
+		}
+		if (activoFantasmaRosa == 1) {
+			// Update Fantasma Rosa
+			blendingUnsorted.find("fantasmaRosa")->second = glm::vec3(modelMatrixFantasmaRosa[3]);
+		}
+		if (activoFantasmaCian) {
+			// Update Fantasma Cian
+			blendingUnsorted.find("fantasmaCian")->second = glm::vec3(modelMatrixFantasmaCian[3]);
+		}
+		if (activoFantasmaNaranja == 1) {
+			// Update Fantasma Naranja
+			blendingUnsorted.find("fantasmaNaranja")->second = glm::vec3(modelMatrixFantasmaNaranja[3]);
+		}
+
+		// Update Grass
+		glm::vec3 grassPosition = blendingUnsorted.find("grass")->second;
+		grassPosition[1] = terrain.getHeightTerrain(grassPosition[0], grassPosition[2]);
+		blendingUnsorted.find("grass")->second = grassPosition;
+
+		/**********
+		 * Sorter with alpha objects
+		 */
+		std::map<float, std::pair<std::string, glm::vec3>> blendingSorted;
+		std::map<std::string, glm::vec3>::iterator itblend;
+		for (itblend = blendingUnsorted.begin(); itblend != blendingUnsorted.end(); itblend++) {
+			float distanceFromView = glm::length(camera->getPosition() - itblend->second);
+			blendingSorted[distanceFromView] = std::make_pair(itblend->first, itblend->second);
+		}
+
+		/**********
+		 * Render de las transparencias
+		 */
+		glEnable(GL_BLEND);
+		glDisable(GL_CULL_FACE);
+		for (std::map<float, std::pair<std::string, glm::vec3> >::reverse_iterator it = blendingSorted.rbegin(); it != blendingSorted.rend(); it++) {
+			if (it->second.first.compare("grass") == 0) {
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				modelGrass.setPosition(it->second.second);
+				modelGrass.render();
 			}
-		}
-		else if (it->second.first.compare("fantasmaRosa") == 0) {
-			if (activoFantasmaRosa == 1) {
-				glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
-				glBlendEquation(GL_FUNC_ADD);
-				if (tiempoFantasmaAzulComer > 0)
-					glBlendColor(0.0, 0.0, 1.0, 1.0);
-				else
-					glBlendColor(1.0, 0.078431, 0.576470, 1.0);
-				//Fantasma Rosa
-				glm::mat4 modelMatrixFantasmaRosaBlend = glm::mat4(modelMatrixFantasmaRosa);
-				modelMatrixFantasmaRosaBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaRosaBlend[3][0], modelMatrixFantasmaRosaBlend[3][2]);
-				modelMatrixFantasmaRosaBlend = glm::scale(modelMatrixFantasmaRosaBlend, glm::vec3(0.074, 0.074, 0.074));
-				fantasmaModel.render(modelMatrixFantasmaRosaBlend);
+			else if (it->second.first.compare("fantasmaRojo") == 0) {
+				if (activoFantasmaRojo == 1) {
+					glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
+					glBlendEquation(GL_FUNC_ADD);
+					if (tiempoFantasmaAzulComer > 0)
+						glBlendColor(0.0, 0.0, 1.0, 1.0);
+					else
+						glBlendColor(1.0, 0.0, 0.0, 1.0);
+					//Fantasma Rojo
+					glm::mat4 modelMatrixFantasmaRojoBlend = glm::mat4(modelMatrixFantasmaRojo);
+					modelMatrixFantasmaRojoBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaRojoBlend[3][0], modelMatrixFantasmaRojoBlend[3][2]);
+					modelMatrixFantasmaRojoBlend = glm::scale(modelMatrixFantasmaRojoBlend, glm::vec3(0.074, 0.074, 0.074));
+					fantasmaModel.render(modelMatrixFantasmaRojoBlend);
+				}
 			}
-		}
-		else if (it->second.first.compare("fantasmaCian") == 0) {
-			if (activoFantasmaCian == 1) {
-				glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
-				glBlendEquation(GL_FUNC_ADD);
-				if (tiempoFantasmaAzulComer > 0)
-					glBlendColor(0.0, 0.0, 1.0, 1.0);
-				else
-					glBlendColor(0.0, 1.0, 1.0, 1.0);
-				//Fantasma Cian
-				glm::mat4 modelMatrixFantasmaCianBlend = glm::mat4(modelMatrixFantasmaCian);
-				modelMatrixFantasmaCianBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaCianBlend[3][0], modelMatrixFantasmaCianBlend[3][2]);
-				modelMatrixFantasmaCianBlend = glm::scale(modelMatrixFantasmaCianBlend, glm::vec3(0.074, 0.074, 0.074));
-				fantasmaModel.render(modelMatrixFantasmaCianBlend);
+			else if (it->second.first.compare("fantasmaRosa") == 0) {
+				if (activoFantasmaRosa == 1) {
+					glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
+					glBlendEquation(GL_FUNC_ADD);
+					if (tiempoFantasmaAzulComer > 0)
+						glBlendColor(0.0, 0.0, 1.0, 1.0);
+					else
+						glBlendColor(1.0, 0.078431, 0.576470, 1.0);
+					//Fantasma Rosa
+					glm::mat4 modelMatrixFantasmaRosaBlend = glm::mat4(modelMatrixFantasmaRosa);
+					modelMatrixFantasmaRosaBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaRosaBlend[3][0], modelMatrixFantasmaRosaBlend[3][2]);
+					modelMatrixFantasmaRosaBlend = glm::scale(modelMatrixFantasmaRosaBlend, glm::vec3(0.074, 0.074, 0.074));
+					fantasmaModel.render(modelMatrixFantasmaRosaBlend);
+				}
 			}
-		}
-		else if (it->second.first.compare("fantasmaNaranja") == 0) {
-			if (activoFantasmaNaranja == 1) {
-				glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
-				glBlendEquation(GL_FUNC_ADD);
-				if (tiempoFantasmaAzulComer > 0)
-					glBlendColor(0.0, 0.0, 1.0, 1.0);
-				else
-					glBlendColor(1.0, 0.549019, 0.0, 1.0);
-				//Fantasma Naranja
-				glm::mat4 modelMatrixFantasmaNaranjaBlend = glm::mat4(modelMatrixFantasmaNaranja);
-				modelMatrixFantasmaNaranjaBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaNaranjaBlend[3][0], modelMatrixFantasmaNaranjaBlend[3][2]);
-				modelMatrixFantasmaNaranjaBlend = glm::scale(modelMatrixFantasmaNaranjaBlend, glm::vec3(0.074, 0.074, 0.074));
-				fantasmaModel.render(modelMatrixFantasmaNaranjaBlend);
+			else if (it->second.first.compare("fantasmaCian") == 0) {
+				if (activoFantasmaCian == 1) {
+					glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
+					glBlendEquation(GL_FUNC_ADD);
+					if (tiempoFantasmaAzulComer > 0)
+						glBlendColor(0.0, 0.0, 1.0, 1.0);
+					else
+						glBlendColor(0.0, 1.0, 1.0, 1.0);
+					//Fantasma Cian
+					glm::mat4 modelMatrixFantasmaCianBlend = glm::mat4(modelMatrixFantasmaCian);
+					modelMatrixFantasmaCianBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaCianBlend[3][0], modelMatrixFantasmaCianBlend[3][2]);
+					modelMatrixFantasmaCianBlend = glm::scale(modelMatrixFantasmaCianBlend, glm::vec3(0.074, 0.074, 0.074));
+					fantasmaModel.render(modelMatrixFantasmaCianBlend);
+				}
 			}
-		}
-		else if (renderParticles && (it->second.first.compare("portalPacman1") == 0 || it->second.first.compare("portalPacman2") == 0)) {
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			/************************************
-			* Init Render particles systems
-			*************************************/
-			glm::mat4 modelMatrixParticlesPortalPacman = glm::mat4(1.0);
-			modelMatrixParticlesPortalPacman = glm::translate(modelMatrixParticlesPortalPacman, it->second.second);
-			modelMatrixParticlesPortalPacman[3][1] = terrain.getHeightTerrain(modelMatrixParticlesPortalPacman[3][0], modelMatrixParticlesPortalPacman[3][2]);
-			modelMatrixParticlesPortalPacman = glm::scale(modelMatrixParticlesPortalPacman, glm::vec3(3.0, 3.0, 3.0));
-			currTimeParticlesAnimation = TimeManager::Instance().GetTime();
-			if (currTimeParticlesAnimation - lastTimeParticlesAnimation > 3.0)
-				lastTimeParticlesAnimation = currTimeParticlesAnimation;
-			//glDisable(GL_DEPTH_TEST);
-			glDepthMask(GL_FALSE);
-			// Set the point size
-			glPointSize(10.0f);
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, textureParticleFountainID);
-			shaderParticlesFountain.turnOn();
-			shaderParticlesFountain.setFloat("Time", float(currTimeParticlesAnimation - lastTimeParticlesAnimation));
-			shaderParticlesFountain.setFloat("ParticleLifetime", 1.0f);
-			shaderParticlesFountain.setInt("ParticleTex", 0);
-			shaderParticlesFountain.setVectorFloat3("Gravity", glm::value_ptr(glm::vec3(0.0f, 0.2f, 0.0f)));
-			shaderParticlesFountain.setMatrix4("model", 1, false, glm::value_ptr(modelMatrixParticlesPortalPacman));
-			glBindVertexArray(VAOParticles);
-			glDrawArrays(GL_POINTS, 0, nParticles);
-			glDepthMask(GL_TRUE);
-			//glEnable(GL_DEPTH_TEST)
-			shaderParticlesFountain.turnOff();
+			else if (it->second.first.compare("fantasmaNaranja") == 0) {
+				if (activoFantasmaNaranja == 1) {
+					glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
+					glBlendEquation(GL_FUNC_ADD);
+					if (tiempoFantasmaAzulComer > 0)
+						glBlendColor(0.0, 0.0, 1.0, 1.0);
+					else
+						glBlendColor(1.0, 0.549019, 0.0, 1.0);
+					//Fantasma Naranja
+					glm::mat4 modelMatrixFantasmaNaranjaBlend = glm::mat4(modelMatrixFantasmaNaranja);
+					modelMatrixFantasmaNaranjaBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaNaranjaBlend[3][0], modelMatrixFantasmaNaranjaBlend[3][2]);
+					modelMatrixFantasmaNaranjaBlend = glm::scale(modelMatrixFantasmaNaranjaBlend, glm::vec3(0.074, 0.074, 0.074));
+					fantasmaModel.render(modelMatrixFantasmaNaranjaBlend);
+				}
+			}
+			else if (renderParticles && (it->second.first.compare("portalPacman1") == 0 || it->second.first.compare("portalPacman2") == 0)) {
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				/************************************
+				* Init Render particles systems
+				*************************************/
+				glm::mat4 modelMatrixParticlesPortalPacman = glm::mat4(1.0);
+				modelMatrixParticlesPortalPacman = glm::translate(modelMatrixParticlesPortalPacman, it->second.second);
+				modelMatrixParticlesPortalPacman[3][1] = terrain.getHeightTerrain(modelMatrixParticlesPortalPacman[3][0], modelMatrixParticlesPortalPacman[3][2]);
+				modelMatrixParticlesPortalPacman = glm::scale(modelMatrixParticlesPortalPacman, glm::vec3(3.0, 3.0, 3.0));
+				currTimeParticlesAnimation = TimeManager::Instance().GetTime();
+				if (currTimeParticlesAnimation - lastTimeParticlesAnimation > 3.0)
+					lastTimeParticlesAnimation = currTimeParticlesAnimation;
+				//glDisable(GL_DEPTH_TEST);
+				glDepthMask(GL_FALSE);
+				// Set the point size
+				glPointSize(10.0f);
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, textureParticleFountainID);
+				shaderParticlesFountain.turnOn();
+				shaderParticlesFountain.setFloat("Time", float(currTimeParticlesAnimation - lastTimeParticlesAnimation));
+				shaderParticlesFountain.setFloat("ParticleLifetime", 1.0f);
+				shaderParticlesFountain.setInt("ParticleTex", 0);
+				shaderParticlesFountain.setVectorFloat3("Gravity", glm::value_ptr(glm::vec3(0.0f, 0.2f, 0.0f)));
+				shaderParticlesFountain.setMatrix4("model", 1, false, glm::value_ptr(modelMatrixParticlesPortalPacman));
+				glBindVertexArray(VAOParticles);
+				glDrawArrays(GL_POINTS, 0, nParticles);
+				glDepthMask(GL_TRUE);
+				//glEnable(GL_DEPTH_TEST)
+				shaderParticlesFountain.turnOff();
 
-			source6Pos[0] = modelMatrixParticlesPortalPacman[3].x;
-			source6Pos[1] = modelMatrixParticlesPortalPacman[3].y;
-			source6Pos[2] = modelMatrixParticlesPortalPacman[3].z;
-			alSourcefv(source[6], AL_POSITION, source6Pos);
-			
-			/*************************************
-			* End Render particles systems
-			**************************************/
-		}
-		else if (renderParticles && (it->second.first.compare("antorcha1") == 0 || it->second.first.compare("antorcha2") == 0 ||
-			it->second.first.compare("antorcha3") == 0 || it->second.first.compare("antorcha4") == 0 ||
-			it->second.first.compare("antorcha5") == 0 || it->second.first.compare("antorcha6") == 0 ||
-			it->second.first.compare("antorcha7") == 0 || it->second.first.compare("antorcha8") == 0 ||
-			it->second.first.compare("antorcha9") == 0 || it->second.first.compare("antorcha10") == 0 ||
-			it->second.first.compare("antorcha11") == 0 || it->second.first.compare("antorcha12") == 0 ||
-			it->second.first.compare("antorcha13") == 0 )) {
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			/************************************
-			* Init Render particles systems
-			************************************/
-			lastTimeParticlesAnimationFire = currTimeParticlesAnimationFire;
-			currTimeParticlesAnimationFire = TimeManager::Instance().GetTime();
+				source6Pos[0] = modelMatrixParticlesPortalPacman[3].x;
+				source6Pos[1] = modelMatrixParticlesPortalPacman[3].y;
+				source6Pos[2] = modelMatrixParticlesPortalPacman[3].z;
+				alSourcefv(source[6], AL_POSITION, source6Pos);
 
-			shaderParticlesFire.setInt("Pass", 1);
-			shaderParticlesFire.setFloat("Time", currTimeParticlesAnimationFire);
-			shaderParticlesFire.setFloat("DeltaT", currTimeParticlesAnimationFire - lastTimeParticlesAnimationFire);
+				/*************************************
+				* End Render particles systems
+				**************************************/
+			}
+			else if (renderParticles && (it->second.first.compare("antorcha1") == 0 || it->second.first.compare("antorcha2") == 0 ||
+				it->second.first.compare("antorcha3") == 0 || it->second.first.compare("antorcha4") == 0 ||
+				it->second.first.compare("antorcha5") == 0 || it->second.first.compare("antorcha6") == 0 ||
+				it->second.first.compare("antorcha7") == 0 || it->second.first.compare("antorcha8") == 0 ||
+				it->second.first.compare("antorcha9") == 0 || it->second.first.compare("antorcha10") == 0 ||
+				it->second.first.compare("antorcha11") == 0 || it->second.first.compare("antorcha12") == 0 ||
+				it->second.first.compare("antorcha13") == 0)) {
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				/************************************
+				* Init Render particles systems
+				************************************/
+				lastTimeParticlesAnimationFire = currTimeParticlesAnimationFire;
+				currTimeParticlesAnimationFire = TimeManager::Instance().GetTime();
 
-			glActiveTexture(GL_TEXTURE1);
-			glBindTexture(GL_TEXTURE_1D, texId);
-			glEnable(GL_RASTERIZER_DISCARD);
-			glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback[drawBuf]);
-			glBeginTransformFeedback(GL_POINTS);
-			glBindVertexArray(particleArray[1 - drawBuf]);
-			glVertexAttribDivisor(0, 0);
-			glVertexAttribDivisor(1, 0);
-			glVertexAttribDivisor(2, 0);
-			glDrawArrays(GL_POINTS, 0, nParticlesFire);
-			glEndTransformFeedback();
-			glDisable(GL_RASTERIZER_DISCARD);
+				shaderParticlesFire.setInt("Pass", 1);
+				shaderParticlesFire.setFloat("Time", currTimeParticlesAnimationFire);
+				shaderParticlesFire.setFloat("DeltaT", currTimeParticlesAnimationFire - lastTimeParticlesAnimationFire);
 
-			shaderParticlesFire.setInt("Pass", 2);
-			glm::mat4 modelFireParticles = glm::mat4(1.0);
-			modelFireParticles = glm::translate(modelFireParticles, it->second.second);
-			modelFireParticles = glm::rotate(modelFireParticles, glm::radians(10.0f), glm::vec3(1, 0, 0));
-			modelFireParticles = glm::scale(modelFireParticles, glm::vec3(0.06, 0.6, 0.06));;
-			shaderParticlesFire.setMatrix4("model", 1, false, glm::value_ptr(modelFireParticles));
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_1D, texId);
+				glEnable(GL_RASTERIZER_DISCARD);
+				glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, feedback[drawBuf]);
+				glBeginTransformFeedback(GL_POINTS);
+				glBindVertexArray(particleArray[1 - drawBuf]);
+				glVertexAttribDivisor(0, 0);
+				glVertexAttribDivisor(1, 0);
+				glVertexAttribDivisor(2, 0);
+				glDrawArrays(GL_POINTS, 0, nParticlesFire);
+				glEndTransformFeedback();
+				glDisable(GL_RASTERIZER_DISCARD);
 
-			shaderParticlesFire.turnOn();
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, textureParticleFireID);
-			glDepthMask(GL_FALSE);
-			glBindVertexArray(particleArray[drawBuf]);
-			glVertexAttribDivisor(0, 1);
-			glVertexAttribDivisor(1, 1);
-			glVertexAttribDivisor(2, 1);
-			glDrawArraysInstanced(GL_TRIANGLES, 0, 6, nParticlesFire);
-			glBindVertexArray(0);
-			glDepthMask(GL_TRUE);
-			drawBuf = 1 - drawBuf;
-			shaderParticlesFire.turnOff();
+				shaderParticlesFire.setInt("Pass", 2);
+				glm::mat4 modelFireParticles = glm::mat4(1.0);
+				modelFireParticles = glm::translate(modelFireParticles, it->second.second);
+				modelFireParticles = glm::rotate(modelFireParticles, glm::radians(10.0f), glm::vec3(1, 0, 0));
+				modelFireParticles = glm::scale(modelFireParticles, glm::vec3(0.06, 0.6, 0.06));;
+				shaderParticlesFire.setMatrix4("model", 1, false, glm::value_ptr(modelFireParticles));
 
-			/****************************+
-			 * Open AL sound data
-			 ****************************/
-			source1Pos[0] = modelFireParticles[3].x;
-			source1Pos[1] = modelFireParticles[3].y;
-			source1Pos[2] = modelFireParticles[3].z;
-			alSourcefv(source[1], AL_POSITION, source1Pos);
+				shaderParticlesFire.turnOn();
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, textureParticleFireID);
+				glDepthMask(GL_FALSE);
+				glBindVertexArray(particleArray[drawBuf]);
+				glVertexAttribDivisor(0, 1);
+				glVertexAttribDivisor(1, 1);
+				glVertexAttribDivisor(2, 1);
+				glDrawArraysInstanced(GL_TRIANGLES, 0, 6, nParticlesFire);
+				glBindVertexArray(0);
+				glDepthMask(GL_TRUE);
+				drawBuf = 1 - drawBuf;
+				shaderParticlesFire.turnOff();
 
-			/****************************************
-			* End Render particles systems
-			****************************************/
+				/****************************+
+				 * Open AL sound data
+				 ****************************/
+				source1Pos[0] = modelFireParticles[3].x;
+				source1Pos[1] = modelFireParticles[3].y;
+				source1Pos[2] = modelFireParticles[3].z;
+				alSourcefv(source[1], AL_POSITION, source1Pos);
+
+				/****************************************
+				* End Render particles systems
+				****************************************/
+			}
 		}
 	}
 
 	/*******************************************
 		 * FreeType text Rendering
 	*******************************************/
+	glDisable(GL_BLEND);
+	glEnable(GL_CULL_FACE);
+
+	glEnable(GL_BLEND);
+	glDisable(GL_CULL_FACE);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	updateUI_Text();
 	glDisable(GL_BLEND);
 	glEnable(GL_CULL_FACE);
