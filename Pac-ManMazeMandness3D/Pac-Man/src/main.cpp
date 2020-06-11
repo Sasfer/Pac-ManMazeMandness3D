@@ -370,6 +370,7 @@ int animationIndex = 1;
 // Para controlar la orientación 
 // del Pacman mientras se mueve
 int anteriorMove = 1;
+int auxMove = 0;
 int rotarMove = 0;
 int modelSelected = 0;
 bool enableCountSelected = true;
@@ -639,6 +640,8 @@ void applicationLoop();
 void prepareScene();
 void prepareDepthScene();
 void renderScene(bool renderParticles = true);
+void movimientoFantasma();
+
 //FreeType
 void RenderText(Shader &shader, std::string text, float x, float y, float scale, glm::vec3 color);
 
@@ -896,7 +899,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	//Fantasmas
 	fantasmaModel.loadModel("../models/Fantasma/fantasma.obj");
 	fantasmaModel.setShader(&shaderMulLighting);
-
+	
 	//Antorcha1
 	modelAntorcha1.loadModel("../models/Antorcha/antorcha2.obj");
 	modelAntorcha1.setShader(&shaderMulLighting);
@@ -948,7 +951,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	//Antorcha 13
 	modelAntorcha13.loadModel("../models/Antorcha/antorcha2.obj");
 	modelAntorcha13.setShader(&shaderMulLighting);
-
+	
 	//Frutas
 	modelCherry.loadModel("../models/Frutas/cherryO.obj");
 	modelCherry.setShader(&shaderMulLighting);
@@ -1517,7 +1520,6 @@ void comePunto(bool colision) {
 	}
 }
 
-
 void comeFantasma(bool colision) {
 	bool col = colision;
 	if (col == true) {
@@ -1557,7 +1559,6 @@ void gameOver(bool colision) {
 	}
 
 }
-
 
 void destroy() {
 	glfwDestroyWindow(window);
@@ -1759,8 +1760,10 @@ bool processInput(bool continueApplication) {
 
 	// En caso de querer regresa  menu principal
 	if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS) {
-		menuPrincipal = 1;
-		reiniciarJuego = 1;
+		if (pause == 1) {
+			menuPrincipal = 1;
+			reiniciarJuego = 1;
+		}
 	}
 
 	// En caso de querer pausar el juego
@@ -1774,6 +1777,15 @@ bool processInput(bool continueApplication) {
 		if (menuPrincipal == 0)
 			pause = 0;
 	}
+
+	// Controlar el funcionamiento de las luces
+	if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
+		lucesActivas = 1;
+		auxLuces = 0;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
+		lucesActivas = 0;
 
 	// Para iniciar el juego, al estar en el menu principal
 	if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
@@ -1812,6 +1824,7 @@ bool processInput(bool continueApplication) {
 				modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(180.0f), glm::vec3(0, 1, 0));
 			if (anteriorMove == 4)
 				modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(90.0f), glm::vec3(0, 1, 0));
+			auxMove = anteriorMove;
 			anteriorMove = 1;
 			rotarMove = 1;
 		}
@@ -1832,6 +1845,7 @@ bool processInput(bool continueApplication) {
 				modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(-90.0f), glm::vec3(0, 1, 0));
 			if (anteriorMove == 4)
 				modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(180.0f), glm::vec3(0, 1, 0));
+			auxMove = anteriorMove;
 			anteriorMove = 2;
 			rotarMove = 1;
 		}
@@ -1852,6 +1866,7 @@ bool processInput(bool continueApplication) {
 				modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(90.0f), glm::vec3(0, 1, 0));
 			if (anteriorMove == 4)
 				modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			auxMove = anteriorMove;
 			anteriorMove = 3;
 			rotarMove = 1;
 		}
@@ -1872,6 +1887,7 @@ bool processInput(bool continueApplication) {
 				modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(180.0f), glm::vec3(0, 1, 0));
 			if (anteriorMove == 3)
 				modelMatrixPacman = glm::rotate(modelMatrixPacman, glm::radians(90.0f), glm::vec3(0, 1, 0));
+			auxMove = anteriorMove;
 			anteriorMove = 4;
 			rotarMove = 1;
 		}
@@ -1886,17 +1902,14 @@ bool processInput(bool continueApplication) {
 	return continueApplication;
 }
 
-void RenderText(Shader &shader, std::string text, float x, float y, float scale, glm::vec3 color)
-{
-	//glUniform3f(textShader.getUniformLocation("textColor"), color.x, color.y, color.z);
+void RenderText(Shader &shader, std::string text, float x, float y, float scale, glm::vec3 color) {
 	shader.setVectorFloat3("textColor", glm::value_ptr(glm::vec3(color.x, color.y, color.z)));
 	glActiveTexture(GL_TEXTURE11);
 	glBindVertexArray(textVAO);
 
 	// iterate through all characters
 	std::string::const_iterator c;
-	for (c = text.begin(); c != text.end(); c++)
-	{
+	for (c = text.begin(); c != text.end(); c++) {
 		Character ch = Characters[*c];
 
 		float xpos = x + ch.Bearing.x * scale;
@@ -1926,19 +1939,18 @@ void RenderText(Shader &shader, std::string text, float x, float y, float scale,
 		// now advance cursors for next glyph (note that advance is number of 1/64 pixels)
 		x += (ch.Advance >> 6) * scale; // bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
 	}
+	
 	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, textTextureID);
 	textShader.setInt("text", 11);
 }
 
 glm::vec3 hex2rgb(string hex) {
-	if (hex.at(0) == '#') {
+	if (hex.at(0) == '#')
 		hex.erase(0, 1);
-	}
 
-	while (hex.length() != 6) {
+	while (hex.length() != 6)
 		hex += "0";
-	}
 
 	int r = std::stol(hex.substr(0, 2), nullptr, 16);
 	int g = std::stol(hex.substr(2, 2), nullptr, 16);
@@ -1975,15 +1987,16 @@ void updateUI_Text() {
 	}
 
 	// Se muestra el texto del menu principal
-	if (menuPrincipal == 1) {
-		RenderText(textShader, "Pac-Man", screenWidth / 2 - 300, screenHeight - 70, 1.8f, hex2rgb("ff800"));
+	else if (menuPrincipal == 1) {
+		RenderText(textShader, "Pac-Man", 150, screenHeight - 120, 2.8f, hex2rgb("ff800"));
 
-		RenderText(textShader, "Maze Madness 3D", screenWidth / 2 - 280, screenHeight - 140, 1.6f, hex2rgb("ffbf00"));
+		RenderText(textShader, "Maze Madness 3D", 30, screenHeight/2 - 200, 2.0f, hex2rgb("ffbf00"));
 
-		RenderText(textShader, "Iniciar [i]", screenWidth / 2 - 330, screenHeight / 2 - 60, 0.9f, hex2rgb("0040ff"));
-		RenderText(textShader, "Salir [esc]", screenWidth / 2 + 150, screenHeight / 2 - 60, 0.9f, hex2rgb("0040ff"));
+		RenderText(textShader, "Iniciar [i]", screenWidth / 2 - 330, screenHeight / 2 + 20, 0.9f, hex2rgb("2aeef1"));
+		RenderText(textShader, "Salir [esc]", screenWidth / 2 + 150, screenHeight / 2 + 20, 0.9f, hex2rgb("2aeef1"));
 
-		RenderText(textShader, "CGA - 2020-2  >>>> IGYE - OFMF - RRLR <<<<", screenWidth / 2 - 120, screenHeight - 680, 0.5f, hex2rgb("81f7d8"));
+		RenderText(textShader, "CGA - 2020-2", screenWidth / 2 - 60, screenHeight - 675, 0.5f, hex2rgb("f1c72a"));
+		RenderText(textShader, ">>>> IGYE - OFMF - RRLR <<<<", screenWidth / 2 - 110, screenHeight - 690, 0.4f, hex2rgb("f1c72a"));
 	}
 
 	// Se muestra el texto cuando se esta en pause
@@ -1995,7 +2008,7 @@ void updateUI_Text() {
 
 	// Se muestra el texto cuando se pierde por que se termino el tiempo o las vidas
 	if (tiempoJuego == 0 || vidaPacman == 0)
-		RenderText(textShader, "Game Over", screenWidth / 2 - 50, screenHeight - 160, 1.2f, hex2rgb("fa58f4"));
+		RenderText(textShader, "Game Over", screenWidth / 2 - 20, screenHeight - 200, 1.4f, hex2rgb("fa58f4"));
 
 	// Texto inicio de nivel
 	if (activoNivel > 0) {
@@ -2110,12 +2123,12 @@ void applicationLoop() {
 	shadowBox = new ShadowBox(-lightPos, camera.get(), 15.0f, 0.1f, 45.0f);
 
 	while (psi) {
-		if (tiempoJuego == 0 && tiempoMuerto >= 20) {
+		if (tiempoJuego == 0 && tiempoMuerto >= 30) {
 			std::cout << " ********** Se termino el TIEMPO ********** " << std::endl;
 			reiniciarJuego = 1;
 		}
 
-		if (vidaPacman == 0 && tiempoMuerto >= 20) {
+		if (vidaPacman == 0 && tiempoMuerto >= 30) {
 			std::cout << " ********** Se terminaron las VIDAS ********** " << std::endl;
 			reiniciarJuego = 1;
 		}
@@ -2239,29 +2252,28 @@ void applicationLoop() {
 			modelMatrixPacman = glm::mat4(1.0);
 			modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(20.25f, 0.05f, 0.0f));
 			auxPortalPacman1 = 0;
+			anteriorMove = 1;
 		}
 
 		if (auxPortalPacman2 == 1) {
 			modelMatrixPacman = glm::mat4(1.0);
 			modelMatrixPacman = glm::translate(modelMatrixPacman, glm::vec3(-20.25f, 0.05f, 0.0f));
 			auxPortalPacman2 = 0;
+			anteriorMove = 1;
 		}
 
 		// Se verifica si se ha comido una fruta 
-		if (activoCereza == 0) {
+		if (activoCereza == 0) 
 			collidersSBB.erase("cereza");
-		}
 
-		if (activoFresa == 0) {
+		if (activoFresa == 0) 
 			collidersSBB.erase("fresa");
-		}
 
-		if (activoNaranja == 0) {
+		if (activoNaranja == 0)
 			collidersSBB.erase("naranja");
-		}
 
 		currTime = TimeManager::Instance().GetTime();
-		if (currTime - lastTime < 0.0041666667) {
+		if (currTime - lastTime < 0.0666666667) {
 			glfwPollEvents();
 			continue;
 		}
@@ -2292,7 +2304,7 @@ void applicationLoop() {
 			// En caso de que termine el tiempo o se terminen las vidas
 			if (tiempoJuego == 0 || vidaPacman == 0) {
 				std::cout << "Tiempo MUERTO -> " << tiempoMuerto << std::endl;
-				if (tiempoMuerto < 21)
+				if (tiempoMuerto < 31)
 					tiempoMuerto += 1;
 			}
 
@@ -2392,44 +2404,48 @@ void applicationLoop() {
 			diaNoche = glm::vec3(0.42, 0.42, 0.42);
 			activoDia = 1;
 		}
-		else if (tiempoDiaNoche <= 12) {
+		
+		if (tiempoJuego == 479)
+			activoDia = 0;
+
+		if (tiempoDiaNoche == 1) {
 			diaNoche = glm::vec3(0.07, 0.07, 0.07);
 			activoDia = 0;
 		}
 
-		else if (tiempoDiaNoche <= 24) {
+		else if (tiempoDiaNoche == 12) {
 			diaNoche = glm::vec3(0.14, 0.14, 0.14);
 			activoDia = 0;
 		}
-		else if (tiempoDiaNoche <= 36) {
+		else if (tiempoDiaNoche == 24) {
 			diaNoche = glm::vec3(0.21, 0.21, 0.21);
 			activoDia = 0;
 		}
-		else if (tiempoDiaNoche <= 48) {
+		else if (tiempoDiaNoche == 36) {
 			diaNoche = glm::vec3(0.28, 0.28, 0.28);
 			activoDia = 1;
 		}
-		else if (tiempoDiaNoche <= 60) {
+		else if (tiempoDiaNoche == 48) {
 			diaNoche = glm::vec3(0.35, 0.35, 0.35);
 			activoDia = 1;
 		}
-		else if (tiempoDiaNoche <= 72) {
+		else if (tiempoDiaNoche == 60) {
 			diaNoche = glm::vec3(0.42, 0.42, 0.42);
 			activoDia = 1;
 		}
-		else if (tiempoDiaNoche <= 84) {
+		else if (tiempoDiaNoche == 72) {
 			diaNoche = glm::vec3(0.35, 0.35, 0.35);
 			activoDia = 1;
 		}
-		else if (tiempoDiaNoche <= 96) {
+		else if (tiempoDiaNoche == 84) {
 			diaNoche = glm::vec3(0.28, 0.28, 0.28);
 			activoDia = 1;
 		}
-		else if (tiempoDiaNoche <= 108) {
+		else if (tiempoDiaNoche == 96) {
 			diaNoche = glm::vec3(0.21, 0.21, 0.21);
 			activoDia = 0;
 		}
-		else if (tiempoDiaNoche <= 120) {
+		else if (tiempoDiaNoche == 108) {
 			diaNoche = glm::vec3(0.14, 0.14, 0.14);
 			activoDia = 0;
 		}
@@ -2477,15 +2493,6 @@ void applicationLoop() {
 
 		camera->updateCamera();
 		view = camera->getViewMatrix();
-
-		// En caso de que termine el tiempo o se terminen las vidas
-		if (tiempoJuego == 0 || vidaPacman == 0) {
-			if (auxMuerto == 0) {
-				camera->setPitch(glm::radians(60.0f));
-				camera->setDistanceFromTarget(8.0f);
-				auxMuerto = 1;
-			}
-		}
 
 		shadowBox->update(screenWidth, screenHeight);
 		glm::vec3 centerBox = shadowBox->getCenter();
@@ -2572,127 +2579,136 @@ void applicationLoop() {
 		* Propiedades PointLights
 		*******************************************/
 		/*
-			shaderMulLighting.setInt("pointLightCount", 17);
-			shaderTerrain.setInt("pointLightCount", 17);
-
+		if(menuPrincipal == 0 &&) {
+			
 			// Luces antorcha, se controla si emitan o no luz dependiendo si es de dia o es de noche
-			for (int i = 4; i < 17; i++) {
-				if (activoDia == 0) {
-					glm::mat4 matrixAdjustLuzAntorcha = glm::mat4(1.0f);
-					matrixAdjustLuzAntorcha = glm::translate(matrixAdjustLuzAntorcha, blendingUnsorted.find("antorcha" + std::to_string(i - 3))->second);
-					glm::vec3 puntoPowerPosition = glm::vec3(matrixAdjustLuzAntorcha[3]);
-					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
-						glm::value_ptr(glm::vec3(0.6, 0.6, 0.6)));
-					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
-						glm::value_ptr(glm::vec3(1.0, 1.0, 0.5)));
-					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
-						glm::value_ptr(glm::vec3(1.0, 1.0, 0.5)));
-					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
-						glm::value_ptr(puntoPowerPosition));
-					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
-					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.2);
-					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.2);
-					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
-						glm::value_ptr(glm::vec3(0.6, 0.6, 0.6)));
-					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
-						glm::value_ptr(glm::vec3(1.0, 1.0, 0.5)));
-					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
-						glm::value_ptr(glm::vec3(1.0, 1.0, 0.5)));
-					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
-						glm::value_ptr(puntoPowerPosition));
-					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
-					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.2);
-					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.2);
+			//if (tiempoJuego == 479 || tiempoDiaNoche == 36 || tiempoDiaNoche == 96 || tiempoJuego == 480) {
+				shaderMulLighting.setInt("pointLightCount", 17);
+				shaderTerrain.setInt("pointLightCount", 17);
+				for (int i = 4; i < 17; i++) {
+					if (activoDia == 0) {
+						glm::mat4 matrixAdjustLuzAntorcha = glm::mat4(1.0f);
+						matrixAdjustLuzAntorcha = glm::translate(matrixAdjustLuzAntorcha, blendingUnsorted.find("antorcha" + std::to_string(i - 3))->second);
+						glm::vec3 puntoPowerPosition = glm::vec3(matrixAdjustLuzAntorcha[3]);
+						shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
+							glm::value_ptr(glm::vec3(0.6, 0.6, 0.6)));
+						shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
+							glm::value_ptr(glm::vec3(1.0, 1.0, 0.5)));
+						shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
+							glm::value_ptr(glm::vec3(1.0, 1.0, 0.5)));
+						shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
+							glm::value_ptr(puntoPowerPosition));
+						shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
+						shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.2);
+						shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.2);
+						shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
+							glm::value_ptr(glm::vec3(0.6, 0.6, 0.6)));
+						shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
+							glm::value_ptr(glm::vec3(1.0, 1.0, 0.5)));
+						shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
+							glm::value_ptr(glm::vec3(1.0, 1.0, 0.5)));
+						shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
+							glm::value_ptr(puntoPowerPosition));
+						shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
+						shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.2);
+						shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.2);
+					}
+					else {
+						glm::mat4 matrixAdjustLuzAntorcha = glm::mat4(1.0f);
+						matrixAdjustLuzAntorcha = glm::translate(matrixAdjustLuzAntorcha, blendingUnsorted.find("antorcha" + std::to_string(i - 3))->second);
+						glm::vec3 puntoPowerPosition = glm::vec3(matrixAdjustLuzAntorcha[3]);
+						shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
+							glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+						shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
+							glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+						shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
+							glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+						shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
+							glm::value_ptr(puntoPowerPosition));
+						shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
+						shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
+						shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
+						shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
+							glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+						shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
+							glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+						shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
+							glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+						shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
+							glm::value_ptr(puntoPowerPosition));
+						shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
+						shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
+						shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
+					}
 				}
-				else {
-					glm::mat4 matrixAdjustLuzAntorcha = glm::mat4(1.0f);
-					matrixAdjustLuzAntorcha = glm::translate(matrixAdjustLuzAntorcha, blendingUnsorted.find("antorcha" + std::to_string(i - 3))->second);
-					glm::vec3 puntoPowerPosition = glm::vec3(matrixAdjustLuzAntorcha[3]);
-					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
-						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
-						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
-						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
-						glm::value_ptr(puntoPowerPosition));
-					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
-					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
-					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
-					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
-						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
-						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
-						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
-						glm::value_ptr(puntoPowerPosition));
-					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
-					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
-					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
-				}
-			}
-
+			//}
+			
 			// Luces colocadas a los puntos POWER para hacerlos resaltar
-			for (int i = 0; i < 4; i++) {
-				if (std::get<1>(puntosPosition.find("punto" + std::to_string(i + 215))->second) == 0) {
-					glm::mat4 matrixAdjustLuzPuntoPower = glm::mat4(1.0f);
-					matrixAdjustLuzPuntoPower = glm::translate(matrixAdjustLuzPuntoPower,
-						std::get<0>(puntosPosition.find("punto" + std::to_string(i + 215))->second));
-					glm::vec3 puntoPowerPosition = glm::vec3(matrixAdjustLuzPuntoPower[3]);
-					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
-						glm::value_ptr(glm::vec3(0.5, 0.5, 0.5)));
-					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
-						glm::value_ptr(glm::vec3(1.0, 1.0, 0.0)));
-					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
-						glm::value_ptr(glm::vec3(1.0, 1.0, 0.0)));
-					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
-						glm::value_ptr(puntoPowerPosition));
-					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
-					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
-					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
-					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
-						glm::value_ptr(glm::vec3(0.5, 0.5, 0.5)));
-					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
-						glm::value_ptr(glm::vec3(1.0, 1.0, 0.0)));
-					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
-						glm::value_ptr(glm::vec3(1.0, 1.0, 0.0)));
-					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
-						glm::value_ptr(puntoPowerPosition));
-					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
-					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
-					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
+			//if (tiempoJuego == 479 || tiempoFantasmaAzulComer > 14 || tiempoJuego == 480) {
+				shaderMulLighting.setInt("pointLightCount", 17);
+				shaderTerrain.setInt("pointLightCount", 17);
+				for (int i = 0; i < 4; i++) {
+					if (std::get<1>(puntosPosition.find("punto" + std::to_string(i + 215))->second) == 0) {
+						glm::mat4 matrixAdjustLuzPuntoPower = glm::mat4(1.0f);
+						matrixAdjustLuzPuntoPower = glm::translate(matrixAdjustLuzPuntoPower,
+							std::get<0>(puntosPosition.find("punto" + std::to_string(i + 215))->second));
+						glm::vec3 puntoPowerPosition = glm::vec3(matrixAdjustLuzPuntoPower[3]);
+						shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
+							glm::value_ptr(glm::vec3(0.5, 0.5, 0.5)));
+						shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
+							glm::value_ptr(glm::vec3(1.0, 1.0, 0.0)));
+						shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
+							glm::value_ptr(glm::vec3(1.0, 1.0, 0.0)));
+						shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
+							glm::value_ptr(puntoPowerPosition));
+						shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
+						shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
+						shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
+						shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
+							glm::value_ptr(glm::vec3(0.5, 0.5, 0.5)));
+						shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
+							glm::value_ptr(glm::vec3(1.0, 1.0, 0.0)));
+						shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
+							glm::value_ptr(glm::vec3(1.0, 1.0, 0.0)));
+						shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
+							glm::value_ptr(puntoPowerPosition));
+						shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
+						shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
+						shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
+					}
+					else {
+						glm::mat4 matrixAdjustLuzPuntoPower = glm::mat4(1.0f);
+						matrixAdjustLuzPuntoPower = glm::translate(matrixAdjustLuzPuntoPower,
+							std::get<0>(puntosPosition.find("punto" + std::to_string(i + 215))->second));
+						glm::vec3 puntoPowerPosition = glm::vec3(matrixAdjustLuzPuntoPower[3]);
+						shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
+							glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+						shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
+							glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+						shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
+							glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+						shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
+							glm::value_ptr(puntoPowerPosition));
+						shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
+						shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
+						shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
+						shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
+							glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+						shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
+							glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+						shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
+							glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
+						shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
+							glm::value_ptr(puntoPowerPosition));
+						shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
+						shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
+						shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
+					}
 				}
-				else {
-					glm::mat4 matrixAdjustLuzPuntoPower = glm::mat4(1.0f);
-					matrixAdjustLuzPuntoPower = glm::translate(matrixAdjustLuzPuntoPower,
-						std::get<0>(puntosPosition.find("punto" + std::to_string(i + 215))->second));
-					glm::vec3 puntoPowerPosition = glm::vec3(matrixAdjustLuzPuntoPower[3]);
-					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
-						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
-						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
-						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-					shaderMulLighting.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
-						glm::value_ptr(puntoPowerPosition));
-					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
-					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
-					shaderMulLighting.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
-					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.ambient",
-						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.diffuse",
-						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].light.specular",
-						glm::value_ptr(glm::vec3(0.0, 0.0, 0.0)));
-					shaderTerrain.setVectorFloat3("pointLights[" + std::to_string(i) + "].position",
-						glm::value_ptr(puntoPowerPosition));
-					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].constant", 1.0);
-					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].linear", 0.1);
-					shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
-				}
-			}
+			//}
+		}
 		*/
+		
 		/*******************************************
 		 * 1.- We render the depth buffer
 		 *******************************************/
@@ -2732,6 +2748,7 @@ void applicationLoop() {
 		glBindTexture(GL_TEXTURE_2D, depthMap);
 		shaderMulLighting.setInt("shadowMap", 10);
 		shaderTerrain.setInt("shadowMap", 10);
+
 		/*******************************************
 		 * Skybox
 		 *******************************************/
@@ -2748,6 +2765,7 @@ void applicationLoop() {
 		glCullFace(oldCullFaceMode);
 		glDepthFunc(oldDepthFuncMode);
 		renderScene();
+
 		/*******************************************
 		 * Debug to box light box
 		 *******************************************/
@@ -2778,74 +2796,8 @@ void applicationLoop() {
 		modelMatrixColliderPacman = glm::translate(modelMatrixColliderPacman,
 			pacmanModelAnimate.getSbb().c + glm::vec3(0.0, 160.0, -60.0));
 		pacmanCollider.c = glm::vec3(modelMatrixColliderPacman[3]);
-		pacmanCollider.ratio = pacmanModelAnimate.getSbb().ratio * 0.005;
+		pacmanCollider.ratio = pacmanModelAnimate.getSbb().ratio * 0.0035;
 		addOrUpdateColliders(collidersSBB, "pacman", pacmanCollider, modelMatrixPacman);
-
-		// Collider Puntos 
-		for (int i = 0; i < puntosPosition.size(); i++) {
-			if (std::get<1>(puntosPosition.find("punto" + std::to_string(i))->second) == 0) {
-				// Puntos NORMALES
-				if (i <= 214) {
-					AbstractModel::SBB puntoCollider;
-					glm::mat4 modelMatrixColliderPunto = glm::mat4(1.0);
-					modelMatrixColliderPunto = glm::translate(modelMatrixColliderPunto,
-						std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second));
-					addOrUpdateColliders(collidersSBB, "punto" + std::to_string(i), puntoCollider, modelMatrixColliderPunto);
-
-					modelMatrixColliderPunto = glm::translate(modelMatrixColliderPunto, puntoModel.getSbb().c);
-					puntoCollider.c = glm::vec3(modelMatrixColliderPunto[3]);
-					puntoCollider.ratio = puntoModel.getSbb().ratio * 0.6;
-					std::get<0>(collidersSBB.find("punto" + std::to_string(i))->second) = puntoCollider;
-				}
-				// Puntos POWER
-				else {
-					AbstractModel::SBB puntoCollider;
-					glm::mat4 modelMatrixColliderPunto = glm::mat4(1.0);
-					modelMatrixColliderPunto = glm::translate(modelMatrixColliderPunto,
-						std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second));
-					addOrUpdateColliders(collidersSBB, "punto" + std::to_string(i), puntoCollider, modelMatrixColliderPunto);
-
-					modelMatrixColliderPunto = glm::translate(modelMatrixColliderPunto, puntoModel.getSbb().c);
-					puntoCollider.c = glm::vec3(modelMatrixColliderPunto[3]);
-					puntoCollider.ratio = puntoModel.getSbb().ratio * 0.9;
-					std::get<0>(collidersSBB.find("punto" + std::to_string(i))->second) = puntoCollider;
-				}
-
-			}
-		}
-
-		//Collider cereza 
-		if (activoCereza == 1) {
-			AbstractModel::SBB cherryCollider;
-			glm::mat4 modelMatrixColliderCherry = glm::mat4(modelMatrixCherry);
-			modelMatrixColliderCherry = glm::scale(modelMatrixColliderCherry, glm::vec3(0.007, 0.007, 0.007));
-			modelMatrixColliderCherry = glm::translate(modelMatrixColliderCherry, modelCherry.getSbb().c + glm::vec3(0.0, 70.0, 0.0));
-			cherryCollider.c = glm::vec3(modelMatrixColliderCherry[3]);
-			cherryCollider.ratio = modelCherry.getSbb().ratio * 0.7;
-			addOrUpdateColliders(collidersSBB, "cereza", cherryCollider, modelMatrixCherry);
-		}
-
-		//Collider naranja
-		if (activoNaranja == 1) {
-			AbstractModel::SBB orangeCollider;
-			glm::mat4 modelMatrixColliderOrange = glm::mat4(modelMatrixOrange);
-			modelMatrixColliderOrange = glm::scale(modelMatrixColliderOrange, glm::vec3(0.09, 0.09, 0.09));
-			modelMatrixColliderOrange = glm::translate(modelMatrixColliderOrange, modelOrange.getSbb().c + glm::vec3(0.0, 8.0, 0.0));
-			orangeCollider.c = glm::vec3(modelMatrixColliderOrange[3]);
-			orangeCollider.ratio = modelOrange.getSbb().ratio * 0.9;
-			addOrUpdateColliders(collidersSBB, "naranja", orangeCollider, modelMatrixOrange);
-		}
-
-		//Collider fresa
-		if (activoFresa == 1) {
-			AbstractModel::SBB strawberryCollider;
-			glm::mat4 modelMatrixColliderStrawberry = glm::mat4(modelMatrixStrawberry);
-			modelMatrixColliderStrawberry = glm::scale(modelMatrixColliderStrawberry, glm::vec3(0.007, 0.007, 0.007));
-			modelMatrixColliderStrawberry = glm::translate(modelMatrixColliderStrawberry, modelStrawberry.getSbb().c + glm::vec3(0.0, 70.0, 0.0));
-			strawberryCollider.c = glm::vec3(modelMatrixColliderStrawberry[3]);
-			strawberryCollider.ratio = modelStrawberry.getSbb().ratio * 0.9;
-			addOrUpdateColliders(collidersSBB, "fresa", strawberryCollider, modelMatrixStrawberry);
-		}
 
 		//Collider Fantasma Rojo
 		if (activoFantasmaRojo == 1) {
@@ -2915,431 +2867,502 @@ void applicationLoop() {
 		/*********************************/
 
 		if (activoFantasmaRojo == 1 && activoFantasmaRosa == 1) {
-			if (glm::distance(posFantasmaRojo, posFantasmaRosa) <= 4.5f) {
+			if (glm::distance(posFantasmaRojo, posFantasmaRosa) <= 5.0f) {
 				auxGiroFantasmaRojo = 1;
 				auxGiroFantasmaRosa = 1;
 			}
 		}
 
 		if (activoFantasmaRojo == 1 && activoFantasmaCian == 1) {
-			if (glm::distance(posFantasmaRojo, posFantasmaCian) <= 4.5f) {
+			if (glm::distance(posFantasmaRojo, posFantasmaCian) <= 5.0f) {
 				auxGiroFantasmaRojo = 1;
 				auxGiroFantasmaCian = 1;
 			}
 		}
 
 		if (activoFantasmaRojo == 1 && activoFantasmaNaranja == 1) {
-			if (glm::distance(posFantasmaRojo, posFantasmaNaranja) <= 4.5f) {
+			if (glm::distance(posFantasmaRojo, posFantasmaNaranja) <= 5.0f) {
 				auxGiroFantasmaRojo = 1;
 				auxGiroFantasmaNaranja = 1;
 			}
 		}
 
 		if (activoFantasmaRosa == 1 && activoFantasmaCian == 1) {
-			if (glm::distance(posFantasmaRosa, posFantasmaCian) <= 4.5f) {
+			if (glm::distance(posFantasmaRosa, posFantasmaCian) <= 5.0f) {
 				auxGiroFantasmaRosa = 1;
 				auxGiroFantasmaCian = 1;
 			}
 		}
 
 		if (activoFantasmaRosa == 1 && activoFantasmaNaranja == 1) {
-			if (glm::distance(posFantasmaRosa, posFantasmaNaranja) <= 4.5f) {
+			if (glm::distance(posFantasmaRosa, posFantasmaNaranja) <= 5.0f) {
 				auxGiroFantasmaRosa = 1;
 				auxGiroFantasmaNaranja = 1;
 			}
 		}
 
 		if (activoFantasmaCian == 1 && activoFantasmaNaranja == 1) {
-			if (glm::distance(posFantasmaCian, posFantasmaNaranja) <= 4.5f) {
+			if (glm::distance(posFantasmaCian, posFantasmaNaranja) <= 5.0f) {
 				auxGiroFantasmaCian = 1;
 				auxGiroFantasmaNaranja = 1;
 			}
 		}
 
-		// Portal fantasma
-		AbstractModel::OBB portalFantasmaCollider;
-		glm::mat4 modelMatrixColliderPortalFantasma1 = glm::mat4(modelMatrixPortalFantasma1);
-		modelMatrixColliderPortalFantasma1 = glm::scale(modelMatrixColliderPortalFantasma1, glm::vec3(0.5, 0.5, 0.5));
-		portalFantasmaCollider.u = glm::quat_cast(modelMatrixColliderPortalFantasma1);
-		modelMatrixColliderPortalFantasma1 = glm::translate(modelMatrixColliderPortalFantasma1, glm::vec3(portalFantasma1Model.getObb().c.x, portalFantasma1Model.getObb().c.y, portalFantasma1Model.getObb().c.z));
-		portalFantasmaCollider.e = portalFantasma1Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		portalFantasmaCollider.c = glm::vec3(modelMatrixColliderPortalFantasma1[3]);
-		addOrUpdateColliders(collidersOBB, "portalFantasma1", portalFantasmaCollider, modelMatrixPortalFantasma1);
+		// Los puntos, frutas y laberinto solo la primera vez que se inicia 
+		// se verifican las cajas de colisión, ya que no se pmueven, no es
+		// necesario generarlas cada ciclo
+		if(tiempoJuego > 478) {
+			// Collider Puntos 
+			for (int i = 0; i < puntosPosition.size(); i++) {
+				if (std::get<1>(puntosPosition.find("punto" + std::to_string(i))->second) == 0) {
+					// Puntos NORMALES
+					if (i <= 214) {
+						AbstractModel::SBB puntoCollider;
+						glm::mat4 modelMatrixColliderPunto = glm::mat4(1.0);
+						modelMatrixColliderPunto = glm::translate(modelMatrixColliderPunto,
+							std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second));
+						addOrUpdateColliders(collidersSBB, "punto" + std::to_string(i), puntoCollider, modelMatrixColliderPunto);
 
-		glm::mat4 modelMatrixColliderPortalFantasma2 = glm::mat4(modelMatrixPortalFantasma2);
-		modelMatrixColliderPortalFantasma2 = glm::scale(modelMatrixColliderPortalFantasma2, glm::vec3(0.5, 0.5, 0.5));
-		portalFantasmaCollider.u = glm::quat_cast(modelMatrixColliderPortalFantasma2);
-		modelMatrixColliderPortalFantasma2 = glm::translate(modelMatrixColliderPortalFantasma2, glm::vec3(portalFantasma2Model.getObb().c.x, portalFantasma2Model.getObb().c.y, portalFantasma2Model.getObb().c.z));
-		portalFantasmaCollider.e = portalFantasma2Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		portalFantasmaCollider.c = glm::vec3(modelMatrixColliderPortalFantasma2[3]);
-		addOrUpdateColliders(collidersOBB, "portalFantasma2", portalFantasmaCollider, modelMatrixPortalFantasma2);
+						modelMatrixColliderPunto = glm::translate(modelMatrixColliderPunto, puntoModel.getSbb().c);
+						puntoCollider.c = glm::vec3(modelMatrixColliderPunto[3]);
+						puntoCollider.ratio = puntoModel.getSbb().ratio * 0.6;
+						std::get<0>(collidersSBB.find("punto" + std::to_string(i))->second) = puntoCollider;
+					}
+					// Puntos POWER
+					else {
+						AbstractModel::SBB puntoCollider;
+						glm::mat4 modelMatrixColliderPunto = glm::mat4(1.0);
+						modelMatrixColliderPunto = glm::translate(modelMatrixColliderPunto,
+							std::get<0>(puntosPosition.find("punto" + std::to_string(i))->second));
+						addOrUpdateColliders(collidersSBB, "punto" + std::to_string(i), puntoCollider, modelMatrixColliderPunto);
 
-		// Portal pacman
-		AbstractModel::OBB portalPacmanCollider;
-		glm::mat4 modelMatrixColliderPortalPacman1 = glm::mat4(modelMatrixPortalPacman1);
-		modelMatrixColliderPortalPacman1 = glm::scale(modelMatrixColliderPortalPacman1, glm::vec3(0.5, 0.5, 0.5));
-		portalPacmanCollider.u = glm::quat_cast(modelMatrixColliderPortalPacman1);
-		modelMatrixColliderPortalPacman1 = glm::translate(modelMatrixColliderPortalPacman1, glm::vec3(portalPacman1Model.getObb().c.x, portalPacman1Model.getObb().c.y, portalPacman1Model.getObb().c.z));
-		portalPacmanCollider.e = portalPacman1Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		portalPacmanCollider.c = glm::vec3(modelMatrixColliderPortalPacman1[3]);
-		addOrUpdateColliders(collidersOBB, "portalPacman1", portalPacmanCollider, modelMatrixPortalPacman1);
+						modelMatrixColliderPunto = glm::translate(modelMatrixColliderPunto, puntoModel.getSbb().c);
+						puntoCollider.c = glm::vec3(modelMatrixColliderPunto[3]);
+						puntoCollider.ratio = puntoModel.getSbb().ratio * 0.9;
+						std::get<0>(collidersSBB.find("punto" + std::to_string(i))->second) = puntoCollider;
+					}
 
-		glm::mat4 modelMatrixColliderPortalPacman2 = glm::mat4(modelMatrixPortalPacman2);
-		modelMatrixColliderPortalPacman2 = glm::scale(modelMatrixColliderPortalPacman2, glm::vec3(0.5, 0.5, 0.5));
-		portalPacmanCollider.u = glm::quat_cast(modelMatrixColliderPortalPacman2);
-		modelMatrixColliderPortalPacman2 = glm::translate(modelMatrixColliderPortalPacman2, glm::vec3(portalPacman2Model.getObb().c.x, portalPacman2Model.getObb().c.y, portalPacman2Model.getObb().c.z));
-		portalPacmanCollider.e = portalPacman2Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		portalPacmanCollider.c = glm::vec3(modelMatrixColliderPortalPacman2[3]);
-		addOrUpdateColliders(collidersOBB, "portalPacman2", portalPacmanCollider, modelMatrixPortalPacman2);
+				}
+			}
 
-		// Piso Antrocha
-		AbstractModel::OBB pisoAntorchaCollider;
-		glm::mat4 modelMatrixColliderPisoAntorcha1 = glm::mat4(modelMatrixPisoAntorcha1);
-		modelMatrixColliderPisoAntorcha1 = glm::scale(modelMatrixColliderPisoAntorcha1, glm::vec3(0.5, 0.5, 0.5));
-		pisoAntorchaCollider.u = glm::quat_cast(modelMatrixColliderPisoAntorcha1);
-		modelMatrixColliderPisoAntorcha1 = glm::translate(modelMatrixColliderPisoAntorcha1, glm::vec3(pisoAntorcha1Model.getObb().c.x, pisoAntorcha1Model.getObb().c.y, pisoAntorcha1Model.getObb().c.z));
-		pisoAntorchaCollider.e = pisoAntorcha1Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		pisoAntorchaCollider.c = glm::vec3(modelMatrixColliderPisoAntorcha1[3]);
-		addOrUpdateColliders(collidersOBB, "pisoAntorcha1", pisoAntorchaCollider, modelMatrixPisoAntorcha1);
+			//Collider cereza 
+			if (activoCereza == 1) {
+				AbstractModel::SBB cherryCollider;
+				glm::mat4 modelMatrixColliderCherry = glm::mat4(modelMatrixCherry);
+				modelMatrixColliderCherry = glm::scale(modelMatrixColliderCherry, glm::vec3(0.007, 0.007, 0.007));
+				modelMatrixColliderCherry = glm::translate(modelMatrixColliderCherry, modelCherry.getSbb().c + glm::vec3(0.0, 70.0, 0.0));
+				cherryCollider.c = glm::vec3(modelMatrixColliderCherry[3]);
+				cherryCollider.ratio = modelCherry.getSbb().ratio * 0.7;
+				addOrUpdateColliders(collidersSBB, "cereza", cherryCollider, modelMatrixCherry);
+			}
 
-		glm::mat4 modelMatrixColliderPisoAntorcha2 = glm::mat4(modelMatrixPisoAntorcha2);
-		modelMatrixColliderPisoAntorcha2 = glm::scale(modelMatrixColliderPisoAntorcha2, glm::vec3(0.5, 0.5, 0.5));
-		pisoAntorchaCollider.u = glm::quat_cast(modelMatrixColliderPisoAntorcha2);
-		modelMatrixColliderPisoAntorcha2 = glm::translate(modelMatrixColliderPisoAntorcha2, glm::vec3(pisoAntorcha2Model.getObb().c.x, pisoAntorcha2Model.getObb().c.y, pisoAntorcha2Model.getObb().c.z));
-		pisoAntorchaCollider.e = pisoAntorcha2Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		pisoAntorchaCollider.c = glm::vec3(modelMatrixColliderPisoAntorcha2[3]);
-		addOrUpdateColliders(collidersOBB, "pisoAntorcha2", pisoAntorchaCollider, modelMatrixPisoAntorcha2);
+			//Collider naranja
+			if (activoNaranja == 1) {
+				AbstractModel::SBB orangeCollider;
+				glm::mat4 modelMatrixColliderOrange = glm::mat4(modelMatrixOrange);
+				modelMatrixColliderOrange = glm::scale(modelMatrixColliderOrange, glm::vec3(0.09, 0.09, 0.09));
+				modelMatrixColliderOrange = glm::translate(modelMatrixColliderOrange, modelOrange.getSbb().c + glm::vec3(0.0, 8.0, 0.0));
+				orangeCollider.c = glm::vec3(modelMatrixColliderOrange[3]);
+				orangeCollider.ratio = modelOrange.getSbb().ratio * 0.9;
+				addOrUpdateColliders(collidersSBB, "naranja", orangeCollider, modelMatrixOrange);
+			}
 
-		glm::mat4 modelMatrixColliderPisoAntorcha3 = glm::mat4(modelMatrixPisoAntorcha3);
-		modelMatrixColliderPisoAntorcha3 = glm::scale(modelMatrixColliderPisoAntorcha3, glm::vec3(0.5, 0.5, 0.5));
-		pisoAntorchaCollider.u = glm::quat_cast(modelMatrixColliderPisoAntorcha3);
-		modelMatrixColliderPisoAntorcha3 = glm::translate(modelMatrixColliderPisoAntorcha3, glm::vec3(pisoAntorcha3Model.getObb().c.x, pisoAntorcha3Model.getObb().c.y, pisoAntorcha3Model.getObb().c.z));
-		pisoAntorchaCollider.e = pisoAntorcha3Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		pisoAntorchaCollider.c = glm::vec3(modelMatrixColliderPisoAntorcha3[3]);
-		addOrUpdateColliders(collidersOBB, "pisoAntorcha3", pisoAntorchaCollider, modelMatrixPisoAntorcha3);
+			//Collider fresa
+			if (activoFresa == 1) {
+				AbstractModel::SBB strawberryCollider;
+				glm::mat4 modelMatrixColliderStrawberry = glm::mat4(modelMatrixStrawberry);
+				modelMatrixColliderStrawberry = glm::scale(modelMatrixColliderStrawberry, glm::vec3(0.007, 0.007, 0.007));
+				modelMatrixColliderStrawberry = glm::translate(modelMatrixColliderStrawberry, modelStrawberry.getSbb().c + glm::vec3(0.0, 70.0, 0.0));
+				strawberryCollider.c = glm::vec3(modelMatrixColliderStrawberry[3]);
+				strawberryCollider.ratio = modelStrawberry.getSbb().ratio * 0.9;
+				addOrUpdateColliders(collidersSBB, "fresa", strawberryCollider, modelMatrixStrawberry);
+			}
 
-		glm::mat4 modelMatrixColliderPisoAntorcha4 = glm::mat4(modelMatrixPisoAntorcha4);
-		modelMatrixColliderPisoAntorcha4 = glm::scale(modelMatrixColliderPisoAntorcha4, glm::vec3(0.5, 0.5, 0.5));
-		pisoAntorchaCollider.u = glm::quat_cast(modelMatrixColliderPisoAntorcha4);
-		modelMatrixColliderPisoAntorcha4 = glm::translate(modelMatrixColliderPisoAntorcha4, glm::vec3(pisoAntorcha4Model.getObb().c.x, pisoAntorcha4Model.getObb().c.y, pisoAntorcha4Model.getObb().c.z));
-		pisoAntorchaCollider.e = pisoAntorcha4Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		pisoAntorchaCollider.c = glm::vec3(modelMatrixColliderPisoAntorcha4[3]);
-		addOrUpdateColliders(collidersOBB, "pisoAntorcha4", pisoAntorchaCollider, modelMatrixPisoAntorcha4);
+			// Portal fantasma
+			AbstractModel::OBB portalFantasmaCollider;
+			glm::mat4 modelMatrixColliderPortalFantasma1 = glm::mat4(modelMatrixPortalFantasma1);
+			modelMatrixColliderPortalFantasma1 = glm::scale(modelMatrixColliderPortalFantasma1, glm::vec3(0.5, 0.5, 0.5));
+			portalFantasmaCollider.u = glm::quat_cast(modelMatrixColliderPortalFantasma1);
+			modelMatrixColliderPortalFantasma1 = glm::translate(modelMatrixColliderPortalFantasma1, glm::vec3(portalFantasma1Model.getObb().c.x, portalFantasma1Model.getObb().c.y, portalFantasma1Model.getObb().c.z));
+			portalFantasmaCollider.e = portalFantasma1Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			portalFantasmaCollider.c = glm::vec3(modelMatrixColliderPortalFantasma1[3]);
+			addOrUpdateColliders(collidersOBB, "portalFantasma1", portalFantasmaCollider, modelMatrixPortalFantasma1);
 
-		//Laberinto
-		AbstractModel::OBB LECollider;
-		glm::mat4 modelmatrixColliderLE1 = glm::mat4(modelMatrixLE1);
-		modelmatrixColliderLE1 = glm::scale(modelmatrixColliderLE1, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE1);
-		modelmatrixColliderLE1 = glm::translate(modelmatrixColliderLE1, glm::vec3(LE1ModelAnimate.getObb().c.x, LE1ModelAnimate.getObb().c.y, LE1ModelAnimate.getObb().c.z));
-		LECollider.e = LE1ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE1[3]);
-		addOrUpdateColliders(collidersOBB, "LE1", LECollider, modelMatrixLE1);
+			glm::mat4 modelMatrixColliderPortalFantasma2 = glm::mat4(modelMatrixPortalFantasma2);
+			modelMatrixColliderPortalFantasma2 = glm::scale(modelMatrixColliderPortalFantasma2, glm::vec3(0.5, 0.5, 0.5));
+			portalFantasmaCollider.u = glm::quat_cast(modelMatrixColliderPortalFantasma2);
+			modelMatrixColliderPortalFantasma2 = glm::translate(modelMatrixColliderPortalFantasma2, glm::vec3(portalFantasma2Model.getObb().c.x, portalFantasma2Model.getObb().c.y, portalFantasma2Model.getObb().c.z));
+			portalFantasmaCollider.e = portalFantasma2Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			portalFantasmaCollider.c = glm::vec3(modelMatrixColliderPortalFantasma2[3]);
+			addOrUpdateColliders(collidersOBB, "portalFantasma2", portalFantasmaCollider, modelMatrixPortalFantasma2);
 
-		glm::mat4 modelmatrixColliderLE2 = glm::mat4(modelMatrixLE2);
-		modelmatrixColliderLE2 = glm::scale(modelmatrixColliderLE2, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE2);
-		modelmatrixColliderLE2 = glm::translate(modelmatrixColliderLE2, glm::vec3(LE2ModelAnimate.getObb().c.x, LE2ModelAnimate.getObb().c.y, LE2ModelAnimate.getObb().c.z));
-		LECollider.e = LE2ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE2[3]);
-		addOrUpdateColliders(collidersOBB, "LE2", LECollider, modelMatrixLE2);
+			// Portal pacman
+			AbstractModel::OBB portalPacmanCollider;
+			glm::mat4 modelMatrixColliderPortalPacman1 = glm::mat4(modelMatrixPortalPacman1);
+			modelMatrixColliderPortalPacman1 = glm::scale(modelMatrixColliderPortalPacman1, glm::vec3(0.5, 0.5, 0.5));
+			portalPacmanCollider.u = glm::quat_cast(modelMatrixColliderPortalPacman1);
+			modelMatrixColliderPortalPacman1 = glm::translate(modelMatrixColliderPortalPacman1, glm::vec3(portalPacman1Model.getObb().c.x, portalPacman1Model.getObb().c.y, portalPacman1Model.getObb().c.z));
+			portalPacmanCollider.e = portalPacman1Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			portalPacmanCollider.c = glm::vec3(modelMatrixColliderPortalPacman1[3]);
+			addOrUpdateColliders(collidersOBB, "portalPacman1", portalPacmanCollider, modelMatrixPortalPacman1);
 
-		glm::mat4 modelmatrixColliderLE3 = glm::mat4(modelMatrixLE3);
-		modelmatrixColliderLE3 = glm::scale(modelmatrixColliderLE3, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE3);
-		modelmatrixColliderLE3 = glm::translate(modelmatrixColliderLE3, glm::vec3(LE3ModelAnimate.getObb().c.x, LE3ModelAnimate.getObb().c.y, LE3ModelAnimate.getObb().c.z));
-		LECollider.e = LE3ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE3[3]);
-		addOrUpdateColliders(collidersOBB, "LE3", LECollider, modelMatrixLE3);
+			glm::mat4 modelMatrixColliderPortalPacman2 = glm::mat4(modelMatrixPortalPacman2);
+			modelMatrixColliderPortalPacman2 = glm::scale(modelMatrixColliderPortalPacman2, glm::vec3(0.5, 0.5, 0.5));
+			portalPacmanCollider.u = glm::quat_cast(modelMatrixColliderPortalPacman2);
+			modelMatrixColliderPortalPacman2 = glm::translate(modelMatrixColliderPortalPacman2, glm::vec3(portalPacman2Model.getObb().c.x, portalPacman2Model.getObb().c.y, portalPacman2Model.getObb().c.z));
+			portalPacmanCollider.e = portalPacman2Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			portalPacmanCollider.c = glm::vec3(modelMatrixColliderPortalPacman2[3]);
+			addOrUpdateColliders(collidersOBB, "portalPacman2", portalPacmanCollider, modelMatrixPortalPacman2);
 
-		glm::mat4 modelmatrixColliderLE4 = glm::mat4(modelMatrixLE4);
-		modelmatrixColliderLE4 = glm::scale(modelmatrixColliderLE4, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE4);
-		modelmatrixColliderLE4 = glm::translate(modelmatrixColliderLE4, glm::vec3(LE4ModelAnimate.getObb().c.x, LE4ModelAnimate.getObb().c.y, LE4ModelAnimate.getObb().c.z));
-		LECollider.e = LE4ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE4[3]);
-		addOrUpdateColliders(collidersOBB, "LE4", LECollider, modelMatrixLE4);
+			// Piso Antrocha
+			AbstractModel::OBB pisoAntorchaCollider;
+			glm::mat4 modelMatrixColliderPisoAntorcha1 = glm::mat4(modelMatrixPisoAntorcha1);
+			modelMatrixColliderPisoAntorcha1 = glm::scale(modelMatrixColliderPisoAntorcha1, glm::vec3(0.5, 0.5, 0.5));
+			pisoAntorchaCollider.u = glm::quat_cast(modelMatrixColliderPisoAntorcha1);
+			modelMatrixColliderPisoAntorcha1 = glm::translate(modelMatrixColliderPisoAntorcha1, glm::vec3(pisoAntorcha1Model.getObb().c.x, pisoAntorcha1Model.getObb().c.y, pisoAntorcha1Model.getObb().c.z));
+			pisoAntorchaCollider.e = pisoAntorcha1Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			pisoAntorchaCollider.c = glm::vec3(modelMatrixColliderPisoAntorcha1[3]);
+			addOrUpdateColliders(collidersOBB, "pisoAntorcha1", pisoAntorchaCollider, modelMatrixPisoAntorcha1);
 
-		glm::mat4 modelmatrixColliderLE5 = glm::mat4(modelMatrixLE5);
-		modelmatrixColliderLE5 = glm::scale(modelmatrixColliderLE5, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE5);
-		modelmatrixColliderLE5 = glm::translate(modelmatrixColliderLE5, glm::vec3(LE5ModelAnimate.getObb().c.x, LE5ModelAnimate.getObb().c.y, LE5ModelAnimate.getObb().c.z));
-		LECollider.e = LE5ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE5[3]);
-		addOrUpdateColliders(collidersOBB, "LE5", LECollider, modelMatrixLE5);
+			glm::mat4 modelMatrixColliderPisoAntorcha2 = glm::mat4(modelMatrixPisoAntorcha2);
+			modelMatrixColliderPisoAntorcha2 = glm::scale(modelMatrixColliderPisoAntorcha2, glm::vec3(0.5, 0.5, 0.5));
+			pisoAntorchaCollider.u = glm::quat_cast(modelMatrixColliderPisoAntorcha2);
+			modelMatrixColliderPisoAntorcha2 = glm::translate(modelMatrixColliderPisoAntorcha2, glm::vec3(pisoAntorcha2Model.getObb().c.x, pisoAntorcha2Model.getObb().c.y, pisoAntorcha2Model.getObb().c.z));
+			pisoAntorchaCollider.e = pisoAntorcha2Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			pisoAntorchaCollider.c = glm::vec3(modelMatrixColliderPisoAntorcha2[3]);
+			addOrUpdateColliders(collidersOBB, "pisoAntorcha2", pisoAntorchaCollider, modelMatrixPisoAntorcha2);
 
-		glm::mat4 modelmatrixColliderLE6 = glm::mat4(modelMatrixLE6);
-		modelmatrixColliderLE6 = glm::scale(modelmatrixColliderLE6, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE6);
-		modelmatrixColliderLE6 = glm::translate(modelmatrixColliderLE6, glm::vec3(LE6ModelAnimate.getObb().c.x, LE6ModelAnimate.getObb().c.y, LE6ModelAnimate.getObb().c.z));
-		LECollider.e = LE6ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE6[3]);
-		addOrUpdateColliders(collidersOBB, "LE6", LECollider, modelMatrixLE6);
+			glm::mat4 modelMatrixColliderPisoAntorcha3 = glm::mat4(modelMatrixPisoAntorcha3);
+			modelMatrixColliderPisoAntorcha3 = glm::scale(modelMatrixColliderPisoAntorcha3, glm::vec3(0.5, 0.5, 0.5));
+			pisoAntorchaCollider.u = glm::quat_cast(modelMatrixColliderPisoAntorcha3);
+			modelMatrixColliderPisoAntorcha3 = glm::translate(modelMatrixColliderPisoAntorcha3, glm::vec3(pisoAntorcha3Model.getObb().c.x, pisoAntorcha3Model.getObb().c.y, pisoAntorcha3Model.getObb().c.z));
+			pisoAntorchaCollider.e = pisoAntorcha3Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			pisoAntorchaCollider.c = glm::vec3(modelMatrixColliderPisoAntorcha3[3]);
+			addOrUpdateColliders(collidersOBB, "pisoAntorcha3", pisoAntorchaCollider, modelMatrixPisoAntorcha3);
 
-		glm::mat4 modelmatrixColliderLE7 = glm::mat4(modelMatrixLE7);
-		modelmatrixColliderLE7 = glm::scale(modelmatrixColliderLE7, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE7);
-		modelmatrixColliderLE7 = glm::translate(modelmatrixColliderLE7, glm::vec3(LE7ModelAnimate.getObb().c.x, LE7ModelAnimate.getObb().c.y, LE7ModelAnimate.getObb().c.z));
-		LECollider.e = LE7ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE7[3]);
-		addOrUpdateColliders(collidersOBB, "LE7", LECollider, modelMatrixLE7);
+			glm::mat4 modelMatrixColliderPisoAntorcha4 = glm::mat4(modelMatrixPisoAntorcha4);
+			modelMatrixColliderPisoAntorcha4 = glm::scale(modelMatrixColliderPisoAntorcha4, glm::vec3(0.5, 0.5, 0.5));
+			pisoAntorchaCollider.u = glm::quat_cast(modelMatrixColliderPisoAntorcha4);
+			modelMatrixColliderPisoAntorcha4 = glm::translate(modelMatrixColliderPisoAntorcha4, glm::vec3(pisoAntorcha4Model.getObb().c.x, pisoAntorcha4Model.getObb().c.y, pisoAntorcha4Model.getObb().c.z));
+			pisoAntorchaCollider.e = pisoAntorcha4Model.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			pisoAntorchaCollider.c = glm::vec3(modelMatrixColliderPisoAntorcha4[3]);
+			addOrUpdateColliders(collidersOBB, "pisoAntorcha4", pisoAntorchaCollider, modelMatrixPisoAntorcha4);
 
-		glm::mat4 modelmatrixColliderLE8 = glm::mat4(modelMatrixLE8);
-		modelmatrixColliderLE8 = glm::scale(modelmatrixColliderLE8, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE8);
-		modelmatrixColliderLE8 = glm::translate(modelmatrixColliderLE8, glm::vec3(LE8ModelAnimate.getObb().c.x, LE8ModelAnimate.getObb().c.y, LE8ModelAnimate.getObb().c.z));
-		LECollider.e = LE8ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE8[3]);
-		addOrUpdateColliders(collidersOBB, "LE8", LECollider, modelMatrixLE8);
+			//Laberinto
+			AbstractModel::OBB LECollider;
+			glm::mat4 modelmatrixColliderLE1 = glm::mat4(modelMatrixLE1);
+			modelmatrixColliderLE1 = glm::scale(modelmatrixColliderLE1, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE1);
+			modelmatrixColliderLE1 = glm::translate(modelmatrixColliderLE1, glm::vec3(LE1ModelAnimate.getObb().c.x, LE1ModelAnimate.getObb().c.y, LE1ModelAnimate.getObb().c.z));
+			LECollider.e = LE1ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE1[3]);
+			addOrUpdateColliders(collidersOBB, "LE1", LECollider, modelMatrixLE1);
 
-		glm::mat4 modelmatrixColliderLE9 = glm::mat4(modelMatrixLE9);
-		modelmatrixColliderLE9 = glm::scale(modelmatrixColliderLE9, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE9);
-		modelmatrixColliderLE9 = glm::translate(modelmatrixColliderLE9, glm::vec3(LE9ModelAnimate.getObb().c.x, LE9ModelAnimate.getObb().c.y, LE9ModelAnimate.getObb().c.z));
-		LECollider.e = LE9ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE9[3]);
-		addOrUpdateColliders(collidersOBB, "LE9", LECollider, modelMatrixLE9);
+			glm::mat4 modelmatrixColliderLE2 = glm::mat4(modelMatrixLE2);
+			modelmatrixColliderLE2 = glm::scale(modelmatrixColliderLE2, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE2);
+			modelmatrixColliderLE2 = glm::translate(modelmatrixColliderLE2, glm::vec3(LE2ModelAnimate.getObb().c.x, LE2ModelAnimate.getObb().c.y, LE2ModelAnimate.getObb().c.z));
+			LECollider.e = LE2ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE2[3]);
+			addOrUpdateColliders(collidersOBB, "LE2", LECollider, modelMatrixLE2);
 
-		glm::mat4 modelmatrixColliderLE10 = glm::mat4(modelMatrixLE10);
-		modelmatrixColliderLE10 = glm::scale(modelmatrixColliderLE10, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE10);
-		modelmatrixColliderLE10 = glm::translate(modelmatrixColliderLE10, glm::vec3(LE10ModelAnimate.getObb().c.x, LE10ModelAnimate.getObb().c.y, LE10ModelAnimate.getObb().c.z));
-		LECollider.e = LE10ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE10[3]);
-		addOrUpdateColliders(collidersOBB, "LE10", LECollider, modelMatrixLE10);
+			glm::mat4 modelmatrixColliderLE3 = glm::mat4(modelMatrixLE3);
+			modelmatrixColliderLE3 = glm::scale(modelmatrixColliderLE3, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE3);
+			modelmatrixColliderLE3 = glm::translate(modelmatrixColliderLE3, glm::vec3(LE3ModelAnimate.getObb().c.x, LE3ModelAnimate.getObb().c.y, LE3ModelAnimate.getObb().c.z));
+			LECollider.e = LE3ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE3[3]);
+			addOrUpdateColliders(collidersOBB, "LE3", LECollider, modelMatrixLE3);
 
-		glm::mat4 modelmatrixColliderLE11 = glm::mat4(modelMatrixLE11);
-		modelmatrixColliderLE11 = glm::scale(modelmatrixColliderLE11, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE11);
-		modelmatrixColliderLE11 = glm::translate(modelmatrixColliderLE11, glm::vec3(LE11ModelAnimate.getObb().c.x, LE11ModelAnimate.getObb().c.y, LE11ModelAnimate.getObb().c.z));
-		LECollider.e = LE11ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE11[3]);
-		addOrUpdateColliders(collidersOBB, "LE11", LECollider, modelMatrixLE11);
+			glm::mat4 modelmatrixColliderLE4 = glm::mat4(modelMatrixLE4);
+			modelmatrixColliderLE4 = glm::scale(modelmatrixColliderLE4, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE4);
+			modelmatrixColliderLE4 = glm::translate(modelmatrixColliderLE4, glm::vec3(LE4ModelAnimate.getObb().c.x, LE4ModelAnimate.getObb().c.y, LE4ModelAnimate.getObb().c.z));
+			LECollider.e = LE4ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE4[3]);
+			addOrUpdateColliders(collidersOBB, "LE4", LECollider, modelMatrixLE4);
 
-		glm::mat4 modelmatrixColliderLE12 = glm::mat4(modelMatrixLE12);
-		modelmatrixColliderLE12 = glm::scale(modelmatrixColliderLE12, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE12);
-		modelmatrixColliderLE12 = glm::translate(modelmatrixColliderLE12, glm::vec3(LE12ModelAnimate.getObb().c.x, LE12ModelAnimate.getObb().c.y, LE12ModelAnimate.getObb().c.z));
-		LECollider.e = LE12ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE12[3]);
-		addOrUpdateColliders(collidersOBB, "LE12", LECollider, modelMatrixLE12);
+			glm::mat4 modelmatrixColliderLE5 = glm::mat4(modelMatrixLE5);
+			modelmatrixColliderLE5 = glm::scale(modelmatrixColliderLE5, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE5);
+			modelmatrixColliderLE5 = glm::translate(modelmatrixColliderLE5, glm::vec3(LE5ModelAnimate.getObb().c.x, LE5ModelAnimate.getObb().c.y, LE5ModelAnimate.getObb().c.z));
+			LECollider.e = LE5ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE5[3]);
+			addOrUpdateColliders(collidersOBB, "LE5", LECollider, modelMatrixLE5);
 
-		glm::mat4 modelmatrixColliderLE13 = glm::mat4(modelMatrixLE13);
-		modelmatrixColliderLE13 = glm::scale(modelmatrixColliderLE13, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE13);
-		modelmatrixColliderLE13 = glm::translate(modelmatrixColliderLE13, glm::vec3(LE13ModelAnimate.getObb().c.x, LE13ModelAnimate.getObb().c.y, LE13ModelAnimate.getObb().c.z));
-		LECollider.e = LE13ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE13[3]);
-		addOrUpdateColliders(collidersOBB, "LE13", LECollider, modelMatrixLE13);
+			glm::mat4 modelmatrixColliderLE6 = glm::mat4(modelMatrixLE6);
+			modelmatrixColliderLE6 = glm::scale(modelmatrixColliderLE6, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE6);
+			modelmatrixColliderLE6 = glm::translate(modelmatrixColliderLE6, glm::vec3(LE6ModelAnimate.getObb().c.x, LE6ModelAnimate.getObb().c.y, LE6ModelAnimate.getObb().c.z));
+			LECollider.e = LE6ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE6[3]);
+			addOrUpdateColliders(collidersOBB, "LE6", LECollider, modelMatrixLE6);
 
-		glm::mat4 modelmatrixColliderLE14 = glm::mat4(modelMatrixLE14);
-		modelmatrixColliderLE14 = glm::scale(modelmatrixColliderLE14, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE14);
-		modelmatrixColliderLE14 = glm::translate(modelmatrixColliderLE14, glm::vec3(LE14ModelAnimate.getObb().c.x, LE14ModelAnimate.getObb().c.y, LE14ModelAnimate.getObb().c.z));
-		LECollider.e = LE14ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE14[3]);
-		addOrUpdateColliders(collidersOBB, "LE14", LECollider, modelMatrixLE14);
+			glm::mat4 modelmatrixColliderLE7 = glm::mat4(modelMatrixLE7);
+			modelmatrixColliderLE7 = glm::scale(modelmatrixColliderLE7, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE7);
+			modelmatrixColliderLE7 = glm::translate(modelmatrixColliderLE7, glm::vec3(LE7ModelAnimate.getObb().c.x, LE7ModelAnimate.getObb().c.y, LE7ModelAnimate.getObb().c.z));
+			LECollider.e = LE7ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE7[3]);
+			addOrUpdateColliders(collidersOBB, "LE7", LECollider, modelMatrixLE7);
 
-		glm::mat4 modelmatrixColliderLE15 = glm::mat4(modelMatrixLE15);
-		modelmatrixColliderLE15 = glm::scale(modelmatrixColliderLE15, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE15);
-		modelmatrixColliderLE15 = glm::translate(modelmatrixColliderLE15, glm::vec3(LE15ModelAnimate.getObb().c.x, LE15ModelAnimate.getObb().c.y, LE15ModelAnimate.getObb().c.z));
-		LECollider.e = LE15ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE15[3]);
-		addOrUpdateColliders(collidersOBB, "LE15", LECollider, modelMatrixLE15);
+			glm::mat4 modelmatrixColliderLE8 = glm::mat4(modelMatrixLE8);
+			modelmatrixColliderLE8 = glm::scale(modelmatrixColliderLE8, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE8);
+			modelmatrixColliderLE8 = glm::translate(modelmatrixColliderLE8, glm::vec3(LE8ModelAnimate.getObb().c.x, LE8ModelAnimate.getObb().c.y, LE8ModelAnimate.getObb().c.z));
+			LECollider.e = LE8ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE8[3]);
+			addOrUpdateColliders(collidersOBB, "LE8", LECollider, modelMatrixLE8);
 
-		glm::mat4 modelmatrixColliderLE16 = glm::mat4(modelMatrixLE16);
-		modelmatrixColliderLE16 = glm::scale(modelmatrixColliderLE16, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE16);
-		modelmatrixColliderLE16 = glm::translate(modelmatrixColliderLE16, glm::vec3(LE16ModelAnimate.getObb().c.x, LE16ModelAnimate.getObb().c.y, LE16ModelAnimate.getObb().c.z));
-		LECollider.e = LE16ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE16[3]);
-		addOrUpdateColliders(collidersOBB, "LE16", LECollider, modelMatrixLE16);
+			glm::mat4 modelmatrixColliderLE9 = glm::mat4(modelMatrixLE9);
+			modelmatrixColliderLE9 = glm::scale(modelmatrixColliderLE9, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE9);
+			modelmatrixColliderLE9 = glm::translate(modelmatrixColliderLE9, glm::vec3(LE9ModelAnimate.getObb().c.x, LE9ModelAnimate.getObb().c.y, LE9ModelAnimate.getObb().c.z));
+			LECollider.e = LE9ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE9[3]);
+			addOrUpdateColliders(collidersOBB, "LE9", LECollider, modelMatrixLE9);
 
-		glm::mat4 modelmatrixColliderLE17 = glm::mat4(modelMatrixLE17);
-		modelmatrixColliderLE17 = glm::scale(modelmatrixColliderLE17, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE17);
-		modelmatrixColliderLE17 = glm::translate(modelmatrixColliderLE17, glm::vec3(LE17ModelAnimate.getObb().c.x, LE17ModelAnimate.getObb().c.y, LE17ModelAnimate.getObb().c.z));
-		LECollider.e = LE17ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE17[3]);
-		addOrUpdateColliders(collidersOBB, "LE17", LECollider, modelMatrixLE17);
+			glm::mat4 modelmatrixColliderLE10 = glm::mat4(modelMatrixLE10);
+			modelmatrixColliderLE10 = glm::scale(modelmatrixColliderLE10, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE10);
+			modelmatrixColliderLE10 = glm::translate(modelmatrixColliderLE10, glm::vec3(LE10ModelAnimate.getObb().c.x, LE10ModelAnimate.getObb().c.y, LE10ModelAnimate.getObb().c.z));
+			LECollider.e = LE10ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE10[3]);
+			addOrUpdateColliders(collidersOBB, "LE10", LECollider, modelMatrixLE10);
 
-		glm::mat4 modelmatrixColliderLE18 = glm::mat4(modelMatrixLE18);
-		modelmatrixColliderLE18 = glm::scale(modelmatrixColliderLE18, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE18);
-		modelmatrixColliderLE18 = glm::translate(modelmatrixColliderLE18, glm::vec3(LE18ModelAnimate.getObb().c.x, LE18ModelAnimate.getObb().c.y, LE18ModelAnimate.getObb().c.z));
-		LECollider.e = LE18ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE18[3]);
-		addOrUpdateColliders(collidersOBB, "LE18", LECollider, modelMatrixLE18);
+			glm::mat4 modelmatrixColliderLE11 = glm::mat4(modelMatrixLE11);
+			modelmatrixColliderLE11 = glm::scale(modelmatrixColliderLE11, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE11);
+			modelmatrixColliderLE11 = glm::translate(modelmatrixColliderLE11, glm::vec3(LE11ModelAnimate.getObb().c.x, LE11ModelAnimate.getObb().c.y, LE11ModelAnimate.getObb().c.z));
+			LECollider.e = LE11ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE11[3]);
+			addOrUpdateColliders(collidersOBB, "LE11", LECollider, modelMatrixLE11);
 
-		glm::mat4 modelmatrixColliderLE19 = glm::mat4(modelMatrixLE19);
-		modelmatrixColliderLE19 = glm::scale(modelmatrixColliderLE19, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE19);
-		modelmatrixColliderLE19 = glm::translate(modelmatrixColliderLE19, glm::vec3(LE19ModelAnimate.getObb().c.x, LE19ModelAnimate.getObb().c.y, LE19ModelAnimate.getObb().c.z));
-		LECollider.e = LE19ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE19[3]);
-		addOrUpdateColliders(collidersOBB, "LE19", LECollider, modelMatrixLE19);
+			glm::mat4 modelmatrixColliderLE12 = glm::mat4(modelMatrixLE12);
+			modelmatrixColliderLE12 = glm::scale(modelmatrixColliderLE12, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE12);
+			modelmatrixColliderLE12 = glm::translate(modelmatrixColliderLE12, glm::vec3(LE12ModelAnimate.getObb().c.x, LE12ModelAnimate.getObb().c.y, LE12ModelAnimate.getObb().c.z));
+			LECollider.e = LE12ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE12[3]);
+			addOrUpdateColliders(collidersOBB, "LE12", LECollider, modelMatrixLE12);
 
-		glm::mat4 modelmatrixColliderLE20 = glm::mat4(modelMatrixLE20);
-		modelmatrixColliderLE20 = glm::scale(modelmatrixColliderLE20, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE20);
-		modelmatrixColliderLE20 = glm::translate(modelmatrixColliderLE20, glm::vec3(LE20ModelAnimate.getObb().c.x, LE20ModelAnimate.getObb().c.y, LE20ModelAnimate.getObb().c.z));
-		LECollider.e = LE20ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE20[3]);
-		addOrUpdateColliders(collidersOBB, "LE20", LECollider, modelMatrixLE20);
+			glm::mat4 modelmatrixColliderLE13 = glm::mat4(modelMatrixLE13);
+			modelmatrixColliderLE13 = glm::scale(modelmatrixColliderLE13, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE13);
+			modelmatrixColliderLE13 = glm::translate(modelmatrixColliderLE13, glm::vec3(LE13ModelAnimate.getObb().c.x, LE13ModelAnimate.getObb().c.y, LE13ModelAnimate.getObb().c.z));
+			LECollider.e = LE13ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE13[3]);
+			addOrUpdateColliders(collidersOBB, "LE13", LECollider, modelMatrixLE13);
 
-		glm::mat4 modelmatrixColliderLE21 = glm::mat4(modelMatrixLE21);
-		modelmatrixColliderLE21 = glm::scale(modelmatrixColliderLE21, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE21);
-		modelmatrixColliderLE21 = glm::translate(modelmatrixColliderLE21, glm::vec3(LE21ModelAnimate.getObb().c.x, LE21ModelAnimate.getObb().c.y, LE21ModelAnimate.getObb().c.z));
-		LECollider.e = LE21ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE21[3]);
-		addOrUpdateColliders(collidersOBB, "LE21", LECollider, modelMatrixLE21);
+			glm::mat4 modelmatrixColliderLE14 = glm::mat4(modelMatrixLE14);
+			modelmatrixColliderLE14 = glm::scale(modelmatrixColliderLE14, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE14);
+			modelmatrixColliderLE14 = glm::translate(modelmatrixColliderLE14, glm::vec3(LE14ModelAnimate.getObb().c.x, LE14ModelAnimate.getObb().c.y, LE14ModelAnimate.getObb().c.z));
+			LECollider.e = LE14ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE14[3]);
+			addOrUpdateColliders(collidersOBB, "LE14", LECollider, modelMatrixLE14);
 
-		glm::mat4 modelmatrixColliderLE22 = glm::mat4(modelMatrixLE22);
-		modelmatrixColliderLE22 = glm::scale(modelmatrixColliderLE22, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE22);
-		modelmatrixColliderLE22 = glm::translate(modelmatrixColliderLE22, glm::vec3(LE22ModelAnimate.getObb().c.x, LE22ModelAnimate.getObb().c.y, LE22ModelAnimate.getObb().c.z));
-		LECollider.e = LE22ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE22[3]);
-		addOrUpdateColliders(collidersOBB, "LE22", LECollider, modelMatrixLE22);
+			glm::mat4 modelmatrixColliderLE15 = glm::mat4(modelMatrixLE15);
+			modelmatrixColliderLE15 = glm::scale(modelmatrixColliderLE15, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE15);
+			modelmatrixColliderLE15 = glm::translate(modelmatrixColliderLE15, glm::vec3(LE15ModelAnimate.getObb().c.x, LE15ModelAnimate.getObb().c.y, LE15ModelAnimate.getObb().c.z));
+			LECollider.e = LE15ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE15[3]);
+			addOrUpdateColliders(collidersOBB, "LE15", LECollider, modelMatrixLE15);
 
-		glm::mat4 modelmatrixColliderLE23 = glm::mat4(modelMatrixLE23);
-		modelmatrixColliderLE23 = glm::scale(modelmatrixColliderLE23, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE23);
-		modelmatrixColliderLE23 = glm::translate(modelmatrixColliderLE23, glm::vec3(LE23ModelAnimate.getObb().c.x, LE23ModelAnimate.getObb().c.y, LE23ModelAnimate.getObb().c.z));
-		LECollider.e = LE23ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE23[3]);
-		addOrUpdateColliders(collidersOBB, "LE23", LECollider, modelMatrixLE23);
+			glm::mat4 modelmatrixColliderLE16 = glm::mat4(modelMatrixLE16);
+			modelmatrixColliderLE16 = glm::scale(modelmatrixColliderLE16, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE16);
+			modelmatrixColliderLE16 = glm::translate(modelmatrixColliderLE16, glm::vec3(LE16ModelAnimate.getObb().c.x, LE16ModelAnimate.getObb().c.y, LE16ModelAnimate.getObb().c.z));
+			LECollider.e = LE16ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE16[3]);
+			addOrUpdateColliders(collidersOBB, "LE16", LECollider, modelMatrixLE16);
 
-		glm::mat4 modelmatrixColliderLE24 = glm::mat4(modelMatrixLE24);
-		modelmatrixColliderLE24 = glm::scale(modelmatrixColliderLE24, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE24);
-		modelmatrixColliderLE24 = glm::translate(modelmatrixColliderLE24, glm::vec3(LE24ModelAnimate.getObb().c.x, LE24ModelAnimate.getObb().c.y, LE24ModelAnimate.getObb().c.z));
-		LECollider.e = LE24ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE24[3]);
-		addOrUpdateColliders(collidersOBB, "LE24", LECollider, modelMatrixLE24);
+			glm::mat4 modelmatrixColliderLE17 = glm::mat4(modelMatrixLE17);
+			modelmatrixColliderLE17 = glm::scale(modelmatrixColliderLE17, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE17);
+			modelmatrixColliderLE17 = glm::translate(modelmatrixColliderLE17, glm::vec3(LE17ModelAnimate.getObb().c.x, LE17ModelAnimate.getObb().c.y, LE17ModelAnimate.getObb().c.z));
+			LECollider.e = LE17ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE17[3]);
+			addOrUpdateColliders(collidersOBB, "LE17", LECollider, modelMatrixLE17);
 
-		glm::mat4 modelmatrixColliderLE25 = glm::mat4(modelMatrixLE25);
-		modelmatrixColliderLE25 = glm::scale(modelmatrixColliderLE25, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE25);
-		modelmatrixColliderLE25 = glm::translate(modelmatrixColliderLE25, glm::vec3(LE25ModelAnimate.getObb().c.x, LE25ModelAnimate.getObb().c.y, LE25ModelAnimate.getObb().c.z));
-		LECollider.e = LE25ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE25[3]);
-		addOrUpdateColliders(collidersOBB, "LE25", LECollider, modelMatrixLE25);
+			glm::mat4 modelmatrixColliderLE18 = glm::mat4(modelMatrixLE18);
+			modelmatrixColliderLE18 = glm::scale(modelmatrixColliderLE18, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE18);
+			modelmatrixColliderLE18 = glm::translate(modelmatrixColliderLE18, glm::vec3(LE18ModelAnimate.getObb().c.x, LE18ModelAnimate.getObb().c.y, LE18ModelAnimate.getObb().c.z));
+			LECollider.e = LE18ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE18[3]);
+			addOrUpdateColliders(collidersOBB, "LE18", LECollider, modelMatrixLE18);
 
-		glm::mat4 modelmatrixColliderLE26 = glm::mat4(modelMatrixLE26);
-		modelmatrixColliderLE26 = glm::scale(modelmatrixColliderLE26, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE26);
-		modelmatrixColliderLE26 = glm::translate(modelmatrixColliderLE26, glm::vec3(LE26ModelAnimate.getObb().c.x, LE26ModelAnimate.getObb().c.y, LE26ModelAnimate.getObb().c.z));
-		LECollider.e = LE26ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE26[3]);
-		addOrUpdateColliders(collidersOBB, "LE26", LECollider, modelMatrixLE26);
+			glm::mat4 modelmatrixColliderLE19 = glm::mat4(modelMatrixLE19);
+			modelmatrixColliderLE19 = glm::scale(modelmatrixColliderLE19, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE19);
+			modelmatrixColliderLE19 = glm::translate(modelmatrixColliderLE19, glm::vec3(LE19ModelAnimate.getObb().c.x, LE19ModelAnimate.getObb().c.y, LE19ModelAnimate.getObb().c.z));
+			LECollider.e = LE19ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE19[3]);
+			addOrUpdateColliders(collidersOBB, "LE19", LECollider, modelMatrixLE19);
 
-		glm::mat4 modelmatrixColliderLE27 = glm::mat4(modelMatrixLE27);
-		modelmatrixColliderLE27 = glm::scale(modelmatrixColliderLE27, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE27);
-		modelmatrixColliderLE27 = glm::translate(modelmatrixColliderLE27, glm::vec3(LE27ModelAnimate.getObb().c.x, LE27ModelAnimate.getObb().c.y, LE27ModelAnimate.getObb().c.z));
-		LECollider.e = LE27ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE27[3]);
-		addOrUpdateColliders(collidersOBB, "LE27", LECollider, modelMatrixLE27);
+			glm::mat4 modelmatrixColliderLE20 = glm::mat4(modelMatrixLE20);
+			modelmatrixColliderLE20 = glm::scale(modelmatrixColliderLE20, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE20);
+			modelmatrixColliderLE20 = glm::translate(modelmatrixColliderLE20, glm::vec3(LE20ModelAnimate.getObb().c.x, LE20ModelAnimate.getObb().c.y, LE20ModelAnimate.getObb().c.z));
+			LECollider.e = LE20ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE20[3]);
+			addOrUpdateColliders(collidersOBB, "LE20", LECollider, modelMatrixLE20);
 
-		glm::mat4 modelmatrixColliderLE28 = glm::mat4(modelMatrixLE28);
-		modelmatrixColliderLE28 = glm::scale(modelmatrixColliderLE28, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE28);
-		modelmatrixColliderLE28 = glm::translate(modelmatrixColliderLE28, glm::vec3(LE28ModelAnimate.getObb().c.x, LE28ModelAnimate.getObb().c.y, LE28ModelAnimate.getObb().c.z));
-		LECollider.e = LE28ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE28[3]);
-		addOrUpdateColliders(collidersOBB, "LE28", LECollider, modelMatrixLE28);
+			glm::mat4 modelmatrixColliderLE21 = glm::mat4(modelMatrixLE21);
+			modelmatrixColliderLE21 = glm::scale(modelmatrixColliderLE21, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE21);
+			modelmatrixColliderLE21 = glm::translate(modelmatrixColliderLE21, glm::vec3(LE21ModelAnimate.getObb().c.x, LE21ModelAnimate.getObb().c.y, LE21ModelAnimate.getObb().c.z));
+			LECollider.e = LE21ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE21[3]);
+			addOrUpdateColliders(collidersOBB, "LE21", LECollider, modelMatrixLE21);
 
-		glm::mat4 modelmatrixColliderLE29 = glm::mat4(modelMatrixLE29);
-		modelmatrixColliderLE29 = glm::scale(modelmatrixColliderLE29, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE29);
-		modelmatrixColliderLE29 = glm::translate(modelmatrixColliderLE29, glm::vec3(LE29ModelAnimate.getObb().c.x, LE29ModelAnimate.getObb().c.y, LE29ModelAnimate.getObb().c.z));
-		LECollider.e = LE29ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE29[3]);
-		addOrUpdateColliders(collidersOBB, "LE29", LECollider, modelMatrixLE29);
+			glm::mat4 modelmatrixColliderLE22 = glm::mat4(modelMatrixLE22);
+			modelmatrixColliderLE22 = glm::scale(modelmatrixColliderLE22, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE22);
+			modelmatrixColliderLE22 = glm::translate(modelmatrixColliderLE22, glm::vec3(LE22ModelAnimate.getObb().c.x, LE22ModelAnimate.getObb().c.y, LE22ModelAnimate.getObb().c.z));
+			LECollider.e = LE22ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE22[3]);
+			addOrUpdateColliders(collidersOBB, "LE22", LECollider, modelMatrixLE22);
 
-		glm::mat4 modelmatrixColliderLE30 = glm::mat4(modelMatrixLE30);
-		modelmatrixColliderLE30 = glm::scale(modelmatrixColliderLE30, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE30);
-		modelmatrixColliderLE30 = glm::translate(modelmatrixColliderLE30, glm::vec3(LE30ModelAnimate.getObb().c.x, LE30ModelAnimate.getObb().c.y, LE30ModelAnimate.getObb().c.z));
-		LECollider.e = LE30ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE30[3]);
-		addOrUpdateColliders(collidersOBB, "LE30", LECollider, modelMatrixLE30);
+			glm::mat4 modelmatrixColliderLE23 = glm::mat4(modelMatrixLE23);
+			modelmatrixColliderLE23 = glm::scale(modelmatrixColliderLE23, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE23);
+			modelmatrixColliderLE23 = glm::translate(modelmatrixColliderLE23, glm::vec3(LE23ModelAnimate.getObb().c.x, LE23ModelAnimate.getObb().c.y, LE23ModelAnimate.getObb().c.z));
+			LECollider.e = LE23ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE23[3]);
+			addOrUpdateColliders(collidersOBB, "LE23", LECollider, modelMatrixLE23);
 
-		glm::mat4 modelmatrixColliderLE31 = glm::mat4(modelMatrixLE31);
-		modelmatrixColliderLE31 = glm::scale(modelmatrixColliderLE31, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE31);
-		modelmatrixColliderLE31 = glm::translate(modelmatrixColliderLE31, glm::vec3(LE31ModelAnimate.getObb().c.x, LE31ModelAnimate.getObb().c.y, LE31ModelAnimate.getObb().c.z));
-		LECollider.e = LE31ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE31[3]);
-		addOrUpdateColliders(collidersOBB, "LE31", LECollider, modelMatrixLE31);
+			glm::mat4 modelmatrixColliderLE24 = glm::mat4(modelMatrixLE24);
+			modelmatrixColliderLE24 = glm::scale(modelmatrixColliderLE24, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE24);
+			modelmatrixColliderLE24 = glm::translate(modelmatrixColliderLE24, glm::vec3(LE24ModelAnimate.getObb().c.x, LE24ModelAnimate.getObb().c.y, LE24ModelAnimate.getObb().c.z));
+			LECollider.e = LE24ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE24[3]);
+			addOrUpdateColliders(collidersOBB, "LE24", LECollider, modelMatrixLE24);
 
-		glm::mat4 modelmatrixColliderLE32 = glm::mat4(modelMatrixLE32);
-		modelmatrixColliderLE32 = glm::scale(modelmatrixColliderLE32, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE32);
-		modelmatrixColliderLE32 = glm::translate(modelmatrixColliderLE32, glm::vec3(LE32ModelAnimate.getObb().c.x, LE32ModelAnimate.getObb().c.y, LE32ModelAnimate.getObb().c.z));
-		LECollider.e = LE32ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE32[3]);
-		addOrUpdateColliders(collidersOBB, "LE32", LECollider, modelMatrixLE32);
+			glm::mat4 modelmatrixColliderLE25 = glm::mat4(modelMatrixLE25);
+			modelmatrixColliderLE25 = glm::scale(modelmatrixColliderLE25, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE25);
+			modelmatrixColliderLE25 = glm::translate(modelmatrixColliderLE25, glm::vec3(LE25ModelAnimate.getObb().c.x, LE25ModelAnimate.getObb().c.y, LE25ModelAnimate.getObb().c.z));
+			LECollider.e = LE25ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE25[3]);
+			addOrUpdateColliders(collidersOBB, "LE25", LECollider, modelMatrixLE25);
 
-		glm::mat4 modelmatrixColliderLE33 = glm::mat4(modelMatrixLE33);
-		modelmatrixColliderLE33 = glm::scale(modelmatrixColliderLE33, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE33);
-		modelmatrixColliderLE33 = glm::translate(modelmatrixColliderLE33, glm::vec3(LE33ModelAnimate.getObb().c.x, LE33ModelAnimate.getObb().c.y, LE33ModelAnimate.getObb().c.z));
-		LECollider.e = LE33ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE33[3]);
-		addOrUpdateColliders(collidersOBB, "LE33", LECollider, modelMatrixLE33);
+			glm::mat4 modelmatrixColliderLE26 = glm::mat4(modelMatrixLE26);
+			modelmatrixColliderLE26 = glm::scale(modelmatrixColliderLE26, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE26);
+			modelmatrixColliderLE26 = glm::translate(modelmatrixColliderLE26, glm::vec3(LE26ModelAnimate.getObb().c.x, LE26ModelAnimate.getObb().c.y, LE26ModelAnimate.getObb().c.z));
+			LECollider.e = LE26ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE26[3]);
+			addOrUpdateColliders(collidersOBB, "LE26", LECollider, modelMatrixLE26);
 
-		glm::mat4 modelmatrixColliderLE34 = glm::mat4(modelMatrixLE34);
-		modelmatrixColliderLE34 = glm::scale(modelmatrixColliderLE34, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE34);
-		modelmatrixColliderLE34 = glm::translate(modelmatrixColliderLE34, glm::vec3(LE34ModelAnimate.getObb().c.x, LE34ModelAnimate.getObb().c.y, LE34ModelAnimate.getObb().c.z));
-		LECollider.e = LE34ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE34[3]);
-		addOrUpdateColliders(collidersOBB, "LE34", LECollider, modelMatrixLE34);
+			glm::mat4 modelmatrixColliderLE27 = glm::mat4(modelMatrixLE27);
+			modelmatrixColliderLE27 = glm::scale(modelmatrixColliderLE27, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE27);
+			modelmatrixColliderLE27 = glm::translate(modelmatrixColliderLE27, glm::vec3(LE27ModelAnimate.getObb().c.x, LE27ModelAnimate.getObb().c.y, LE27ModelAnimate.getObb().c.z));
+			LECollider.e = LE27ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE27[3]);
+			addOrUpdateColliders(collidersOBB, "LE27", LECollider, modelMatrixLE27);
 
-		glm::mat4 modelmatrixColliderLE35 = glm::mat4(modelMatrixLE35);
-		modelmatrixColliderLE35 = glm::scale(modelmatrixColliderLE35, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE35);
-		modelmatrixColliderLE35 = glm::translate(modelmatrixColliderLE35, glm::vec3(LE35ModelAnimate.getObb().c.x, LE35ModelAnimate.getObb().c.y, LE35ModelAnimate.getObb().c.z));
-		LECollider.e = LE35ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE35[3]);
-		addOrUpdateColliders(collidersOBB, "LE35", LECollider, modelMatrixLE35);
+			glm::mat4 modelmatrixColliderLE28 = glm::mat4(modelMatrixLE28);
+			modelmatrixColliderLE28 = glm::scale(modelmatrixColliderLE28, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE28);
+			modelmatrixColliderLE28 = glm::translate(modelmatrixColliderLE28, glm::vec3(LE28ModelAnimate.getObb().c.x, LE28ModelAnimate.getObb().c.y, LE28ModelAnimate.getObb().c.z));
+			LECollider.e = LE28ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE28[3]);
+			addOrUpdateColliders(collidersOBB, "LE28", LECollider, modelMatrixLE28);
 
-		glm::mat4 modelmatrixColliderLE36 = glm::mat4(modelMatrixLE36);
-		modelmatrixColliderLE36 = glm::scale(modelmatrixColliderLE36, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE36);
-		modelmatrixColliderLE36 = glm::translate(modelmatrixColliderLE36, glm::vec3(LE36ModelAnimate.getObb().c.x, LE36ModelAnimate.getObb().c.y, LE36ModelAnimate.getObb().c.z));
-		LECollider.e = LE36ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE36[3]);
-		addOrUpdateColliders(collidersOBB, "LE36", LECollider, modelMatrixLE36);
+			glm::mat4 modelmatrixColliderLE29 = glm::mat4(modelMatrixLE29);
+			modelmatrixColliderLE29 = glm::scale(modelmatrixColliderLE29, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE29);
+			modelmatrixColliderLE29 = glm::translate(modelmatrixColliderLE29, glm::vec3(LE29ModelAnimate.getObb().c.x, LE29ModelAnimate.getObb().c.y, LE29ModelAnimate.getObb().c.z));
+			LECollider.e = LE29ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE29[3]);
+			addOrUpdateColliders(collidersOBB, "LE29", LECollider, modelMatrixLE29);
 
-		glm::mat4 modelmatrixColliderLE37 = glm::mat4(modelMatrixLE37);
-		modelmatrixColliderLE37 = glm::scale(modelmatrixColliderLE37, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE37);
-		modelmatrixColliderLE37 = glm::translate(modelmatrixColliderLE37, glm::vec3(LE37ModelAnimate.getObb().c.x, LE37ModelAnimate.getObb().c.y, LE37ModelAnimate.getObb().c.z));
-		LECollider.e = LE37ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE37[3]);
-		addOrUpdateColliders(collidersOBB, "LE37", LECollider, modelMatrixLE37);
+			glm::mat4 modelmatrixColliderLE30 = glm::mat4(modelMatrixLE30);
+			modelmatrixColliderLE30 = glm::scale(modelmatrixColliderLE30, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE30);
+			modelmatrixColliderLE30 = glm::translate(modelmatrixColliderLE30, glm::vec3(LE30ModelAnimate.getObb().c.x, LE30ModelAnimate.getObb().c.y, LE30ModelAnimate.getObb().c.z));
+			LECollider.e = LE30ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE30[3]);
+			addOrUpdateColliders(collidersOBB, "LE30", LECollider, modelMatrixLE30);
 
-		glm::mat4 modelmatrixColliderLE38 = glm::mat4(modelMatrixLE38);
-		modelmatrixColliderLE38 = glm::scale(modelmatrixColliderLE38, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE38);
-		modelmatrixColliderLE38 = glm::translate(modelmatrixColliderLE38, glm::vec3(LE38ModelAnimate.getObb().c.x, LE38ModelAnimate.getObb().c.y, LE38ModelAnimate.getObb().c.z));
-		LECollider.e = LE38ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE38[3]);
-		addOrUpdateColliders(collidersOBB, "LE38", LECollider, modelMatrixLE38);
+			glm::mat4 modelmatrixColliderLE31 = glm::mat4(modelMatrixLE31);
+			modelmatrixColliderLE31 = glm::scale(modelmatrixColliderLE31, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE31);
+			modelmatrixColliderLE31 = glm::translate(modelmatrixColliderLE31, glm::vec3(LE31ModelAnimate.getObb().c.x, LE31ModelAnimate.getObb().c.y, LE31ModelAnimate.getObb().c.z));
+			LECollider.e = LE31ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE31[3]);
+			addOrUpdateColliders(collidersOBB, "LE31", LECollider, modelMatrixLE31);
 
-		glm::mat4 modelmatrixColliderLE39 = glm::mat4(modelMatrixLE39);
-		modelmatrixColliderLE39 = glm::scale(modelmatrixColliderLE39, glm::vec3(0.5, 0.5, 0.5));
-		LECollider.u = glm::quat_cast(modelmatrixColliderLE39);
-		modelmatrixColliderLE39 = glm::translate(modelmatrixColliderLE39, glm::vec3(LE39ModelAnimate.getObb().c.x, LE39ModelAnimate.getObb().c.y, LE39ModelAnimate.getObb().c.z));
-		LECollider.e = LE39ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
-		LECollider.c = glm::vec3(modelmatrixColliderLE39[3]);
-		addOrUpdateColliders(collidersOBB, "LE39", LECollider, modelMatrixLE39);
+			glm::mat4 modelmatrixColliderLE32 = glm::mat4(modelMatrixLE32);
+			modelmatrixColliderLE32 = glm::scale(modelmatrixColliderLE32, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE32);
+			modelmatrixColliderLE32 = glm::translate(modelmatrixColliderLE32, glm::vec3(LE32ModelAnimate.getObb().c.x, LE32ModelAnimate.getObb().c.y, LE32ModelAnimate.getObb().c.z));
+			LECollider.e = LE32ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE32[3]);
+			addOrUpdateColliders(collidersOBB, "LE32", LECollider, modelMatrixLE32);
 
+			glm::mat4 modelmatrixColliderLE33 = glm::mat4(modelMatrixLE33);
+			modelmatrixColliderLE33 = glm::scale(modelmatrixColliderLE33, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE33);
+			modelmatrixColliderLE33 = glm::translate(modelmatrixColliderLE33, glm::vec3(LE33ModelAnimate.getObb().c.x, LE33ModelAnimate.getObb().c.y, LE33ModelAnimate.getObb().c.z));
+			LECollider.e = LE33ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE33[3]);
+			addOrUpdateColliders(collidersOBB, "LE33", LECollider, modelMatrixLE33);
+
+			glm::mat4 modelmatrixColliderLE34 = glm::mat4(modelMatrixLE34);
+			modelmatrixColliderLE34 = glm::scale(modelmatrixColliderLE34, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE34);
+			modelmatrixColliderLE34 = glm::translate(modelmatrixColliderLE34, glm::vec3(LE34ModelAnimate.getObb().c.x, LE34ModelAnimate.getObb().c.y, LE34ModelAnimate.getObb().c.z));
+			LECollider.e = LE34ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE34[3]);
+			addOrUpdateColliders(collidersOBB, "LE34", LECollider, modelMatrixLE34);
+
+			glm::mat4 modelmatrixColliderLE35 = glm::mat4(modelMatrixLE35);
+			modelmatrixColliderLE35 = glm::scale(modelmatrixColliderLE35, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE35);
+			modelmatrixColliderLE35 = glm::translate(modelmatrixColliderLE35, glm::vec3(LE35ModelAnimate.getObb().c.x, LE35ModelAnimate.getObb().c.y, LE35ModelAnimate.getObb().c.z));
+			LECollider.e = LE35ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE35[3]);
+			addOrUpdateColliders(collidersOBB, "LE35", LECollider, modelMatrixLE35);
+
+			glm::mat4 modelmatrixColliderLE36 = glm::mat4(modelMatrixLE36);
+			modelmatrixColliderLE36 = glm::scale(modelmatrixColliderLE36, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE36);
+			modelmatrixColliderLE36 = glm::translate(modelmatrixColliderLE36, glm::vec3(LE36ModelAnimate.getObb().c.x, LE36ModelAnimate.getObb().c.y, LE36ModelAnimate.getObb().c.z));
+			LECollider.e = LE36ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE36[3]);
+			addOrUpdateColliders(collidersOBB, "LE36", LECollider, modelMatrixLE36);
+
+			glm::mat4 modelmatrixColliderLE37 = glm::mat4(modelMatrixLE37);
+			modelmatrixColliderLE37 = glm::scale(modelmatrixColliderLE37, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE37);
+			modelmatrixColliderLE37 = glm::translate(modelmatrixColliderLE37, glm::vec3(LE37ModelAnimate.getObb().c.x, LE37ModelAnimate.getObb().c.y, LE37ModelAnimate.getObb().c.z));
+			LECollider.e = LE37ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE37[3]);
+			addOrUpdateColliders(collidersOBB, "LE37", LECollider, modelMatrixLE37);
+
+			glm::mat4 modelmatrixColliderLE38 = glm::mat4(modelMatrixLE38);
+			modelmatrixColliderLE38 = glm::scale(modelmatrixColliderLE38, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE38);
+			modelmatrixColliderLE38 = glm::translate(modelmatrixColliderLE38, glm::vec3(LE38ModelAnimate.getObb().c.x, LE38ModelAnimate.getObb().c.y, LE38ModelAnimate.getObb().c.z));
+			LECollider.e = LE38ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE38[3]);
+			addOrUpdateColliders(collidersOBB, "LE38", LECollider, modelMatrixLE38);
+
+			glm::mat4 modelmatrixColliderLE39 = glm::mat4(modelMatrixLE39);
+			modelmatrixColliderLE39 = glm::scale(modelmatrixColliderLE39, glm::vec3(0.5, 0.5, 0.5));
+			LECollider.u = glm::quat_cast(modelmatrixColliderLE39);
+			modelmatrixColliderLE39 = glm::translate(modelmatrixColliderLE39, glm::vec3(LE39ModelAnimate.getObb().c.x, LE39ModelAnimate.getObb().c.y, LE39ModelAnimate.getObb().c.z));
+			LECollider.e = LE39ModelAnimate.getObb().e * glm::vec3(0.5, 0.5, 0.5);
+			LECollider.c = glm::vec3(modelmatrixColliderLE39[3]);
+			addOrUpdateColliders(collidersOBB, "LE39", LECollider, modelMatrixLE39);
+		}
+		
 		/*******************************************
 		 * Render de colliders
 		 *******************************************/
@@ -3365,60 +3388,52 @@ void applicationLoop() {
 			 sphereCollider.render(matrixCollider);
 		 }
 		 */
+
 		 /*******************************************
 		  * Test Colisions
 		  *******************************************/
+		// Detección colision OBB y OBB
 		for (std::map<std::string,
-			std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >::iterator it =
-			collidersOBB.begin(); it != collidersOBB.end(); it++) {
+			std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >::iterator it = collidersOBB.begin(); 
+			it != collidersOBB.end(); it++) {
 			bool isCollision = false;
 			for (std::map<std::string,
-				std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >::iterator jt =
-				collidersOBB.begin(); jt != collidersOBB.end(); jt++) {
+				std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >::iterator jt = collidersOBB.begin(); 
+				jt != collidersOBB.end(); jt++) {
 				if (it != jt && testOBBOBB(std::get<0>(it->second), std::get<0>(jt->second))) {
 					// Se verifica la colision de un fantasma con alguna pared
 					if (it->first.compare("fantasmaRojo") == 0 && jt->first[0] != 'f') {
 						if (activoFantasmaRojo == 1) {
-							if (verificaMoveFantasmaRojo == 1) {
+							if (verificaMoveFantasmaRojo == 1) 
 								moveIzqFantasmaRojo = 1;
-							}
-							else if (verificaMoveFantasmaRojo == 3) {
+							else if (verificaMoveFantasmaRojo == 3) 
 								moveDerFantasmaRojo = 1;
-							}
 						}
 					}
 					if (it->first.compare("fantasmaRosa") == 0 && jt->first[0] != 'f') {
 						if (activoFantasmaRosa == 1) {
-							if (verificaMoveFantasmaRosa == 1) {
+							if (verificaMoveFantasmaRosa == 1) 
 								moveIzqFantasmaRosa = 1;
-							}
-							else if (verificaMoveFantasmaRosa == 3) {
+							else if (verificaMoveFantasmaRosa == 3) 
 								moveDerFantasmaRosa = 1;
-							}
 						}
 					}
 					if (it->first.compare("fantasmaCian") == 0 && jt->first[0] != 'f') {
 						if (activoFantasmaCian == 1) {
-							if (verificaMoveFantasmaCian == 1) {
+							if (verificaMoveFantasmaCian == 1) 
 								moveIzqFantasmaCian = 1;
-							}
-							else if (verificaMoveFantasmaCian == 3) {
+							else if (verificaMoveFantasmaCian == 3)
 								moveDerFantasmaCian = 1;
-							}
 						}
 					}
 					if (it->first.compare("fantasmaNaranja") == 0 && jt->first[0] != 'f') {
 						if (activoFantasmaNaranja == 1) {
-							if (verificaMoveFantasmaNaranja == 1) {
+							if (verificaMoveFantasmaNaranja == 1) 
 								moveIzqFantasmaNaranja = 1;
-							}
-							else if (verificaMoveFantasmaNaranja == 3) {
+							else if (verificaMoveFantasmaNaranja == 3) 
 								moveDerFantasmaNaranja = 1;
-							}
 						}
 					}
-
-					//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
 
 					if (it->first[0] == 'f' && jt->first[0] == 'f')
 						isCollision = false;
@@ -3429,15 +3444,15 @@ void applicationLoop() {
 			addOrUpdateCollisionDetection(collisionDetection, it->first, isCollision);
 		}
 
+		// Detección colision SBB y SBB
 		for (std::map<std::string,
-			std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> >::iterator it =
-			collidersSBB.begin(); it != collidersSBB.end(); it++) {
+			std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> >::iterator it = collidersSBB.begin(); 
+			it != collidersSBB.end(); it++) {
 			bool isCollision = false;
 			for (std::map<std::string,
-				std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> >::iterator jt =
-				collidersSBB.begin(); jt != collidersSBB.end(); jt++) {
+				std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> >::iterator jt = collidersSBB.begin(); 
+				jt != collidersSBB.end(); jt++) {
 				if (it != jt && testSphereSphereIntersection(std::get<0>(it->second), std::get<0>(jt->second))) {
-					//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
 					// Se verifica colision entre un punto y Pacman
 					if (it->first[0] == 'p' && it->first[1] == 'u' && jt->first.compare("pacman") == 0) {
 						//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
@@ -3454,21 +3469,18 @@ void applicationLoop() {
 						puntoObtenido.insert(std::pair<std::string, int>(it->first, 1));
 					}
 					else if (it->first.compare("cereza") == 0 && jt->first.compare("pacman") == 0) {
-						//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
 						activoCereza = 0;
 						puntosPacman = puntosPacman + 50;
 						//comeFruta(true);
 						std::cout << "Puntos -> " << puntosPacman << std::endl;
 					}
 					else if (it->first.compare("fresa") == 0 && jt->first.compare("pacman") == 0) {
-						//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
 						activoFresa = 0;
 						puntosPacman = puntosPacman + 100;
 						//comeFruta(true);
 						std::cout << "Puntos -> " << puntosPacman << std::endl;
 					}
 					else if (it->first.compare("naranja") == 0 && jt->first.compare("pacman") == 0) {
-						//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
 						activoNaranja = 0;
 						puntosPacman = puntosPacman + 150;
 						//comeFruta(true);
@@ -3487,13 +3499,12 @@ void applicationLoop() {
 			addOrUpdateCollisionDetection(collisionDetection, it->first, isCollision);
 		}
 
-		for (std::map<std::string,
-			std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> >::iterator it =
-			collidersSBB.begin(); it != collidersSBB.end(); it++) {
+		// Detección colision SBB y OBB
+		for (std::map<std::string, std::tuple<AbstractModel::SBB, 
+			glm::mat4, glm::mat4> >::iterator it = collidersSBB.begin(); 
+			it != collidersSBB.end(); it++) {
 			bool isCollision = false;
-			std::map<std::string,
-				std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >::iterator jt =
-				collidersOBB.begin();
+			std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >::iterator jt = collidersOBB.begin();
 			for (; jt != collidersOBB.end(); jt++) {
 				if (testSphereOBox(std::get<0>(it->second), std::get<0>(jt->second))) {
 					// Se evita detectar la colision entre un PUNTO y un FANTASMA
@@ -3501,12 +3512,13 @@ void applicationLoop() {
 						isCollision = true;
 						addOrUpdateCollisionDetection(collisionDetection, jt->first, isCollision);
 					}
-					if (it->first.compare("pacman") == 0 && jt->first.compare("portalPacman1") == 0) {
+
+					if (it->first.compare("pacman") == 0 && jt->first.compare("portalPacman1") == 0)
 						auxPortalPacman1 = 1;
-					}
-					if (it->first.compare("pacman") == 0 && jt->first.compare("portalPacman2") == 0) {
+					
+					if (it->first.compare("pacman") == 0 && jt->first.compare("portalPacman2") == 0)
 						auxPortalPacman2 = 1;
-					}
+					
 					// Se detecta colision entre PACMAN y FANTASMA
 					if (it->first.compare("pacman") == 0 && jt->first[0] == 'f') {
 						// Se verifica si PACMAN puede comer un fantasma por haber comido un punto POWER
@@ -3527,9 +3539,9 @@ void applicationLoop() {
 								activoFantasmaNaranja = 0;
 								tiempoMuertoNaranja = 10;
 							}
-
 							puntosPacman = puntosPacman + 10;
 						}
+						// En caso de que no, se afecta la vida del Pac-Man
 						else {
 							if (vidaPacman >= 2) {
 								vidaPacman = vidaPacman - 1;
@@ -3554,20 +3566,23 @@ void applicationLoop() {
 			addOrUpdateCollisionDetection(collisionDetection, it->first, isCollision);
 		}
 
+		// Detección de las colisiones de los OBB y SBB
 		std::map<std::string, bool>::iterator colIt;
 		for (colIt = collisionDetection.begin(); colIt != collisionDetection.end(); colIt++) {
-			std::map<std::string,
-				std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> >::iterator it =
+			std::map<std::string, std::tuple<AbstractModel::SBB, glm::mat4, glm::mat4> >::iterator it =
 				collidersSBB.find(colIt->first);
-			std::map<std::string,
-				std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >::iterator jt =
+			std::map<std::string, std::tuple<AbstractModel::OBB, glm::mat4, glm::mat4> >::iterator jt =
 				collidersOBB.find(colIt->first);
 			if (it != collidersSBB.end()) {
 				if (!colIt->second)
 					addOrUpdateColliders(collidersSBB, it->first);
 				else {
-					if (it->first.compare("pacman") == 0)
+					if (it->first.compare("pacman") == 0) {
 						modelMatrixPacman = std::get<1>(it->second);
+						//if (anteriorMove != auxMove)
+							//anteriorMove = auxMove;
+						
+					}
 				}
 			}
 			if (jt != collidersOBB.end()) {
@@ -3681,6 +3696,8 @@ void applicationLoop() {
 			}
 		}
 
+		// Conteo y eliminación de puntos de la escena para que el el proximo ciclo
+		// no sean renderizados los puntos que ya han sido comidos por Pac-Man
 		for (std::map<std::string, int>::iterator p = puntoObtenido.begin(); p != puntoObtenido.end(); p++) {
 			collidersSBB.erase(collidersSBB.find(p->first));
 			puntosPacman = puntosPacman + p->second;
@@ -3692,218 +3709,43 @@ void applicationLoop() {
 
 		// Constantes de animaciones
 		if (menuPrincipal == 1) {
-			animationIndex = 1;
-			camera->setPitch(glm::radians(32.0f));
+			camera->setPitch(glm::radians(20.0f));
 			camera->setDistanceFromTarget(8.0f);
 			camera->setAngleAroundTarget(glm::radians(180.0f));
+			animationIndex = 1;
 		}
 		else {
-			if (tiempoJuego == 0 || vidaPacman == 0)
+			if (tiempoJuego == 0 || vidaPacman == 0) {
+				camera->setPitch(glm::radians(60.0f));
+				camera->setDistanceFromTarget(8.0f);
 				animationIndex = 0;
-			else if (pause == 1)
-				animationIndex = 1;
+			}
 			else {
 				camera->setPitch(glm::radians(26.0f));
 				camera->setDistanceFromTarget(15.0f);
-				camera->setAngleAroundTarget(glm::radians(8.0f));
 				animationIndex = 2;
 			}
 
+			if (pause == 1)
+				animationIndex = 1;
+			
+			if (vistaAerea == 1) 
+				camera->setAngleAroundTarget(glm::radians(0.0f));
+			else
+				camera->setAngleAroundTarget(glm::radians(8.0f));
 		}
 
 		/*******************************************
 		 * State machines
 		 *******************************************/
-		 // Movimiento fantasma 
-		 // Para poder recorrer más dinamicamente el laberinto
-		 // verificamos los posibles caminos para ver la posibilidad
-		 // de algun giro al avanzar hacia al frente
-
-		 /********************************/
-		 // Movimiento fantasma ROJO
-		 /********************************/
-
-		if (activoFantasmaRojo == 1 && tiempoJuego > 0 && vidaPacman > 0 && menuPrincipal == 0 && pause == 0) {
-			// Verificamos si chocamos con alguna pared a la izquierda
-			if (verificaMoveFantasmaRojo == 0) {
-				modelMatrixFantasmaRojo = glm::translate(modelMatrixFantasmaRojo, glm::vec3(-0.5625, 0.0, 0.0));
-				verificaMoveFantasmaRojo = 1;
-			}
-			// Esperamos un tiempo
-			else if (verificaMoveFantasmaRojo == 1)
-				verificaMoveFantasmaRojo = 2;
-			// Verificamos si chocamos con alguna pared a la derecha
-			else if (verificaMoveFantasmaRojo == 2) {
-				modelMatrixFantasmaRojo = glm::translate(modelMatrixFantasmaRojo, glm::vec3(0.5625, 0, 0.0));
-				verificaMoveFantasmaRojo = 3;
-			}
-			// Esperamos un tiempo
-			else if (verificaMoveFantasmaRojo == 3)
-				verificaMoveFantasmaRojo = 4;
-			// Avanzamos hacia al frente
-			else if (verificaMoveFantasmaRojo == 4) {
-				if (moveIzqFantasmaRojo == 1 && moveDerFantasmaRojo == 0)
-					modelMatrixFantasmaRojo = glm::rotate(modelMatrixFantasmaRojo, glm::radians(90.0f), glm::vec3(0, 1, 0));
-				else if (moveIzqFantasmaRojo == 0 && moveDerFantasmaRojo == 1)
-					modelMatrixFantasmaRojo = glm::rotate(modelMatrixFantasmaRojo, glm::radians(-90.0f), glm::vec3(0, 1, 0));
-				else if (moveIzqFantasmaRojo == 0 && moveDerFantasmaRojo == 0) {
-					auxGiro = rand() % 10;
-					if (auxGiro == 0 || auxGiro == 2 || auxGiro == 4 || auxGiro == 6 || auxGiro == 8)
-						modelMatrixFantasmaRojo = glm::rotate(modelMatrixFantasmaRojo, glm::radians(90.0f), glm::vec3(0, 1, 0));
-					else
-						modelMatrixFantasmaRojo = glm::rotate(modelMatrixFantasmaRojo, glm::radians(-90.0f), glm::vec3(0, 1, 0));
-				}
-				if (auxGiroFantasmaRojo == 1) {
-					modelMatrixFantasmaRojo = glm::rotate(modelMatrixFantasmaRojo, glm::radians(180.0f), glm::vec3(0, 1, 0));
-					auxGiroFantasmaRojo = 0;
-				}
-				modelMatrixFantasmaRojo = glm::translate(modelMatrixFantasmaRojo, glm::vec3(0.0, 0, 0.5625));
-				verificaMoveFantasmaRojo = 0;
-				moveIzqFantasmaRojo = 0;
-				moveDerFantasmaRojo = 0;
-			}
-		}
-
-		/********************************/
-		// Movimiento fantasma ROSA
-		/********************************/
-
-		if (activoFantasmaRosa == 1 && tiempoJuego > 0 && vidaPacman > 0 && menuPrincipal == 0 && pause == 0) {
-			// Verificamos si chocamos con alguna pared a la izquierda
-			if (verificaMoveFantasmaRosa == 0) {
-				modelMatrixFantasmaRosa = glm::translate(modelMatrixFantasmaRosa, glm::vec3(-0.5625, 0.0, 0.0));
-				verificaMoveFantasmaRosa = 1;
-			}
-			// Esperamos un tiempo
-			else if (verificaMoveFantasmaRosa == 1)
-				verificaMoveFantasmaRosa = 2;
-			// Verificamos si chocamos con alguna pared a la derecha
-			else if (verificaMoveFantasmaRosa == 2) {
-				modelMatrixFantasmaRosa = glm::translate(modelMatrixFantasmaRosa, glm::vec3(0.5625, 0, 0.0));
-				verificaMoveFantasmaRosa = 3;
-			}
-			// Esperamos un tiempo
-			else if (verificaMoveFantasmaRosa == 3)
-				verificaMoveFantasmaRosa = 4;
-			// Avanzamos hacia al frente
-			else if (verificaMoveFantasmaRosa == 4) {
-				if (moveIzqFantasmaRosa == 1 && moveDerFantasmaRosa == 0)
-					modelMatrixFantasmaRosa = glm::rotate(modelMatrixFantasmaRosa, glm::radians(90.0f), glm::vec3(0, 1, 0));
-				else if (moveIzqFantasmaRosa == 0 && moveDerFantasmaRosa == 1)
-					modelMatrixFantasmaRosa = glm::rotate(modelMatrixFantasmaRosa, glm::radians(-90.0f), glm::vec3(0, 1, 0));
-				else if (moveIzqFantasmaRosa == 0 && moveDerFantasmaRosa == 0) {
-					auxGiro = rand() % 10;
-					if (auxGiro == 0 || auxGiro == 2 || auxGiro == 4 || auxGiro == 6 || auxGiro == 8)
-						modelMatrixFantasmaRosa = glm::rotate(modelMatrixFantasmaRosa, glm::radians(90.0f), glm::vec3(0, 1, 0));
-					else
-						modelMatrixFantasmaRosa = glm::rotate(modelMatrixFantasmaRosa, glm::radians(-90.0f), glm::vec3(0, 1, 0));
-				}
-				if (auxGiroFantasmaRosa == 1) {
-					modelMatrixFantasmaRosa = glm::rotate(modelMatrixFantasmaRosa, glm::radians(180.0f), glm::vec3(0, 1, 0));
-					auxGiroFantasmaRosa = 0;
-				}
-				modelMatrixFantasmaRosa = glm::translate(modelMatrixFantasmaRosa, glm::vec3(0.0, 0, 0.5625));
-				verificaMoveFantasmaRosa = 0;
-				moveIzqFantasmaRosa = 0;
-				moveDerFantasmaRosa = 0;
-			}
-		}
-
-		/********************************/
-		// Movimiento fantasma CIAN
-		/********************************/
-
-		if (activoFantasmaCian == 1 && tiempoJuego > 0 && vidaPacman > 0 && menuPrincipal == 0 && pause == 0) {
-			// Verificamos si chocamos con alguna pared a la izquierda
-			if (verificaMoveFantasmaCian == 0) {
-				modelMatrixFantasmaCian = glm::translate(modelMatrixFantasmaCian, glm::vec3(-0.5625, 0.0, 0.0));
-				verificaMoveFantasmaCian = 1;
-			}
-			// Esperamos un tiempo
-			else if (verificaMoveFantasmaCian == 1)
-				verificaMoveFantasmaCian = 2;
-			// Verificamos si chocamos con alguna pared a la derecha
-			else if (verificaMoveFantasmaCian == 2) {
-				modelMatrixFantasmaCian = glm::translate(modelMatrixFantasmaCian, glm::vec3(0.5625, 0, 0.0));
-				verificaMoveFantasmaCian = 3;
-			}
-			// Esperamos un tiempo
-			else if (verificaMoveFantasmaCian == 3)
-				verificaMoveFantasmaCian = 4;
-			// Avanzamos hacia al frente
-			else if (verificaMoveFantasmaCian == 4) {
-				if (moveIzqFantasmaCian == 1 && moveDerFantasmaCian == 0)
-					modelMatrixFantasmaCian = glm::rotate(modelMatrixFantasmaCian, glm::radians(90.0f), glm::vec3(0, 1, 0));
-				else if (moveIzqFantasmaCian == 0 && moveDerFantasmaCian == 1)
-					modelMatrixFantasmaCian = glm::rotate(modelMatrixFantasmaCian, glm::radians(-90.0f), glm::vec3(0, 1, 0));
-				else if (moveIzqFantasmaCian == 0 && moveDerFantasmaCian == 0) {
-					auxGiro = rand() % 10;
-					if (auxGiro == 0 || auxGiro == 2 || auxGiro == 4 || auxGiro == 6 || auxGiro == 8)
-						modelMatrixFantasmaCian = glm::rotate(modelMatrixFantasmaCian, glm::radians(90.0f), glm::vec3(0, 1, 0));
-					else
-						modelMatrixFantasmaCian = glm::rotate(modelMatrixFantasmaCian, glm::radians(-90.0f), glm::vec3(0, 1, 0));
-				}
-				if (auxGiroFantasmaCian == 1) {
-					modelMatrixFantasmaCian = glm::rotate(modelMatrixFantasmaCian, glm::radians(180.0f), glm::vec3(0, 1, 0));
-					auxGiroFantasmaCian = 0;
-				}
-				modelMatrixFantasmaCian = glm::translate(modelMatrixFantasmaCian, glm::vec3(0.0, 0, 0.5625));
-				verificaMoveFantasmaCian = 0;
-				moveIzqFantasmaCian = 0;
-				moveDerFantasmaCian = 0;
-			}
-		}
-
-		/********************************/
-		// Movimiento fantasma NARANJA
-		/********************************/
-
-		if (activoFantasmaNaranja == 1 && tiempoJuego > 0 && vidaPacman > 0 && menuPrincipal == 0 && pause == 0) {
-			// Verificamos si chocamos con alguna pared a la izquierda
-			if (verificaMoveFantasmaNaranja == 0) {
-				modelMatrixFantasmaNaranja = glm::translate(modelMatrixFantasmaNaranja, glm::vec3(-0.5625, 0.0, 0.0));
-				verificaMoveFantasmaNaranja = 1;
-			}
-			// Esperamos un tiempo
-			else if (verificaMoveFantasmaNaranja == 1)
-				verificaMoveFantasmaNaranja = 2;
-			// Verificamos si chocamos con alguna pared a la derecha
-			else if (verificaMoveFantasmaNaranja == 2) {
-				modelMatrixFantasmaNaranja = glm::translate(modelMatrixFantasmaNaranja, glm::vec3(0.5625, 0, 0.0));
-				verificaMoveFantasmaNaranja = 3;
-			}
-			// Esperamos un tiempo
-			else if (verificaMoveFantasmaNaranja == 3)
-				verificaMoveFantasmaNaranja = 4;
-			// Avanzamos hacia al frente
-			else if (verificaMoveFantasmaNaranja == 4) {
-				if (moveIzqFantasmaNaranja == 1 && moveDerFantasmaNaranja == 0)
-					modelMatrixFantasmaNaranja = glm::rotate(modelMatrixFantasmaNaranja, glm::radians(90.0f), glm::vec3(0, 1, 0));
-				else if (moveIzqFantasmaNaranja == 0 && moveDerFantasmaNaranja == 1)
-					modelMatrixFantasmaNaranja = glm::rotate(modelMatrixFantasmaNaranja, glm::radians(-90.0f), glm::vec3(0, 1, 0));
-				else if (moveIzqFantasmaNaranja == 0 && moveDerFantasmaNaranja == 0) {
-					auxGiro = rand() % 10;
-					if (auxGiro == 0 || auxGiro == 2 || auxGiro == 4 || auxGiro == 6 || auxGiro == 8)
-						modelMatrixFantasmaNaranja = glm::rotate(modelMatrixFantasmaNaranja, glm::radians(90.0f), glm::vec3(0, 1, 0));
-					else
-						modelMatrixFantasmaNaranja = glm::rotate(modelMatrixFantasmaNaranja, glm::radians(-90.0f), glm::vec3(0, 1, 0));
-				}
-				if (auxGiroFantasmaNaranja == 1) {
-					modelMatrixFantasmaNaranja = glm::rotate(modelMatrixFantasmaNaranja, glm::radians(180.0f), glm::vec3(0, 1, 0));
-					auxGiroFantasmaNaranja = 0;
-				}
-				modelMatrixFantasmaNaranja = glm::translate(modelMatrixFantasmaNaranja, glm::vec3(0.0, 0, 0.5625));
-				verificaMoveFantasmaNaranja = 0;
-				moveIzqFantasmaNaranja = 0;
-				moveDerFantasmaNaranja = 0;
-			}
-		}
+		
+		movimientoFantasma();
 
 		glfwSwapBuffers(window);
 
-		/****************************+
+		/****************************
 		 * Open AL sound data
-		 */
+		 ****************************/
 		 // Listener for the thiird person camera -> PACMAN
 		listenerPos[0] = modelMatrixPacman[3].x;
 		listenerPos[1] = modelMatrixPacman[3].y;
@@ -3927,6 +3769,193 @@ void applicationLoop() {
 				sourcesPlay[i] = false;
 				alSourcePlay(source[i]);
 			}
+		}
+	}
+}
+
+void movimientoFantasma() {
+	// Movimiento fantasma 
+	// Para poder recorrer más dinamicamente el laberinto
+	// verificamos los posibles caminos para ver la posibilidad
+	// de algun giro al avanzar hacia al frente
+
+	/********************************/
+	// Movimiento fantasma ROJO
+	/********************************/
+
+	if (activoFantasmaRojo == 1 && tiempoJuego > 0 && vidaPacman > 0 && menuPrincipal == 0 && pause == 0) {
+		// Verificamos si chocamos con alguna pared a la izquierda
+		if (verificaMoveFantasmaRojo == 0) {
+			modelMatrixFantasmaRojo = glm::translate(modelMatrixFantasmaRojo, glm::vec3(-0.5625, 0.0, 0.0));
+			verificaMoveFantasmaRojo = 1;
+		}
+		// Esperamos un tiempo
+		else if (verificaMoveFantasmaRojo == 1)
+			verificaMoveFantasmaRojo = 2;
+		// Verificamos si chocamos con alguna pared a la derecha
+		else if (verificaMoveFantasmaRojo == 2) {
+			modelMatrixFantasmaRojo = glm::translate(modelMatrixFantasmaRojo, glm::vec3(0.5625, 0, 0.0));
+			verificaMoveFantasmaRojo = 3;
+		}
+		// Esperamos un tiempo
+		else if (verificaMoveFantasmaRojo == 3)
+			verificaMoveFantasmaRojo = 4;
+		// Avanzamos hacia al frente
+		else if (verificaMoveFantasmaRojo == 4) {
+			if (moveIzqFantasmaRojo == 1 && moveDerFantasmaRojo == 0)
+				modelMatrixFantasmaRojo = glm::rotate(modelMatrixFantasmaRojo, glm::radians(90.0f), glm::vec3(0, 1, 0));
+			else if (moveIzqFantasmaRojo == 0 && moveDerFantasmaRojo == 1)
+				modelMatrixFantasmaRojo = glm::rotate(modelMatrixFantasmaRojo, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			else if (moveIzqFantasmaRojo == 0 && moveDerFantasmaRojo == 0) {
+				auxGiro = rand() % 10;
+				if (auxGiro == 0 || auxGiro == 2 || auxGiro == 4 || auxGiro == 6 || auxGiro == 8)
+					modelMatrixFantasmaRojo = glm::rotate(modelMatrixFantasmaRojo, glm::radians(90.0f), glm::vec3(0, 1, 0));
+				else
+					modelMatrixFantasmaRojo = glm::rotate(modelMatrixFantasmaRojo, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			}
+			if (auxGiroFantasmaRojo == 1) {
+				modelMatrixFantasmaRojo = glm::rotate(modelMatrixFantasmaRojo, glm::radians(180.0f), glm::vec3(0, 1, 0));
+				auxGiroFantasmaRojo = 0;
+			}
+			modelMatrixFantasmaRojo = glm::translate(modelMatrixFantasmaRojo, glm::vec3(0.0, 0, 0.5625));
+			verificaMoveFantasmaRojo = 0;
+			moveIzqFantasmaRojo = 0;
+			moveDerFantasmaRojo = 0;
+		}
+	}
+
+	/********************************/
+	// Movimiento fantasma ROSA
+	/********************************/
+
+	if (activoFantasmaRosa == 1 && tiempoJuego > 0 && vidaPacman > 0 && menuPrincipal == 0 && pause == 0) {
+		// Verificamos si chocamos con alguna pared a la izquierda
+		if (verificaMoveFantasmaRosa == 0) {
+			modelMatrixFantasmaRosa = glm::translate(modelMatrixFantasmaRosa, glm::vec3(-0.5625, 0.0, 0.0));
+			verificaMoveFantasmaRosa = 1;
+		}
+		// Esperamos un tiempo
+		else if (verificaMoveFantasmaRosa == 1)
+			verificaMoveFantasmaRosa = 2;
+		// Verificamos si chocamos con alguna pared a la derecha
+		else if (verificaMoveFantasmaRosa == 2) {
+			modelMatrixFantasmaRosa = glm::translate(modelMatrixFantasmaRosa, glm::vec3(0.5625, 0, 0.0));
+			verificaMoveFantasmaRosa = 3;
+		}
+		// Esperamos un tiempo
+		else if (verificaMoveFantasmaRosa == 3)
+			verificaMoveFantasmaRosa = 4;
+		// Avanzamos hacia al frente
+		else if (verificaMoveFantasmaRosa == 4) {
+			if (moveIzqFantasmaRosa == 1 && moveDerFantasmaRosa == 0)
+				modelMatrixFantasmaRosa = glm::rotate(modelMatrixFantasmaRosa, glm::radians(90.0f), glm::vec3(0, 1, 0));
+			else if (moveIzqFantasmaRosa == 0 && moveDerFantasmaRosa == 1)
+				modelMatrixFantasmaRosa = glm::rotate(modelMatrixFantasmaRosa, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			else if (moveIzqFantasmaRosa == 0 && moveDerFantasmaRosa == 0) {
+				auxGiro = rand() % 10;
+				if (auxGiro == 0 || auxGiro == 2 || auxGiro == 4 || auxGiro == 6 || auxGiro == 8)
+					modelMatrixFantasmaRosa = glm::rotate(modelMatrixFantasmaRosa, glm::radians(90.0f), glm::vec3(0, 1, 0));
+				else
+					modelMatrixFantasmaRosa = glm::rotate(modelMatrixFantasmaRosa, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			}
+			if (auxGiroFantasmaRosa == 1) {
+				modelMatrixFantasmaRosa = glm::rotate(modelMatrixFantasmaRosa, glm::radians(180.0f), glm::vec3(0, 1, 0));
+				auxGiroFantasmaRosa = 0;
+			}
+			modelMatrixFantasmaRosa = glm::translate(modelMatrixFantasmaRosa, glm::vec3(0.0, 0, 0.5625));
+			verificaMoveFantasmaRosa = 0;
+			moveIzqFantasmaRosa = 0;
+			moveDerFantasmaRosa = 0;
+		}
+	}
+
+	/********************************/
+	// Movimiento fantasma CIAN
+	/********************************/
+
+	if (activoFantasmaCian == 1 && tiempoJuego > 0 && vidaPacman > 0 && menuPrincipal == 0 && pause == 0) {
+		// Verificamos si chocamos con alguna pared a la izquierda
+		if (verificaMoveFantasmaCian == 0) {
+			modelMatrixFantasmaCian = glm::translate(modelMatrixFantasmaCian, glm::vec3(-0.5625, 0.0, 0.0));
+			verificaMoveFantasmaCian = 1;
+		}
+		// Esperamos un tiempo
+		else if (verificaMoveFantasmaCian == 1)
+			verificaMoveFantasmaCian = 2;
+		// Verificamos si chocamos con alguna pared a la derecha
+		else if (verificaMoveFantasmaCian == 2) {
+			modelMatrixFantasmaCian = glm::translate(modelMatrixFantasmaCian, glm::vec3(0.5625, 0, 0.0));
+			verificaMoveFantasmaCian = 3;
+		}
+		// Esperamos un tiempo
+		else if (verificaMoveFantasmaCian == 3)
+			verificaMoveFantasmaCian = 4;
+		// Avanzamos hacia al frente
+		else if (verificaMoveFantasmaCian == 4) {
+			if (moveIzqFantasmaCian == 1 && moveDerFantasmaCian == 0)
+				modelMatrixFantasmaCian = glm::rotate(modelMatrixFantasmaCian, glm::radians(90.0f), glm::vec3(0, 1, 0));
+			else if (moveIzqFantasmaCian == 0 && moveDerFantasmaCian == 1)
+				modelMatrixFantasmaCian = glm::rotate(modelMatrixFantasmaCian, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			else if (moveIzqFantasmaCian == 0 && moveDerFantasmaCian == 0) {
+				auxGiro = rand() % 10;
+				if (auxGiro == 0 || auxGiro == 2 || auxGiro == 4 || auxGiro == 6 || auxGiro == 8)
+					modelMatrixFantasmaCian = glm::rotate(modelMatrixFantasmaCian, glm::radians(90.0f), glm::vec3(0, 1, 0));
+				else
+					modelMatrixFantasmaCian = glm::rotate(modelMatrixFantasmaCian, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			}
+			if (auxGiroFantasmaCian == 1) {
+				modelMatrixFantasmaCian = glm::rotate(modelMatrixFantasmaCian, glm::radians(180.0f), glm::vec3(0, 1, 0));
+				auxGiroFantasmaCian = 0;
+			}
+			modelMatrixFantasmaCian = glm::translate(modelMatrixFantasmaCian, glm::vec3(0.0, 0, 0.5625));
+			verificaMoveFantasmaCian = 0;
+			moveIzqFantasmaCian = 0;
+			moveDerFantasmaCian = 0;
+		}
+	}
+
+	/********************************/
+	// Movimiento fantasma NARANJA
+	/********************************/
+
+	if (activoFantasmaNaranja == 1 && tiempoJuego > 0 && vidaPacman > 0 && menuPrincipal == 0 && pause == 0) {
+		// Verificamos si chocamos con alguna pared a la izquierda
+		if (verificaMoveFantasmaNaranja == 0) {
+			modelMatrixFantasmaNaranja = glm::translate(modelMatrixFantasmaNaranja, glm::vec3(-0.5625, 0.0, 0.0));
+			verificaMoveFantasmaNaranja = 1;
+		}
+		// Esperamos un tiempo
+		else if (verificaMoveFantasmaNaranja == 1)
+			verificaMoveFantasmaNaranja = 2;
+		// Verificamos si chocamos con alguna pared a la derecha
+		else if (verificaMoveFantasmaNaranja == 2) {
+			modelMatrixFantasmaNaranja = glm::translate(modelMatrixFantasmaNaranja, glm::vec3(0.5625, 0, 0.0));
+			verificaMoveFantasmaNaranja = 3;
+		}
+		// Esperamos un tiempo
+		else if (verificaMoveFantasmaNaranja == 3)
+			verificaMoveFantasmaNaranja = 4;
+		// Avanzamos hacia al frente
+		else if (verificaMoveFantasmaNaranja == 4) {
+			if (moveIzqFantasmaNaranja == 1 && moveDerFantasmaNaranja == 0)
+				modelMatrixFantasmaNaranja = glm::rotate(modelMatrixFantasmaNaranja, glm::radians(90.0f), glm::vec3(0, 1, 0));
+			else if (moveIzqFantasmaNaranja == 0 && moveDerFantasmaNaranja == 1)
+				modelMatrixFantasmaNaranja = glm::rotate(modelMatrixFantasmaNaranja, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			else if (moveIzqFantasmaNaranja == 0 && moveDerFantasmaNaranja == 0) {
+				auxGiro = rand() % 10;
+				if (auxGiro == 0 || auxGiro == 2 || auxGiro == 4 || auxGiro == 6 || auxGiro == 8)
+					modelMatrixFantasmaNaranja = glm::rotate(modelMatrixFantasmaNaranja, glm::radians(90.0f), glm::vec3(0, 1, 0));
+				else
+					modelMatrixFantasmaNaranja = glm::rotate(modelMatrixFantasmaNaranja, glm::radians(-90.0f), glm::vec3(0, 1, 0));
+			}
+			if (auxGiroFantasmaNaranja == 1) {
+				modelMatrixFantasmaNaranja = glm::rotate(modelMatrixFantasmaNaranja, glm::radians(180.0f), glm::vec3(0, 1, 0));
+				auxGiroFantasmaNaranja = 0;
+			}
+			modelMatrixFantasmaNaranja = glm::translate(modelMatrixFantasmaNaranja, glm::vec3(0.0, 0, 0.5625));
+			verificaMoveFantasmaNaranja = 0;
+			moveIzqFantasmaNaranja = 0;
+			moveDerFantasmaNaranja = 0;
 		}
 	}
 }
@@ -3957,7 +3986,6 @@ void prepareScene() {
 	modelAntorcha11.setShader(&shaderMulLighting);
 	modelAntorcha12.setShader(&shaderMulLighting);
 	modelAntorcha13.setShader(&shaderMulLighting);
-
 
 	// Frutas
 	modelCherry.setShader(&shaderMulLighting);
@@ -4043,20 +4071,19 @@ void prepareDepthScene() {
 }
 
 void renderScene(bool renderParticles) {
-
 	/*******************************************
 	 * Terrain Cesped
 	 *******************************************/
-	 // Se activa la textura del ladrillo rojo
+	 // Se activa la textura de arena
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, textureTerrainBackgroundID);
 	shaderTerrain.setInt("backgroundTexture", 0);
-	// Se activa la textura de desierto
+	// Se activa la textura de ladrillo cafe
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, textureTerrainRID);
 	shaderTerrain.setInt("rTexture", 1);
 	if (nivel == 1) {
-		// Se activa la textura de arena
+		// Se activa la textura de pasto verde
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, textureTerrainGID);
 		shaderTerrain.setInt("gTexture", 2);
@@ -4149,19 +4176,7 @@ void renderScene(bool renderParticles) {
 		glm::mat4 modelMatrixPisoAntorcha4Body = glm::mat4(modelMatrixPisoAntorcha4);
 		modelMatrixPisoAntorcha4Body = glm::scale(modelMatrixPisoAntorcha4Body, glm::vec3(0.5, 0.5, 0.5));
 		pisoAntorcha4Model.render(modelMatrixPisoAntorcha4Body);
-	}
 
-	/*******************************************
-	 * Custom Anim objects obj
-	 *******************************************/
-	 //Pacman
-	modelMatrixPacman[3][1] = terrain.getHeightTerrain(modelMatrixPacman[3][0], modelMatrixPacman[3][2]);
-	glm::mat4 modelMatrixPacmanBody = glm::mat4(modelMatrixPacman);
-	modelMatrixPacmanBody = glm::scale(modelMatrixPacmanBody, glm::vec3(0.005, 0.005, 0.005));
-	pacmanModelAnimate.setAnimationIndex(animationIndex);
-	pacmanModelAnimate.render(modelMatrixPacmanBody);
-
-	if (menuPrincipal == 0) {
 		//Antorchas
 		modelMatrixAntorcha1[3][1] = terrain.getHeightTerrain(modelMatrixAntorcha1[3][0], modelMatrixAntorcha1[3][2]);
 		modelAntorcha1.render(modelMatrixAntorcha1);
@@ -4217,7 +4232,6 @@ void renderScene(bool renderParticles) {
 		glm::mat4 modelMatrixLE1Body = glm::mat4(modelMatrixLE1);
 		modelMatrixLE1Body = glm::scale(modelMatrixLE1Body, glm::vec3(0.5, 0.5, 0.5));
 		LE1ModelAnimate.render(modelMatrixLE1Body);
-
 		modelMatrixLE2[3][1] = terrain.getHeightTerrain(modelMatrixLE2[3][0], modelMatrixLE2[3][2]);
 		glm::mat4 modelMatrixLE2Body = glm::mat4(modelMatrixLE2);
 		modelMatrixLE2Body = glm::scale(modelMatrixLE2Body, glm::vec3(0.5, 0.5, 0.5));
@@ -4370,35 +4384,46 @@ void renderScene(bool renderParticles) {
 		glm::mat4 modelMatrixLE39Body = glm::mat4(modelMatrixLE39);
 		modelMatrixLE39Body = glm::scale(modelMatrixLE39Body, glm::vec3(0.5, 0.5, 0.5));
 		LE39ModelAnimate.render(modelMatrixLE39Body);
+	}
 
-		/**********
+	/*******************************************
+	 * Custom Anim objects obj
+	 *******************************************/
+	 //Pacman
+	modelMatrixPacman[3][1] = terrain.getHeightTerrain(modelMatrixPacman[3][0], modelMatrixPacman[3][2]);
+	glm::mat4 modelMatrixPacmanBody = glm::mat4(modelMatrixPacman);
+	modelMatrixPacmanBody = glm::scale(modelMatrixPacmanBody, glm::vec3(0.0055, 0.0055, 0.0055));
+	pacmanModelAnimate.setAnimationIndex(animationIndex);
+	pacmanModelAnimate.render(modelMatrixPacmanBody);
+
+	if (menuPrincipal == 0) {
+		/*******************************************
 		 * Update the position with alpha objects
-		 */
-		if (activoFantasmaRojo == 1) {
-			// Update Fantasma Rojo
+		 *******************************************/
+		 // Update Fantasma Rojo
+		if (activoFantasmaRojo == 1)
 			blendingUnsorted.find("fantasmaRojo")->second = glm::vec3(modelMatrixFantasmaRojo[3]);
-		}
-		if (activoFantasmaRosa == 1) {
-			// Update Fantasma Rosa
+
+		// Update Fantasma Rosa
+		if (activoFantasmaRosa == 1)
 			blendingUnsorted.find("fantasmaRosa")->second = glm::vec3(modelMatrixFantasmaRosa[3]);
-		}
-		if (activoFantasmaCian) {
-			// Update Fantasma Cian
+
+		// Update Fantasma Cian
+		if (activoFantasmaCian == 1)
 			blendingUnsorted.find("fantasmaCian")->second = glm::vec3(modelMatrixFantasmaCian[3]);
-		}
-		if (activoFantasmaNaranja == 1) {
-			// Update Fantasma Naranja
+
+		// Update Fantasma Naranja
+		if (activoFantasmaNaranja == 1)
 			blendingUnsorted.find("fantasmaNaranja")->second = glm::vec3(modelMatrixFantasmaNaranja[3]);
-		}
 
 		// Update Grass
 		glm::vec3 grassPosition = blendingUnsorted.find("grass")->second;
 		grassPosition[1] = terrain.getHeightTerrain(grassPosition[0], grassPosition[2]);
 		blendingUnsorted.find("grass")->second = grassPosition;
 
-		/**********
-		 * Sorter with alpha objects
-		 */
+		/*******************************
+			* Sorter with alpha objects
+			*******************************/
 		std::map<float, std::pair<std::string, glm::vec3>> blendingSorted;
 		std::map<std::string, glm::vec3>::iterator itblend;
 		for (itblend = blendingUnsorted.begin(); itblend != blendingUnsorted.end(); itblend++) {
@@ -4406,9 +4431,9 @@ void renderScene(bool renderParticles) {
 			blendingSorted[distanceFromView] = std::make_pair(itblend->first, itblend->second);
 		}
 
-		/**********
-		 * Render de las transparencias
-		 */
+		/********************************
+			* Render de las transparencias
+			********************************/
 		glEnable(GL_BLEND);
 		glDisable(GL_CULL_FACE);
 		for (std::map<float, std::pair<std::string, glm::vec3> >::reverse_iterator it = blendingSorted.rbegin(); it != blendingSorted.rend(); it++) {
@@ -4417,65 +4442,57 @@ void renderScene(bool renderParticles) {
 				modelGrass.setPosition(it->second.second);
 				modelGrass.render();
 			}
-			else if (it->second.first.compare("fantasmaRojo") == 0) {
-				if (activoFantasmaRojo == 1) {
-					glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
-					glBlendEquation(GL_FUNC_ADD);
-					if (tiempoFantasmaAzulComer > 0)
-						glBlendColor(0.0, 0.0, 1.0, 1.0);
-					else
-						glBlendColor(1.0, 0.0, 0.0, 1.0);
-					//Fantasma Rojo
-					glm::mat4 modelMatrixFantasmaRojoBlend = glm::mat4(modelMatrixFantasmaRojo);
-					modelMatrixFantasmaRojoBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaRojoBlend[3][0], modelMatrixFantasmaRojoBlend[3][2]);
-					modelMatrixFantasmaRojoBlend = glm::scale(modelMatrixFantasmaRojoBlend, glm::vec3(0.074, 0.074, 0.074));
-					fantasmaModel.render(modelMatrixFantasmaRojoBlend);
-				}
+			else if (it->second.first.compare("fantasmaRojo") == 0 && activoFantasmaRojo == 1) {
+				glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
+				glBlendEquation(GL_FUNC_ADD);
+				if (tiempoFantasmaAzulComer > 0)
+					glBlendColor(0.0, 0.0, 1.0, 1.0);
+				else
+					glBlendColor(1.0, 0.0, 0.0, 1.0);
+				//Fantasma Rojo
+				glm::mat4 modelMatrixFantasmaRojoBlend = glm::mat4(modelMatrixFantasmaRojo);
+				modelMatrixFantasmaRojoBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaRojoBlend[3][0], modelMatrixFantasmaRojoBlend[3][2]);
+				modelMatrixFantasmaRojoBlend = glm::scale(modelMatrixFantasmaRojoBlend, glm::vec3(0.074, 0.074, 0.074));
+				fantasmaModel.render(modelMatrixFantasmaRojoBlend);
 			}
-			else if (it->second.first.compare("fantasmaRosa") == 0) {
-				if (activoFantasmaRosa == 1) {
-					glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
-					glBlendEquation(GL_FUNC_ADD);
-					if (tiempoFantasmaAzulComer > 0)
-						glBlendColor(0.0, 0.0, 1.0, 1.0);
-					else
-						glBlendColor(1.0, 0.078431, 0.576470, 1.0);
-					//Fantasma Rosa
-					glm::mat4 modelMatrixFantasmaRosaBlend = glm::mat4(modelMatrixFantasmaRosa);
-					modelMatrixFantasmaRosaBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaRosaBlend[3][0], modelMatrixFantasmaRosaBlend[3][2]);
-					modelMatrixFantasmaRosaBlend = glm::scale(modelMatrixFantasmaRosaBlend, glm::vec3(0.074, 0.074, 0.074));
-					fantasmaModel.render(modelMatrixFantasmaRosaBlend);
-				}
+			else if (it->second.first.compare("fantasmaRosa") == 0 && activoFantasmaRosa == 1) {
+				glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
+				glBlendEquation(GL_FUNC_ADD);
+				if (tiempoFantasmaAzulComer > 0)
+					glBlendColor(0.0, 0.0, 1.0, 1.0);
+				else
+					glBlendColor(1.0, 0.078431, 0.576470, 1.0);
+				//Fantasma Rosa
+				glm::mat4 modelMatrixFantasmaRosaBlend = glm::mat4(modelMatrixFantasmaRosa);
+				modelMatrixFantasmaRosaBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaRosaBlend[3][0], modelMatrixFantasmaRosaBlend[3][2]);
+				modelMatrixFantasmaRosaBlend = glm::scale(modelMatrixFantasmaRosaBlend, glm::vec3(0.074, 0.074, 0.074));
+				fantasmaModel.render(modelMatrixFantasmaRosaBlend);
 			}
-			else if (it->second.first.compare("fantasmaCian") == 0) {
-				if (activoFantasmaCian == 1) {
-					glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
-					glBlendEquation(GL_FUNC_ADD);
-					if (tiempoFantasmaAzulComer > 0)
-						glBlendColor(0.0, 0.0, 1.0, 1.0);
-					else
-						glBlendColor(0.0, 1.0, 1.0, 1.0);
-					//Fantasma Cian
-					glm::mat4 modelMatrixFantasmaCianBlend = glm::mat4(modelMatrixFantasmaCian);
-					modelMatrixFantasmaCianBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaCianBlend[3][0], modelMatrixFantasmaCianBlend[3][2]);
-					modelMatrixFantasmaCianBlend = glm::scale(modelMatrixFantasmaCianBlend, glm::vec3(0.074, 0.074, 0.074));
-					fantasmaModel.render(modelMatrixFantasmaCianBlend);
-				}
+			else if (it->second.first.compare("fantasmaCian") == 0 && activoFantasmaCian == 1) {
+				glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
+				glBlendEquation(GL_FUNC_ADD);
+				if (tiempoFantasmaAzulComer > 0)
+					glBlendColor(0.0, 0.0, 1.0, 1.0);
+				else
+					glBlendColor(0.0, 1.0, 1.0, 1.0);
+				//Fantasma Cian
+				glm::mat4 modelMatrixFantasmaCianBlend = glm::mat4(modelMatrixFantasmaCian);
+				modelMatrixFantasmaCianBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaCianBlend[3][0], modelMatrixFantasmaCianBlend[3][2]);
+				modelMatrixFantasmaCianBlend = glm::scale(modelMatrixFantasmaCianBlend, glm::vec3(0.074, 0.074, 0.074));
+				fantasmaModel.render(modelMatrixFantasmaCianBlend);
 			}
-			else if (it->second.first.compare("fantasmaNaranja") == 0) {
-				if (activoFantasmaNaranja == 1) {
-					glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
-					glBlendEquation(GL_FUNC_ADD);
-					if (tiempoFantasmaAzulComer > 0)
-						glBlendColor(0.0, 0.0, 1.0, 1.0);
-					else
-						glBlendColor(1.0, 0.549019, 0.0, 1.0);
-					//Fantasma Naranja
-					glm::mat4 modelMatrixFantasmaNaranjaBlend = glm::mat4(modelMatrixFantasmaNaranja);
-					modelMatrixFantasmaNaranjaBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaNaranjaBlend[3][0], modelMatrixFantasmaNaranjaBlend[3][2]);
-					modelMatrixFantasmaNaranjaBlend = glm::scale(modelMatrixFantasmaNaranjaBlend, glm::vec3(0.074, 0.074, 0.074));
-					fantasmaModel.render(modelMatrixFantasmaNaranjaBlend);
-				}
+			else if (it->second.first.compare("fantasmaNaranja") == 0 && activoFantasmaNaranja == 1) {
+				glBlendFunc(GL_CONSTANT_COLOR, GL_DST_COLOR);
+				glBlendEquation(GL_FUNC_ADD);
+				if (tiempoFantasmaAzulComer > 0)
+					glBlendColor(0.0, 0.0, 1.0, 1.0);
+				else
+					glBlendColor(1.0, 0.549019, 0.0, 1.0);
+				//Fantasma Naranja
+				glm::mat4 modelMatrixFantasmaNaranjaBlend = glm::mat4(modelMatrixFantasmaNaranja);
+				modelMatrixFantasmaNaranjaBlend[3][1] = terrain.getHeightTerrain(modelMatrixFantasmaNaranjaBlend[3][0], modelMatrixFantasmaNaranjaBlend[3][2]);
+				modelMatrixFantasmaNaranjaBlend = glm::scale(modelMatrixFantasmaNaranjaBlend, glm::vec3(0.074, 0.074, 0.074));
+				fantasmaModel.render(modelMatrixFantasmaNaranjaBlend);
 			}
 			else if (renderParticles && (it->second.first.compare("portalPacman1") == 0 || it->second.first.compare("portalPacman2") == 0)) {
 				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -4507,6 +4524,9 @@ void renderScene(bool renderParticles) {
 				//glEnable(GL_DEPTH_TEST)
 				shaderParticlesFountain.turnOff();
 
+				/****************************
+					* Open AL sound data
+					****************************/
 				source6Pos[0] = modelMatrixParticlesPortalPacman[3].x;
 				source6Pos[1] = modelMatrixParticlesPortalPacman[3].y;
 				source6Pos[2] = modelMatrixParticlesPortalPacman[3].z;
@@ -4568,9 +4588,9 @@ void renderScene(bool renderParticles) {
 				drawBuf = 1 - drawBuf;
 				shaderParticlesFire.turnOff();
 
-				/****************************+
-				 * Open AL sound data
-				 ****************************/
+				/****************************
+					* Open AL sound data
+					****************************/
 				source1Pos[0] = modelFireParticles[3].x;
 				source1Pos[1] = modelFireParticles[3].y;
 				source1Pos[2] = modelFireParticles[3].z;
@@ -4584,7 +4604,7 @@ void renderScene(bool renderParticles) {
 	}
 
 	/*******************************************
-		 * FreeType text Rendering
+			* FreeType text Rendering
 	*******************************************/
 	glDisable(GL_BLEND);
 	glEnable(GL_CULL_FACE);
