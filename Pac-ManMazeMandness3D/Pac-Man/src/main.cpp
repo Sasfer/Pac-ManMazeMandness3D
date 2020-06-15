@@ -254,6 +254,14 @@ int auxPortalPacman2 = 0;
 
 glm::vec3 posFantasmaRojo, posFantasmaRosa, posFantasmaCian, posFantasmaNaranja;
 
+int audioGeneralAux = 0;
+int audioMenuAux = 0;
+int comerPuntoAudioAux = 0;
+int comerFantasmaAux = 0;
+int chocarFantasmaAux = 0;
+int comerFrutaAux = 0;
+int tiempoSonidoAux = 0;
+
 // Frutas
 int activoFresa = 1;
 int activoCereza = 1;
@@ -565,49 +573,65 @@ GLuint depthMap, depthMapFBO;
 
  // OpenAL Defines
 #define NUM_BUFFERS 8
-#define NUM_SOURCES 3
+#define NUM_SOURCES 20
 #define NUM_ENVIRONMENTS 1
+
 // Listener
 ALfloat listenerPos[] = { 0.0, 0.0, 4.0 };
 ALfloat listenerVel[] = { 0.0, 0.0, 0.0 };
 ALfloat listenerOri[] = { 0.0, 0.0, 1.0, 0.0, 1.0, 0.0 };
+
 // Source 0 Fuego 
-ALfloat source0Pos[] = { -2.0, 8.0, 0.0 };
-ALfloat source0Vel[] = { 0.0, 0.0, 0.0 };
-// Source 1  Tema Original de Pacaman 
-ALfloat source1Pos[] = { -18.0, 0.0, 17.0 };
-ALfloat source1Vel[] = { -18.0, 0.0, 17.0 };
-// Source 2 Colision Pacman y puntos
-ALfloat source2Pos[] = { 2.0, 0.0, 0.0 };
-ALfloat source2Vel[] = { 0.0, 0.0, 0.0 };
-//Source 3-Pacman  Game Over
-ALfloat source3Pos[] = { 2.0, 0.0, 0.0 };
-ALfloat source3Vel[] = { 0.0, 0.0, 0.0 };
-//Source 4 Comiendo Fantasma
-ALfloat source4Pos[] = { 0.0, 0.0, 1.0 };
-ALfloat source4Vel[] = { 0.0, 0.0, 0.0 };
-//Source 5 Comiendo fruta
-ALfloat source5Pos[] = { 6.0, 0.0, 0.0 };
-ALfloat source5Vel[] = { 0.0, 0.0, 0.0 };
+ALfloat sourceF1Pos[] = { -18.0, 7.3f, -18.0f };		ALfloat sourceF1Vel[] = { 0.0, 0.0, 0.0 };
+ALfloat sourceF2Pos[] = { -18.0, 7.3f, 18.0f };			ALfloat sourceF2Vel[] = { 0.0, 0.0, 0.0 };
+ALfloat sourceF3Pos[] = { -18.0, 7.3f, -18.0f };		ALfloat sourceF3Vel[] = { 0.0, 0.0, 0.0 };
+ALfloat sourceF4Pos[] = { 18.0, 7.3f, 18.0f };			ALfloat sourceF4Vel[] = { 0.0, 0.0, 0.0 };
+
+ALfloat sourceF5Pos[] = { 0.0f, 5.85f, 9.0f };			ALfloat sourceF5Vel[] = { 0.0, 0.0, 0.0 };
+ALfloat sourceF6Pos[] = { 0.0f, 5.85f, -9.0f };			ALfloat sourceF6Vel[] = { 0.0, 0.0, 0.0 };
+ALfloat sourceF7Pos[] = { -13.5f, 5.85f, 0.0f };		ALfloat sourceF7Vel[] = { 0.0, 0.0, 0.0 };
+ALfloat sourceF8Pos[] = { 13.5f, 5.85f, 0.0f };			ALfloat sourceF8Vel[] = { 0.0, 0.0, 0.0 };
+
+ALfloat sourceF9Pos[] = { 0.0f, 5.85f, 18.0f };			ALfloat sourceF9Vel[] = { 0.0, 0.0, 0.0 };
+ALfloat sourceF10Pos[] = { 0.0f, 5.85f, -18.0f };		ALfloat sourceF10Vel[] = { 0.0, 0.0, 0.0 };
+ALfloat sourceF11Pos[] = { -18.0f, 5.85f, 0.0f };		ALfloat sourceF11Vel[] = { 0.0, 0.0, 0.0 };
+ALfloat sourceF12Pos[] = { 18.0, 5.85f, 0.0f };			ALfloat sourceF12Vel[] = { 0.0, 0.0, 0.0 };
+
+ALfloat sourceF13Pos[] = { 0.0f, 5.85f, 0.0f };			ALfloat sourceF13Vel[] = { 0.0, 0.0, 0.0 };
 
 //Source Portales pacaman 
-ALfloat source6Pos[] = { 22.5f, -0.3f, 0.0f };
-ALfloat source6Vel[] = { 0.0, 0.0, 0.0 };
+ALfloat sourceP1Pos[] = { 22.5f, -0.3f, 0.0f };			ALfloat sourceP1Vel[] = { 0.0, 0.0, 0.0 };
+ALfloat sourceP2Pos[] = { -22.5f, -0.3f, 0.0f };		ALfloat sourceP2Vel[] = { 0.0, 0.0, 0.0 };
 
-ALfloat source7Pos[] = { -22.5f, -0.3f, 0.0f };
-ALfloat source7Vel[] = { 0.0, 0.0, 0.0 };
+// Source Tema Original de Pacaman menú principal
+ALfloat sourceTOPPos[] = { 0.0, 1.0, 0.0 };				ALfloat sourceTOPVel[] = { 0.0, 1.0, 0.0 };
+
+// Source Comer punto
+ALfloat sourcePPPos[] = { 2.0, 0.0, 0.0 };				ALfloat sourcePPVel[] = { 0.0, 0.0, 0.0 };
+
+//Source Pacman  Game Over
+ALfloat sourceGOPos[] = { 0.0, 0.0, 0.0 };				ALfloat sourceGOVel[] = { 0.0, 0.0, 0.0 };
+
+//Source Comiendo Fantasma
+ALfloat sourceCFAPos[] = { 0.0, 0.0, 1.0 };				ALfloat sourceCFAVel[] = { 0.0, 0.0, 0.0 };
+
+//Source Comiendo fruta
+ALfloat sourceCFRPos[] = { 6.0, 0.0, 0.0 };				ALfloat sourceCFRVel[] = { 0.0, 0.0, 0.0 };
+
 
 // Buffers
 ALuint buffer[NUM_BUFFERS];
 ALuint source[NUM_SOURCES];
 ALuint environment[NUM_ENVIRONMENTS];
+
 // Configs
 ALsizei size, freq;
 ALenum format;
 ALvoid *data;
 int ch;
 ALboolean loop;
-std::vector<bool> sourcesPlay = { true, true, true };
+std::vector<bool> sourcesPlay = { true, true, true, true, true, true, true, true, true, true, 
+								  true, true, true, true, true, true, true, true, true, true };
 
 /**********************
  *  FreeType config   *
@@ -1384,7 +1408,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	buffer[3] = alutCreateBufferFromFile("../sounds/gameOver.wav");
 	buffer[4] = alutCreateBufferFromFile("../sounds/eatFantasma.wav");
 	buffer[5] = alutCreateBufferFromFile("../sounds/eatFruta.wav");
-	buffer[6] = alutCreateBufferFromFile("../sounds/fuente.wav");
+	buffer[6] = alutCreateBufferFromFile("../sounds/fountain.wav");
 	int errorAlut = alutGetError();
 	if (errorAlut != ALUT_ERROR_NO_ERROR) {
 		printf("- Error open files with alut %d !!\n", errorAlut);
@@ -1402,34 +1426,174 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 		printf("init - no errors after alGenSources\n");
 	}
 
-	/*
+	/*****************/
+	// Audio
 	//Tema Fuego
 	alSourcef(source[1], AL_PITCH, 1.0f);
-	alSourcef(source[1], AL_GAIN, 1.8f);
-	alSourcefv(source[1], AL_POSITION, source1Pos);
-	alSourcefv(source[1], AL_VELOCITY, source1Vel);
+	alSourcef(source[1], AL_GAIN, 0.5f);
+	alSourcefv(source[1], AL_POSITION, sourceF1Pos);
+	alSourcefv(source[1], AL_VELOCITY, sourceF1Vel);
 	alSourcei(source[1], AL_BUFFER, buffer[1]);
 	alSourcei(source[1], AL_LOOPING, AL_TRUE);
-	alSourcef(source[1], AL_MAX_DISTANCE, 1000);*/
+	alSourcef(source[1], AL_MAX_DISTANCE, 1000);
 
-	//Tema Oiginal
-	alSourcef(source[0], AL_PITCH, 1.0f);
-	alSourcef(source[0], AL_GAIN, 1.0f);
-	alSourcefv(source[0], AL_POSITION, source0Pos);
-	alSourcefv(source[0], AL_VELOCITY, source0Vel);
-	alSourcei(source[0], AL_BUFFER, buffer[0]);
-	//alSourcei(source[0], AL_LOOPING, AL_TRUE);
-	alSourcef(source[0], AL_MAX_DISTANCE, 2000);
+	alSourcef(source[1], AL_PITCH, 1.0f);
+	alSourcef(source[1], AL_GAIN, 0.5f);
+	alSourcefv(source[1], AL_POSITION, sourceF2Pos);
+	alSourcefv(source[1], AL_VELOCITY, sourceF2Vel);
+	alSourcei(source[1], AL_BUFFER, buffer[1]);
+	alSourcei(source[1], AL_LOOPING, AL_TRUE);
+	alSourcef(source[1], AL_MAX_DISTANCE, 1000);
 
+	alSourcef(source[1], AL_PITCH, 1.0f);
+	alSourcef(source[1], AL_GAIN, 0.5f);
+	alSourcefv(source[1], AL_POSITION, sourceF3Pos);
+	alSourcefv(source[1], AL_VELOCITY, sourceF3Vel);
+	alSourcei(source[1], AL_BUFFER, buffer[1]);
+	alSourcei(source[1], AL_LOOPING, AL_TRUE);
+	alSourcef(source[1], AL_MAX_DISTANCE, 1000);
 
-	//Fuente
+	alSourcef(source[1], AL_PITCH, 1.0f);
+	alSourcef(source[1], AL_GAIN, 0.5f);
+	alSourcefv(source[1], AL_POSITION, sourceF4Pos);
+	alSourcefv(source[1], AL_VELOCITY, sourceF4Vel);
+	alSourcei(source[1], AL_BUFFER, buffer[1]);
+	alSourcei(source[1], AL_LOOPING, AL_TRUE);
+	alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+	alSourcef(source[1], AL_PITCH, 1.0f);
+	alSourcef(source[1], AL_GAIN, 0.5f);
+	alSourcefv(source[1], AL_POSITION, sourceF5Pos);
+	alSourcefv(source[1], AL_VELOCITY, sourceF5Vel);
+	alSourcei(source[1], AL_BUFFER, buffer[1]);
+	alSourcei(source[1], AL_LOOPING, AL_TRUE);
+	alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+	alSourcef(source[1], AL_PITCH, 1.0f);
+	alSourcef(source[1], AL_GAIN, 0.5f);
+	alSourcefv(source[1], AL_POSITION, sourceF6Pos);
+	alSourcefv(source[1], AL_VELOCITY, sourceF6Vel);
+	alSourcei(source[1], AL_BUFFER, buffer[1]);
+	alSourcei(source[1], AL_LOOPING, AL_TRUE);
+	alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+	alSourcef(source[1], AL_PITCH, 1.0f);
+	alSourcef(source[1], AL_GAIN, 0.5f);
+	alSourcefv(source[1], AL_POSITION, sourceF7Pos);
+	alSourcefv(source[1], AL_VELOCITY, sourceF7Vel);
+	alSourcei(source[1], AL_BUFFER, buffer[1]);
+	alSourcei(source[1], AL_LOOPING, AL_TRUE);
+	alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+	alSourcef(source[1], AL_PITCH, 1.0f);
+	alSourcef(source[1], AL_GAIN, 0.5f);
+	alSourcefv(source[1], AL_POSITION, sourceF8Pos);
+	alSourcefv(source[1], AL_VELOCITY, sourceF8Vel);
+	alSourcei(source[1], AL_BUFFER, buffer[1]);
+	alSourcei(source[1], AL_LOOPING, AL_TRUE);
+	alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+	alSourcef(source[1], AL_PITCH, 1.0f);
+	alSourcef(source[1], AL_GAIN, 0.5f);
+	alSourcefv(source[1], AL_POSITION, sourceF9Pos);
+	alSourcefv(source[1], AL_VELOCITY, sourceF9Vel);
+	alSourcei(source[1], AL_BUFFER, buffer[1]);
+	alSourcei(source[1], AL_LOOPING, AL_TRUE);
+	alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+	alSourcef(source[1], AL_PITCH, 1.0f);
+	alSourcef(source[1], AL_GAIN, 0.5f);
+	alSourcefv(source[1], AL_POSITION, sourceF10Pos);
+	alSourcefv(source[1], AL_VELOCITY, sourceF10Vel);
+	alSourcei(source[1], AL_BUFFER, buffer[1]);
+	alSourcei(source[1], AL_LOOPING, AL_TRUE);
+	alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+	alSourcef(source[1], AL_PITCH, 1.0f);
+	alSourcef(source[1], AL_GAIN, 0.5f);
+	alSourcefv(source[1], AL_POSITION, sourceF11Pos);
+	alSourcefv(source[1], AL_VELOCITY, sourceF11Vel);
+	alSourcei(source[1], AL_BUFFER, buffer[1]);
+	alSourcei(source[1], AL_LOOPING, AL_TRUE);
+	alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+	alSourcef(source[1], AL_PITCH, 1.0f);
+	alSourcef(source[1], AL_GAIN, 0.5f);
+	alSourcefv(source[1], AL_POSITION, sourceF12Pos);
+	alSourcefv(source[1], AL_VELOCITY, sourceF12Vel);
+	alSourcei(source[1], AL_BUFFER, buffer[1]);
+	alSourcei(source[1], AL_LOOPING, AL_TRUE);
+	alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+	alSourcef(source[1], AL_PITCH, 1.0f);
+	alSourcef(source[1], AL_GAIN, 0.5f);
+	alSourcefv(source[1], AL_POSITION, sourceF13Pos);
+	alSourcefv(source[1], AL_VELOCITY, sourceF13Vel);
+	alSourcei(source[1], AL_BUFFER, buffer[1]);
+	alSourcei(source[1], AL_LOOPING, AL_TRUE);
+	alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+	//Portales
 	alSourcef(source[6], AL_PITCH, 1.0f);
-	alSourcef(source[6], AL_GAIN, 2.0f);
-	alSourcefv(source[6], AL_POSITION, source6Pos);
-	alSourcefv(source[6], AL_VELOCITY, source6Vel);
+	alSourcef(source[6], AL_GAIN, 1.0f);
+	alSourcefv(source[6], AL_POSITION, sourceP1Pos);
+	alSourcefv(source[6], AL_VELOCITY, sourceP1Vel);
 	alSourcei(source[6], AL_BUFFER, buffer[6]);
 	alSourcei(source[6], AL_LOOPING, AL_TRUE);
 	alSourcef(source[6], AL_MAX_DISTANCE, 2000);
+
+	alSourcef(source[6], AL_PITCH, 1.0f);
+	alSourcef(source[6], AL_GAIN, 1.0f);
+	alSourcefv(source[6], AL_POSITION, sourceP2Pos);
+	alSourcefv(source[6], AL_VELOCITY, sourceP2Vel);
+	alSourcei(source[6], AL_BUFFER, buffer[6]);
+	alSourcei(source[6], AL_LOOPING, AL_TRUE);
+	alSourcef(source[6], AL_MAX_DISTANCE, 2000);
+
+	// Tema principal Pac-Man menú principal
+	alSourcef(source[0], AL_PITCH, 1.0f);
+	alSourcef(source[0], AL_GAIN, 1.5f);
+	alSourcefv(source[0], AL_POSITION, sourceTOPPos);
+	alSourcefv(source[0], AL_VELOCITY, sourceTOPVel);
+	alSourcei(source[0], AL_BUFFER, buffer[0]);
+	alSourcei(source[0], AL_LOOPING, AL_TRUE);
+	alSourcef(source[0], AL_MAX_DISTANCE, 2000);
+
+	// Comer puntos
+	alSourcef(source[2], AL_PITCH, 1.0f);
+	alSourcef(source[2], AL_GAIN, 1.2f);
+	alSourcefv(source[2], AL_POSITION, sourcePPPos);
+	alSourcefv(source[2], AL_VELOCITY, sourcePPVel);
+	alSourcei(source[2], AL_BUFFER, buffer[2]);
+	alSourcei(source[2], AL_LOOPING, AL_TRUE);
+	alSourcef(source[2], AL_MAX_DISTANCE, 500);
+
+	// GameOver
+	alSourcef(source[3], AL_PITCH, 1.0f);
+	alSourcef(source[3], AL_GAIN, 1.2f);
+	alSourcefv(source[3], AL_POSITION, sourceGOPos);
+	alSourcefv(source[3], AL_VELOCITY, sourceGOVel);
+	alSourcei(source[3], AL_BUFFER, buffer[3]);
+	alSourcei(source[3], AL_LOOPING, AL_TRUE);
+	alSourcef(source[3], AL_MAX_DISTANCE, 5000);
+
+	// Comer fruta o fantasma
+	alSourcef(source[5], AL_PITCH, 1.0f);
+	alSourcef(source[5], AL_GAIN, 1.2f);
+	alSourcefv(source[5], AL_POSITION, sourceCFRPos);
+	alSourcefv(source[5], AL_VELOCITY, sourceCFRVel);
+	alSourcei(source[5], AL_BUFFER, buffer[5]);
+	alSourcei(source[5], AL_LOOPING, AL_TRUE);
+	alSourcef(source[5], AL_MAX_DISTANCE, 50);
+
+	// Chocar fantasma
+	alSourcef(source[4], AL_PITCH, 1.0f);
+	alSourcef(source[4], AL_GAIN, 1.2f);
+	alSourcefv(source[4], AL_POSITION, sourceCFAPos);
+	alSourcefv(source[4], AL_VELOCITY, sourceCFAVel);
+	alSourcei(source[4], AL_BUFFER, buffer[4]);
+	alSourcei(source[4], AL_LOOPING, AL_TRUE);
+	alSourcef(source[4], AL_MAX_DISTANCE, 50);
 
 	/*******************************************
 	 * FreeType init
@@ -1504,60 +1668,6 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-}
-
-void comePunto(bool colision) {
-	bool col = colision;
-	if (col == true) {
-		alSourcef(source[2], AL_PITCH, 1.0f);
-		alSourcef(source[2], AL_GAIN, 4.3f);
-		alSourcefv(source[2], AL_POSITION, source2Pos);
-		alSourcefv(source[2], AL_VELOCITY, source2Vel);
-		alSourcei(source[2], AL_BUFFER, buffer[2]);
-		alSourcei(source[2], AL_LOOPING, AL_TRUE);
-		alSourcef(source[2], AL_MAX_DISTANCE, 5000);
-
-	}
-}
-
-void comeFantasma(bool colision) {
-	bool col = colision;
-	if (col == true) {
-		alSourcef(source[4], AL_PITCH, 1.0f);
-		alSourcef(source[4], AL_GAIN, 4.3f);
-		alSourcefv(source[4], AL_POSITION, source2Pos);
-		alSourcefv(source[4], AL_VELOCITY, source2Vel);
-		alSourcei(source[4], AL_BUFFER, buffer[4]);
-		alSourcei(source[4], AL_LOOPING, AL_TRUE);
-		alSourcef(source[4], AL_MAX_DISTANCE, 500);
-	}
-}
-
-void comeFruta(bool colision) {
-	bool col = colision;
-	if (col == true) {
-		alSourcef(source[5], AL_PITCH, 1.0f);
-		alSourcef(source[5], AL_GAIN, 4.3f);
-		alSourcefv(source[5], AL_POSITION, source2Pos);
-		alSourcefv(source[5], AL_VELOCITY, source2Vel);
-		alSourcei(source[5], AL_BUFFER, buffer[5]);
-		alSourcei(source[5], AL_LOOPING, AL_TRUE);
-		alSourcef(source[5], AL_MAX_DISTANCE, 500);
-	}
-}
-
-void gameOver(bool colision) {
-	bool col = colision;
-	if (col == true) {
-		alSourcef(source[3], AL_PITCH, 1.0f);
-		alSourcef(source[3], AL_GAIN, 4.3f);
-		alSourcefv(source[3], AL_POSITION, source2Pos);
-		alSourcefv(source[3], AL_VELOCITY, source2Vel);
-		alSourcei(source[3], AL_BUFFER, buffer[3]);
-		alSourcei(source[3], AL_LOOPING, AL_TRUE);
-		alSourcef(source[3], AL_MAX_DISTANCE, 500);
-	}
-
 }
 
 void destroy() {
@@ -1777,15 +1887,6 @@ bool processInput(bool continueApplication) {
 		if (menuPrincipal == 0)
 			pause = 0;
 	}
-
-	// Controlar el funcionamiento de las luces
-	if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS) {
-		lucesActivas = 1;
-		auxLuces = 0;
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
-		lucesActivas = 0;
 
 	// Para iniciar el juego, al estar en el menu principal
 	if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS) {
@@ -2144,6 +2245,15 @@ void applicationLoop() {
 			collidersOBB.clear();
 			collidersSBB.clear();
 
+			// Audio
+			audioGeneralAux = 0;
+			audioMenuAux = 0;
+			comerPuntoAudioAux = 0;
+			comerFantasmaAux = 0;
+			chocarFantasmaAux = 0;
+			comerFrutaAux = 0;
+			tiempoSonidoAux = 0;
+
 			// Model matrix definitions
 			//Pacman
 			modelMatrixPacman = glm::mat4(1.0f);
@@ -2301,9 +2411,21 @@ void applicationLoop() {
 				std::cout << "Tiempo -> " << tiempoJuego << std::endl;
 			}
 
+			if (comerFrutaAux == 1 || comerFantasmaAux == 1) 
+				tiempoSonidoAux += 1;
+			
 			// En caso de que termine el tiempo o se terminen las vidas
 			if (tiempoJuego == 0 || vidaPacman == 0) {
 				std::cout << "Tiempo MUERTO -> " << tiempoMuerto << std::endl;
+				if (tiempoMuerto == 6) {
+					alSourcef(source[3], AL_PITCH, 1.0f);
+					alSourcef(source[3], AL_GAIN, 1.5f);
+					alSourcefv(source[3], AL_POSITION, sourceGOPos);
+					alSourcefv(source[3], AL_VELOCITY, sourceGOVel);
+					alSourcei(source[3], AL_BUFFER, buffer[2]);
+					alSourcei(source[3], AL_LOOPING, AL_TRUE);
+					alSourcef(source[3], AL_MAX_DISTANCE, 500);
+				}
 				if (tiempoMuerto < 31)
 					tiempoMuerto += 1;
 			}
@@ -2448,6 +2570,410 @@ void applicationLoop() {
 		else if (tiempoDiaNoche == 108) {
 			diaNoche = glm::vec3(0.14, 0.14, 0.14);
 			activoDia = 0;
+		}
+
+		// Audio general
+		if (menuPrincipal == 0 && audioGeneralAux == 0) {
+			audioGeneralAux = 1;
+			//Tema Fuego
+			alSourcef(source[1], AL_PITCH, 1.0f);
+			alSourcef(source[1], AL_GAIN, 0.5f);
+			alSourcefv(source[1], AL_POSITION, sourceF1Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF1Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 1.0f);
+			alSourcef(source[1], AL_GAIN, 0.5f);
+			alSourcefv(source[1], AL_POSITION, sourceF2Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF2Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 1.0f);
+			alSourcef(source[1], AL_GAIN, 0.5f);
+			alSourcefv(source[1], AL_POSITION, sourceF3Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF3Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 1.0f);
+			alSourcef(source[1], AL_GAIN, 0.5f);
+			alSourcefv(source[1], AL_POSITION, sourceF4Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF4Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 1.0f);
+			alSourcef(source[1], AL_GAIN, 0.5f);
+			alSourcefv(source[1], AL_POSITION, sourceF5Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF5Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 1.0f);
+			alSourcef(source[1], AL_GAIN, 0.5f);
+			alSourcefv(source[1], AL_POSITION, sourceF6Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF6Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 1.0f);
+			alSourcef(source[1], AL_GAIN, 0.5f);
+			alSourcefv(source[1], AL_POSITION, sourceF7Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF7Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 1.0f);
+			alSourcef(source[1], AL_GAIN, 0.5f);
+			alSourcefv(source[1], AL_POSITION, sourceF8Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF8Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 1.0f);
+			alSourcef(source[1], AL_GAIN, 0.5f);
+			alSourcefv(source[1], AL_POSITION, sourceF9Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF9Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 1.0f);
+			alSourcef(source[1], AL_GAIN, 0.5f);
+			alSourcefv(source[1], AL_POSITION, sourceF10Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF10Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 1.0f);
+			alSourcef(source[1], AL_GAIN, 0.5f);
+			alSourcefv(source[1], AL_POSITION, sourceF11Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF11Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 1.0f);
+			alSourcef(source[1], AL_GAIN, 0.5f);
+			alSourcefv(source[1], AL_POSITION, sourceF12Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF12Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 1.0f);
+			alSourcef(source[1], AL_GAIN, 0.5f);
+			alSourcefv(source[1], AL_POSITION, sourceF13Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF13Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			//Portales
+			alSourcef(source[6], AL_PITCH, 1.0f);
+			alSourcef(source[6], AL_GAIN, 1.0f);
+			alSourcefv(source[6], AL_POSITION, sourceP1Pos);
+			alSourcefv(source[6], AL_VELOCITY, sourceP1Vel);
+			alSourcei(source[6], AL_BUFFER, buffer[6]);
+			alSourcei(source[6], AL_LOOPING, AL_TRUE);
+			alSourcef(source[6], AL_MAX_DISTANCE, 2000);
+
+			alSourcef(source[6], AL_PITCH, 1.0f);
+			alSourcef(source[6], AL_GAIN, 1.0f);
+			alSourcefv(source[6], AL_POSITION, sourceP2Pos);
+			alSourcefv(source[6], AL_VELOCITY, sourceP2Vel);
+			alSourcei(source[6], AL_BUFFER, buffer[6]);
+			alSourcei(source[6], AL_LOOPING, AL_TRUE);
+			alSourcef(source[6], AL_MAX_DISTANCE, 2000);
+
+			//Tema principal Pac-Man menú principal
+			alSourcef(source[0], AL_PITCH, 0.0f);
+			alSourcef(source[0], AL_GAIN, 0.0f);
+			alSourcefv(source[0], AL_POSITION, sourceTOPPos);
+			alSourcefv(source[0], AL_VELOCITY, sourceTOPVel);
+			alSourcei(source[0], AL_BUFFER, buffer[0]);
+			alSourcei(source[0], AL_LOOPING, AL_TRUE);
+			alSourcef(source[0], AL_MAX_DISTANCE, 2000);
+
+			// Comer puntos
+			alSourcef(source[2], AL_PITCH, 0.0f);
+			alSourcef(source[2], AL_GAIN, 0.0f);
+			alSourcefv(source[2], AL_POSITION, sourcePPPos);
+			alSourcefv(source[2], AL_VELOCITY, sourcePPVel);
+			alSourcei(source[2], AL_BUFFER, buffer[2]);
+			alSourcei(source[2], AL_LOOPING, AL_FALSE);
+			alSourcef(source[2], AL_MAX_DISTANCE, 500);
+
+			// GameOver
+			alSourcef(source[3], AL_PITCH, 0.0f);
+			alSourcef(source[3], AL_GAIN, 0.0f);
+			alSourcefv(source[3], AL_POSITION, sourceGOPos);
+			alSourcefv(source[3], AL_VELOCITY, sourceGOVel);
+			alSourcei(source[3], AL_BUFFER, buffer[3]);
+			alSourcei(source[3], AL_LOOPING, AL_TRUE);
+			alSourcef(source[3], AL_MAX_DISTANCE, 5000);
+
+			// Comer fruta o fantasma
+			alSourcef(source[5], AL_PITCH, 0.0f);
+			alSourcef(source[5], AL_GAIN, 0.0f);
+			alSourcefv(source[5], AL_POSITION, sourceCFRPos);
+			alSourcefv(source[5], AL_VELOCITY, sourceCFRVel);
+			alSourcei(source[5], AL_BUFFER, buffer[5]);
+			alSourcei(source[5], AL_LOOPING, AL_TRUE);
+			alSourcef(source[5], AL_MAX_DISTANCE, 50);
+
+			// Chocar fantasma
+			alSourcef(source[4], AL_PITCH, 0.0f);
+			alSourcef(source[4], AL_GAIN, 0.0f);
+			alSourcefv(source[4], AL_POSITION, sourceCFAPos);
+			alSourcefv(source[4], AL_VELOCITY, sourceCFAVel);
+			alSourcei(source[4], AL_BUFFER, buffer[4]);
+			alSourcei(source[4], AL_LOOPING, AL_TRUE);
+			alSourcef(source[4], AL_MAX_DISTANCE, 50);
+		}
+		else if (menuPrincipal == 1 && audioMenuAux == 0) {
+			audioMenuAux = 1;
+			//Tema Fuego
+			alSourcef(source[1], AL_PITCH, 0.0f);
+			alSourcef(source[1], AL_GAIN, 0.0f);
+			alSourcefv(source[1], AL_POSITION, sourceF1Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF1Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 0.0f);
+			alSourcef(source[1], AL_GAIN, 0.0f);
+			alSourcefv(source[1], AL_POSITION, sourceF2Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF2Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 0.0f);
+			alSourcef(source[1], AL_GAIN, 0.0f);
+			alSourcefv(source[1], AL_POSITION, sourceF3Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF3Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 0.0f);
+			alSourcef(source[1], AL_GAIN, 0.0f);
+			alSourcefv(source[1], AL_POSITION, sourceF4Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF4Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 0.0f);
+			alSourcef(source[1], AL_GAIN, 0.0f);
+			alSourcefv(source[1], AL_POSITION, sourceF5Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF5Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 0.0f);
+			alSourcef(source[1], AL_GAIN, 0.0f);
+			alSourcefv(source[1], AL_POSITION, sourceF6Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF6Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 0.0f);
+			alSourcef(source[1], AL_GAIN, 0.0f);
+			alSourcefv(source[1], AL_POSITION, sourceF7Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF7Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 0.0f);
+			alSourcef(source[1], AL_GAIN, 0.0f);
+			alSourcefv(source[1], AL_POSITION, sourceF8Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF8Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 0.0f);
+			alSourcef(source[1], AL_GAIN, 0.0f);
+			alSourcefv(source[1], AL_POSITION, sourceF9Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF9Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 0.0f);
+			alSourcef(source[1], AL_GAIN, 0.0f);
+			alSourcefv(source[1], AL_POSITION, sourceF10Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF10Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 0.0f);
+			alSourcef(source[1], AL_GAIN, 0.0f);
+			alSourcefv(source[1], AL_POSITION, sourceF11Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF11Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 0.0f);
+			alSourcef(source[1], AL_GAIN, 0.0f);
+			alSourcefv(source[1], AL_POSITION, sourceF12Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF12Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			alSourcef(source[1], AL_PITCH, 0.0f);
+			alSourcef(source[1], AL_GAIN, 0.0f);
+			alSourcefv(source[1], AL_POSITION, sourceF13Pos);
+			alSourcefv(source[1], AL_VELOCITY, sourceF13Vel);
+			alSourcei(source[1], AL_BUFFER, buffer[1]);
+			alSourcei(source[1], AL_LOOPING, AL_TRUE);
+			alSourcef(source[1], AL_MAX_DISTANCE, 1000);
+
+			//Fuente
+			alSourcef(source[6], AL_PITCH, 0.0f);
+			alSourcef(source[6], AL_GAIN, 0.0f);
+			alSourcefv(source[6], AL_POSITION, sourceP1Pos);
+			alSourcefv(source[6], AL_VELOCITY, sourceP1Vel);
+			alSourcei(source[6], AL_BUFFER, buffer[6]);
+			alSourcei(source[6], AL_LOOPING, AL_TRUE);
+			alSourcef(source[6], AL_MAX_DISTANCE, 2000);
+
+			alSourcef(source[6], AL_PITCH, 0.0f);
+			alSourcef(source[6], AL_GAIN, 0.0f);
+			alSourcefv(source[6], AL_POSITION, sourceP2Pos);
+			alSourcefv(source[6], AL_VELOCITY, sourceP2Vel);
+			alSourcei(source[6], AL_BUFFER, buffer[6]);
+			alSourcei(source[6], AL_LOOPING, AL_TRUE);
+			alSourcef(source[6], AL_MAX_DISTANCE, 2000);
+
+			//Tema principal
+			alSourcef(source[0], AL_PITCH, 1.0f);
+			alSourcef(source[0], AL_GAIN, 1.5f);
+			alSourcefv(source[0], AL_POSITION, sourceTOPPos);
+			alSourcefv(source[0], AL_VELOCITY, sourceTOPVel);
+			alSourcei(source[0], AL_BUFFER, buffer[0]);
+			alSourcei(source[0], AL_LOOPING, AL_TRUE);
+			alSourcef(source[0], AL_MAX_DISTANCE, 2000);
+
+			// Comer puntos
+			alSourcef(source[2], AL_PITCH, 0.0f);
+			alSourcef(source[2], AL_GAIN, 0.0f);
+			alSourcefv(source[2], AL_POSITION, sourcePPPos);
+			alSourcefv(source[2], AL_VELOCITY, sourcePPVel);
+			alSourcei(source[2], AL_BUFFER, buffer[2]);
+			alSourcei(source[2], AL_LOOPING, AL_FALSE);
+			alSourcef(source[2], AL_MAX_DISTANCE, 500);
+
+			// GameOver
+			alSourcef(source[3], AL_PITCH, 0.0f);
+			alSourcef(source[3], AL_GAIN, 0.0f);
+			alSourcefv(source[3], AL_POSITION, sourceGOPos);
+			alSourcefv(source[3], AL_VELOCITY, sourceGOVel);
+			alSourcei(source[3], AL_BUFFER, buffer[3]);
+			alSourcei(source[3], AL_LOOPING, AL_TRUE);
+			alSourcef(source[3], AL_MAX_DISTANCE, 5000);
+
+			// Comer fruta o fantasma
+			alSourcef(source[5], AL_PITCH, 0.0f);
+			alSourcef(source[5], AL_GAIN, 0.0f);
+			alSourcefv(source[5], AL_POSITION, sourceCFRPos);
+			alSourcefv(source[5], AL_VELOCITY, sourceCFRVel);
+			alSourcei(source[5], AL_BUFFER, buffer[5]);
+			alSourcei(source[5], AL_LOOPING, AL_TRUE);
+			alSourcef(source[5], AL_MAX_DISTANCE, 50);
+
+			// Chocar fantasma
+			alSourcef(source[4], AL_PITCH, 0.0f);
+			alSourcef(source[4], AL_GAIN, 0.0f);
+			alSourcefv(source[4], AL_POSITION, sourceCFAPos);
+			alSourcefv(source[4], AL_VELOCITY, sourceCFAVel);
+			alSourcei(source[4], AL_BUFFER, buffer[4]);
+			alSourcei(source[4], AL_LOOPING, AL_TRUE);
+			alSourcef(source[4], AL_MAX_DISTANCE, 50);
+		}
+
+		if (comerPuntoAudioAux == 1) {
+			comerPuntoAudioAux = 0;
+			alSourcef(source[2], AL_PITCH, 1.0f);
+			alSourcef(source[2], AL_GAIN, 1.0f);
+			alSourcefv(source[2], AL_POSITION, sourcePPPos);
+			alSourcefv(source[2], AL_VELOCITY, sourcePPVel);
+			alSourcei(source[2], AL_BUFFER, buffer[2]);
+			alSourcei(source[2], AL_LOOPING, AL_TRUE);
+			alSourcef(source[2], AL_MAX_DISTANCE, 50);
+		}
+		else {
+			alSourcef(source[2], AL_PITCH, 0.0f);
+			alSourcef(source[2], AL_GAIN, 0.0f);
+			alSourcefv(source[2], AL_POSITION, sourcePPPos);
+			alSourcefv(source[2], AL_VELOCITY, sourcePPVel);
+			alSourcei(source[2], AL_BUFFER, buffer[2]);
+			alSourcei(source[2], AL_LOOPING, AL_TRUE);
+			alSourcef(source[2], AL_MAX_DISTANCE, 50);
+		}
+		
+		if (comerFantasmaAux == 1 || comerFrutaAux == 1) {
+			alSourcef(source[5], AL_PITCH, 1.0f);
+			alSourcef(source[5], AL_GAIN, 1.5f);
+			alSourcefv(source[5], AL_POSITION, sourceCFRPos);
+			alSourcefv(source[5], AL_VELOCITY, sourceCFRVel);
+			alSourcei(source[5], AL_BUFFER, buffer[5]);
+			alSourcei(source[5], AL_LOOPING, AL_TRUE);
+			alSourcef(source[5], AL_MAX_DISTANCE, 50);
+			if (tiempoSonidoAux > 1) {
+				comerFantasmaAux = 0;
+				comerFrutaAux = 0;
+				tiempoSonidoAux = 0;
+			}	
+		}
+		else {
+			alSourcef(source[5], AL_PITCH, 0.0f);
+			alSourcef(source[5], AL_GAIN, 0.0f);
+			alSourcefv(source[5], AL_POSITION, sourceCFRPos);
+			alSourcefv(source[5], AL_VELOCITY, sourceCFRVel);
+			alSourcei(source[5], AL_BUFFER, buffer[5]);
+			alSourcei(source[5], AL_LOOPING, AL_TRUE);
+			alSourcef(source[5], AL_MAX_DISTANCE, 50);
+		}
+
+		if (chocarFantasmaAux == 1) {
+			alSourcef(source[4], AL_PITCH, 1.0f);
+			alSourcef(source[4], AL_GAIN, 1.5f);
+			alSourcefv(source[4], AL_POSITION, sourceCFAPos);
+			alSourcefv(source[4], AL_VELOCITY, sourceCFAVel);
+			alSourcei(source[4], AL_BUFFER, buffer[4]);
+			alSourcei(source[4], AL_LOOPING, AL_TRUE);
+			alSourcef(source[4], AL_MAX_DISTANCE, 50);
+			chocarFantasmaAux = 0;
+		}
+		else {
+			alSourcef(source[4], AL_PITCH, 0.0f);
+			alSourcef(source[4], AL_GAIN, 0.0f);
+			alSourcefv(source[4], AL_POSITION, sourceCFAPos);
+			alSourcefv(source[4], AL_VELOCITY, sourceCFAVel);
+			alSourcei(source[4], AL_BUFFER, buffer[4]);
+			alSourcei(source[4], AL_LOOPING, AL_TRUE);
+			alSourcef(source[4], AL_MAX_DISTANCE, 50);
 		}
 
 		std::map<std::string, bool> collisionDetection;
@@ -3457,6 +3983,12 @@ void applicationLoop() {
 					if (it->first[0] == 'p' && it->first[1] == 'u' && jt->first.compare("pacman") == 0) {
 						//std::cout << "Colision " << it->first << " with " << jt->first << std::endl;
 						std::get<1>(puntosPosition.find(it->first)->second) = 1;
+						// Comer puntos
+						sourcePPPos[0] = std::get<0>(puntosPosition.find(it->first)->second).x;
+						sourcePPPos[1] = std::get<0>(puntosPosition.find(it->first)->second).y;
+						sourcePPPos[2] = std::get<0>(puntosPosition.find(it->first)->second).z;
+						comerPuntoAudioAux = 1;
+
 						//comePunto(true);
 						// Si PACMAN come un punto POWER puede comer a alguno de los fantasmas por los 
 						// siguientes 15 segundos, además de que podrá avanzar más rápido
@@ -3471,19 +4003,28 @@ void applicationLoop() {
 					else if (it->first.compare("cereza") == 0 && jt->first.compare("pacman") == 0) {
 						activoCereza = 0;
 						puntosPacman = puntosPacman + 50;
-						//comeFruta(true);
+						sourceCFRPos[0] = modelMatrixCherry[3].x;
+						sourceCFRPos[1] = modelMatrixCherry[3].y;
+						sourceCFRPos[2] = modelMatrixCherry[3].z;
+						comerFrutaAux = 1;
 						std::cout << "Puntos -> " << puntosPacman << std::endl;
 					}
 					else if (it->first.compare("fresa") == 0 && jt->first.compare("pacman") == 0) {
 						activoFresa = 0;
 						puntosPacman = puntosPacman + 100;
-						//comeFruta(true);
+						sourceCFRPos[0] = modelMatrixStrawberry[3].x;
+						sourceCFRPos[1] = modelMatrixStrawberry[3].y;
+						sourceCFRPos[2] = modelMatrixStrawberry[3].z;
+						comerFrutaAux = 1;
 						std::cout << "Puntos -> " << puntosPacman << std::endl;
 					}
 					else if (it->first.compare("naranja") == 0 && jt->first.compare("pacman") == 0) {
 						activoNaranja = 0;
 						puntosPacman = puntosPacman + 150;
-						//comeFruta(true);
+						sourceCFRPos[0] = modelMatrixOrange[3].x;
+						sourceCFRPos[1] = modelMatrixOrange[3].y;
+						sourceCFRPos[2] = modelMatrixOrange[3].z;
+						comerFrutaAux = 1;
 						std::cout << "Puntos -> " << puntosPacman << std::endl;
 					}
 
@@ -3526,20 +4067,33 @@ void applicationLoop() {
 							if (jt->first.compare("fantasmaRojo") == 0) {
 								activoFantasmaRojo = 0;
 								tiempoMuertoRojo = 10;
+								sourceCFRPos[0] = modelMatrixFantasmaRojo[3].x;
+								sourceCFRPos[1] = modelMatrixFantasmaRojo[3].y;
+								sourceCFRPos[2] = modelMatrixFantasmaRojo[3].z;
 							}
 							else if (jt->first.compare("fantasmaRosa") == 0) {
 								activoFantasmaRosa = 0;
 								tiempoMuertoRosa = 10;
+								sourceCFRPos[0] = modelMatrixFantasmaRosa[3].x;
+								sourceCFRPos[1] = modelMatrixFantasmaRosa[3].y;
+								sourceCFRPos[2] = modelMatrixFantasmaRosa[3].z;
 							}
 							else if (jt->first.compare("fantasmaCian") == 0) {
 								activoFantasmaCian = 0;
 								tiempoMuertoCian = 10;
+								sourceCFRPos[0] = modelMatrixFantasmaCian[3].x;
+								sourceCFRPos[1] = modelMatrixFantasmaCian[3].y;
+								sourceCFRPos[2] = modelMatrixFantasmaCian[3].z;
 							}
 							else if (jt->first.compare("fantasmaNaranja") == 0) {
 								activoFantasmaNaranja = 0;
 								tiempoMuertoNaranja = 10;
+								sourceCFRPos[0] = modelMatrixFantasmaNaranja[3].x;
+								sourceCFRPos[1] = modelMatrixFantasmaNaranja[3].y;
+								sourceCFRPos[2] = modelMatrixFantasmaNaranja[3].z;
 							}
 							puntosPacman = puntosPacman + 10;
+							comerFantasmaAux = 1;
 						}
 						// En caso de que no, se afecta la vida del Pac-Man
 						else {
@@ -3547,12 +4101,53 @@ void applicationLoop() {
 								vidaPacman = vidaPacman - 1;
 								std::cout << "Puntos -> " << puntosPacman << std::endl;
 								std::cout << "Vida -> " << vidaPacman << std::endl;
+								if (jt->first.compare("fantasmaRojo") == 0) {
+									sourceCFAPos[0] = modelMatrixFantasmaRojo[3].x;
+									sourceCFAPos[1] = modelMatrixFantasmaRojo[3].y;
+									sourceCFAPos[2] = modelMatrixFantasmaRojo[3].z;
+								}
+								else if (jt->first.compare("fantasmaRosa") == 0) {
+									sourceCFAPos[0] = modelMatrixFantasmaRosa[3].x;
+									sourceCFAPos[1] = modelMatrixFantasmaRosa[3].y;
+									sourceCFAPos[2] = modelMatrixFantasmaRosa[3].z;
+								}
+								else if (jt->first.compare("fantasmaCian") == 0) {
+									sourceCFAPos[0] = modelMatrixFantasmaCian[3].x;
+									sourceCFAPos[1] = modelMatrixFantasmaCian[3].y;
+									sourceCFAPos[2] = modelMatrixFantasmaCian[3].z;
+								}
+								else if (jt->first.compare("fantasmaNaranja") == 0) {
+									sourceCFAPos[0] = modelMatrixFantasmaNaranja[3].x;
+									sourceCFAPos[1] = modelMatrixFantasmaNaranja[3].y;
+									sourceCFAPos[2] = modelMatrixFantasmaNaranja[3].z;
+								}
+								chocarFantasmaAux = 1;
 							}
 							else {
 								if (vidaPacman == 1) {
 									vidaPacman = vidaPacman - 1;
-									//gameOver(true);
+					
 									std::cout << "******** FIN DEL JUEGO, SIN VIDA ********" << std::endl;
+								}
+								if (jt->first.compare("fantasmaRojo") == 0) {
+									sourceGOPos[0] = modelMatrixFantasmaRojo[3].x;
+									sourceGOPos[1] = modelMatrixFantasmaRojo[3].y;
+									sourceGOPos[2] = modelMatrixFantasmaRojo[3].z;
+								}
+								else if (jt->first.compare("fantasmaRosa") == 0) {
+									sourceGOPos[0] = modelMatrixFantasmaRosa[3].x;
+									sourceGOPos[1] = modelMatrixFantasmaRosa[3].y;
+									sourceGOPos[2] = modelMatrixFantasmaRosa[3].z;
+								}
+								else if (jt->first.compare("fantasmaCian") == 0) {
+									sourceGOPos[0] = modelMatrixFantasmaCian[3].x;
+									sourceGOPos[1] = modelMatrixFantasmaCian[3].y;
+									sourceGOPos[2] = modelMatrixFantasmaCian[3].z;
+								}
+								else if (jt->first.compare("fantasmaNaranja") == 0) {
+									sourceGOPos[0] = modelMatrixFantasmaNaranja[3].x;
+									sourceGOPos[1] = modelMatrixFantasmaNaranja[3].y;
+									sourceGOPos[2] = modelMatrixFantasmaNaranja[3].z;
 								}
 								break;
 							}
@@ -4527,11 +5122,19 @@ void renderScene(bool renderParticles) {
 				/****************************
 					* Open AL sound data
 					****************************/
-				source6Pos[0] = modelMatrixParticlesPortalPacman[3].x;
-				source6Pos[1] = modelMatrixParticlesPortalPacman[3].y;
-				source6Pos[2] = modelMatrixParticlesPortalPacman[3].z;
-				alSourcefv(source[6], AL_POSITION, source6Pos);
-
+				if (it->second.first.compare("portalPacman1") == 0) {
+					sourceP1Pos[0] = modelMatrixParticlesPortalPacman[3].x;
+					sourceP1Pos[1] = modelMatrixParticlesPortalPacman[3].y;
+					sourceP1Pos[2] = modelMatrixParticlesPortalPacman[3].z;
+					alSourcefv(source[6], AL_POSITION, sourceP1Pos);
+				}
+				else if (it->second.first.compare("portalPacman2") == 0) {
+					sourceP2Pos[0] = modelMatrixParticlesPortalPacman[3].x;
+					sourceP2Pos[1] = modelMatrixParticlesPortalPacman[3].y;
+					sourceP2Pos[2] = modelMatrixParticlesPortalPacman[3].z;
+					alSourcefv(source[6], AL_POSITION, sourceP2Pos);
+				}
+				
 				/*************************************
 				* End Render particles systems
 				**************************************/
@@ -4591,10 +5194,85 @@ void renderScene(bool renderParticles) {
 				/****************************
 					* Open AL sound data
 					****************************/
-				source1Pos[0] = modelFireParticles[3].x;
-				source1Pos[1] = modelFireParticles[3].y;
-				source1Pos[2] = modelFireParticles[3].z;
-				alSourcefv(source[1], AL_POSITION, source1Pos);
+				if (it->second.first.compare("antorcha1") == 0) {
+					sourceF1Pos[0] = modelFireParticles[3].x;
+					sourceF1Pos[1] = modelFireParticles[3].y;
+					sourceF1Pos[2] = modelFireParticles[3].z;
+					alSourcefv(source[1], AL_POSITION, sourceF1Pos);
+				}
+				else if (it->second.first.compare("antorcha2") == 0) {
+					sourceF2Pos[0] = modelFireParticles[3].x;
+					sourceF2Pos[1] = modelFireParticles[3].y;
+					sourceF2Pos[2] = modelFireParticles[3].z;
+					alSourcefv(source[1], AL_POSITION, sourceF2Pos);
+				}
+				else if (it->second.first.compare("antorcha3") == 0) {
+					sourceF3Pos[0] = modelFireParticles[3].x;
+					sourceF3Pos[1] = modelFireParticles[3].y;
+					sourceF3Pos[2] = modelFireParticles[3].z;
+					alSourcefv(source[1], AL_POSITION, sourceF3Pos);
+				}
+				else if (it->second.first.compare("antorcha4") == 0) {
+					sourceF4Pos[0] = modelFireParticles[3].x;
+					sourceF4Pos[1] = modelFireParticles[3].y;
+					sourceF4Pos[2] = modelFireParticles[3].z;
+					alSourcefv(source[1], AL_POSITION, sourceF4Pos);
+				}
+				else if (it->second.first.compare("antorcha5") == 0) {
+					sourceF5Pos[0] = modelFireParticles[3].x;
+					sourceF5Pos[1] = modelFireParticles[3].y;
+					sourceF5Pos[2] = modelFireParticles[3].z;
+					alSourcefv(source[1], AL_POSITION, sourceF5Pos);
+				}
+				else if (it->second.first.compare("antorcha6") == 0) {
+					sourceF6Pos[0] = modelFireParticles[3].x;
+					sourceF6Pos[1] = modelFireParticles[3].y;
+					sourceF6Pos[2] = modelFireParticles[3].z;
+					alSourcefv(source[1], AL_POSITION, sourceF6Pos);
+				}
+				else if (it->second.first.compare("antorcha7") == 0) {
+					sourceF7Pos[0] = modelFireParticles[3].x;
+					sourceF7Pos[1] = modelFireParticles[3].y;
+					sourceF7Pos[2] = modelFireParticles[3].z;
+					alSourcefv(source[1], AL_POSITION, sourceF7Pos);
+				}
+				else if (it->second.first.compare("antorcha8") == 0) {
+					sourceF8Pos[0] = modelFireParticles[3].x;
+					sourceF8Pos[1] = modelFireParticles[3].y;
+					sourceF8Pos[2] = modelFireParticles[3].z;
+					alSourcefv(source[1], AL_POSITION, sourceF8Pos);
+				}
+				else if (it->second.first.compare("antorcha9") == 0) {
+					sourceF9Pos[0] = modelFireParticles[3].x;
+					sourceF9Pos[1] = modelFireParticles[3].y;
+					sourceF9Pos[2] = modelFireParticles[3].z;
+					alSourcefv(source[1], AL_POSITION, sourceF9Pos);
+				}
+				else if (it->second.first.compare("antorcha10") == 0) {
+					sourceF10Pos[0] = modelFireParticles[3].x;
+					sourceF10Pos[1] = modelFireParticles[3].y;
+					sourceF10Pos[2] = modelFireParticles[3].z;
+					alSourcefv(source[1], AL_POSITION, sourceF10Pos);
+				}
+				else if (it->second.first.compare("antorcha11") == 0) {
+					sourceF11Pos[0] = modelFireParticles[3].x;
+					sourceF11Pos[1] = modelFireParticles[3].y;
+					sourceF11Pos[2] = modelFireParticles[3].z;
+					alSourcefv(source[1], AL_POSITION, sourceF11Pos);
+				}
+				else if (it->second.first.compare("antorcha12") == 0) {
+					sourceF12Pos[0] = modelFireParticles[3].x;
+					sourceF12Pos[1] = modelFireParticles[3].y;
+					sourceF12Pos[2] = modelFireParticles[3].z;
+					alSourcefv(source[1], AL_POSITION, sourceF12Pos);
+				}
+				else if (it->second.first.compare("antorcha13") == 0) {
+					sourceF13Pos[0] = modelFireParticles[3].x;
+					sourceF13Pos[1] = modelFireParticles[3].y;
+					sourceF13Pos[2] = modelFireParticles[3].z;
+					alSourcefv(source[1], AL_POSITION, sourceF13Pos);
+				}
+				
 
 				/****************************************
 				* End Render particles systems
