@@ -25,13 +25,9 @@ _Para poder hacer uso de esta aplicación de requiere de:_
 * Visual Studio 2017
 * OpenGL 3.3
 
-## Ejecutable y videos ⚙️
+## Ejecutable, videos y documentación ⚙️
 
-https://github.com/Yeigesl/ejecutablePacman.git
-
-
-##Documenatación ◘
-https://github.com/Yeigesl/docuemnatacionPacman.git
+https://github.com/Yeigesl/recursosPacman.git
 
 ## Autores 🔩
 
