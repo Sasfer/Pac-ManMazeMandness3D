@@ -5,7 +5,12 @@ Computación Gráfica Avanzada_
 
 ## Comenzando 🚀
 
-_Pac-Man Made Mandness 3D es un juego..._
+_Pac-Man Made Mandness 3D es un videojuego que permite a un usuario controlar el personaje de Pac-Man a través de un laberinto ubicado en un terreno, con el fin de recolectar puntos amarillos distribuidos por el lugar.
+
+Es importante mencionar que se cuenta con un tiempo determinado para completar dicha recolección, así como un número único e inicial de vidas.
+
+En el camino dentro del laberinto Pac-Man se podrá encontrar con: fantasmas, frutas, power pallets y portales.
+
 
 ## Aplicación ⚙️
 
@@ -22,7 +27,7 @@ _Para poder hacer uso de esta aplicación de requiere de:_
 
 ## Ejecutable y videos ⚙️
 
-
+https://github.com/Yeigesl/ejecutablePacman.git
 
 ## Autores 🔩
 
