@@ -29,6 +29,10 @@ _Para poder hacer uso de esta aplicación de requiere de:_
 
 https://github.com/Yeigesl/ejecutablePacman.git
 
+
+##Documenatación ◘
+https://github.com/Yeigesl/docuemnatacionPacman.git
+
 ## Autores 🔩
 
 _* Isabel Gómez Yareli Elizabeth_
