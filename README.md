@@ -22,7 +22,8 @@ _Para poder hacer uso de esta aplicación de requiere de:_
 
 ## Ejecutable y videos ⚙️
 
-
+##Documentación del proyecto ☑
+https://github.com/Yeigesl/docuemnatacionPacman.git
 
 ## Autores 🔩
 

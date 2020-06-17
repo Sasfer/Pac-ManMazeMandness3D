@@ -3104,11 +3104,11 @@ void applicationLoop() {
 		/*******************************************
 		* Propiedades PointLights
 		*******************************************/
-		/*
-		if(menuPrincipal == 0 &&) {
+		
+		if(menuPrincipal == 0) {
 			
 			// Luces antorcha, se controla si emitan o no luz dependiendo si es de dia o es de noche
-			//if (tiempoJuego == 479 || tiempoDiaNoche == 36 || tiempoDiaNoche == 96 || tiempoJuego == 480) {
+			if (tiempoJuego == 479 || tiempoDiaNoche == 36 || tiempoDiaNoche == 96 || tiempoJuego == 480) {
 				shaderMulLighting.setInt("pointLightCount", 17);
 				shaderTerrain.setInt("pointLightCount", 17);
 				for (int i = 4; i < 17; i++) {
@@ -3167,10 +3167,10 @@ void applicationLoop() {
 						shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
 					}
 				}
-			//}
+			}
 			
 			// Luces colocadas a los puntos POWER para hacerlos resaltar
-			//if (tiempoJuego == 479 || tiempoFantasmaAzulComer > 14 || tiempoJuego == 480) {
+			if (tiempoJuego == 479 || tiempoFantasmaAzulComer > 14 || tiempoJuego == 480) {
 				shaderMulLighting.setInt("pointLightCount", 17);
 				shaderTerrain.setInt("pointLightCount", 17);
 				for (int i = 0; i < 4; i++) {
@@ -3231,9 +3231,9 @@ void applicationLoop() {
 						shaderTerrain.setFloat("pointLights[" + std::to_string(i) + "].quadratic", 0.1);
 					}
 				}
-			//}
+			}
 		}
-		*/
+		
 		
 		/*******************************************
 		 * 1.- We render the depth buffer
