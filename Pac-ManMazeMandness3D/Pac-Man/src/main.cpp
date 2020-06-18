@@ -188,6 +188,8 @@ Model LE37ModelAnimate;
 Model LE38ModelAnimate;
 Model LE39ModelAnimate;
 
+
+
 // Juego
 int menuPrincipal = 1;
 int nivel = 1;
@@ -373,6 +375,9 @@ glm::mat4 modelMatrixLE36 = glm::mat4(1.0f);
 glm::mat4 modelMatrixLE37 = glm::mat4(1.0f);
 glm::mat4 modelMatrixLE38 = glm::mat4(1.0f);
 glm::mat4 modelMatrixLE39 = glm::mat4(1.0f);
+
+//Estatua
+glm::mat4 modelMatrixEstatua = glm::mat4(1.0f);
 
 int animationIndex = 1;
 // Para controlar la orientación 
@@ -1096,6 +1101,9 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	LE39ModelAnimate.loadModel("../models/LaberintoEgipto/LE39.obj");
 	LE39ModelAnimate.setShader(&shaderMulLighting);
 
+
+
+
 	camera->setPosition(glm::vec3(0.0, 0.0, 10.0));
 	camera->setDistanceFromTarget(distanceFromTarget);
 	camera->setSensitivity(1.0);
@@ -1764,6 +1772,8 @@ void destroy() {
 	LE37ModelAnimate.destroy();
 	LE38ModelAnimate.destroy();
 	LE39ModelAnimate.destroy();
+
+
 
 	// Textures Delete
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -4639,6 +4649,8 @@ void prepareScene() {
 	portalFantasma2Model.setShader(&shaderMulLighting);
 	portalPacman1Model.setShader(&shaderMulLighting);
 	portalPacman2Model.setShader(&shaderMulLighting);
+
+	
 }
 
 void prepareDepthScene() {
@@ -4802,6 +4814,8 @@ void renderScene(bool renderParticles) {
 		modelAntorcha12.render(modelMatrixAntorcha12);
 
 		modelAntorcha13.render(modelMatrixAntorcha13);
+
+
 
 		//Frutas
 		if (activoCereza == 1) {
