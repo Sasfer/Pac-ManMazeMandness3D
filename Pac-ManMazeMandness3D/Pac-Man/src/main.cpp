@@ -376,9 +376,6 @@ glm::mat4 modelMatrixLE37 = glm::mat4(1.0f);
 glm::mat4 modelMatrixLE38 = glm::mat4(1.0f);
 glm::mat4 modelMatrixLE39 = glm::mat4(1.0f);
 
-//Estatua
-glm::mat4 modelMatrixEstatua = glm::mat4(1.0f);
-
 int animationIndex = 1;
 // Para controlar la orientación 
 // del Pacman mientras se mueve
@@ -1559,7 +1556,7 @@ void init(int width, int height, std::string strTitle, bool bFullScreen) {
 	alSourcef(source[6], AL_MAX_DISTANCE, 2000);
 
 	// Tema principal Pac-Man menú principal
-	alSourcef(source[0], AL_PITCH, 1.0f);
+	alSourcef(source[0], AL_PITCH, 0.6f);
 	alSourcef(source[0], AL_GAIN, 1.5f);
 	alSourcefv(source[0], AL_POSITION, sourceTOPPos);
 	alSourcefv(source[0], AL_VELOCITY, sourceTOPVel);
@@ -2112,9 +2109,9 @@ void updateUI_Text() {
 
 	// Se muestra el texto cuando se esta en pause
 	if (pause == 1) {
-		RenderText(textShader, "Continue [o]", screenWidth / 2 + 120, screenHeight / 2, 0.7f, hex2rgb("0040ff"));
-		RenderText(textShader, "Main menu [m]", screenWidth / 2 + 120, screenHeight / 2 - 40, 0.7f, hex2rgb("0040ff"));
-		RenderText(textShader, "Exit [esc]", screenWidth / 2 + 120, screenHeight / 2 - 80, 0.7f, hex2rgb("0040ff"));
+		RenderText(textShader, "Continue [o]", screenWidth / 2 + 120, screenHeight / 2, 0.7f, hex2rgb("ff0040"));
+		RenderText(textShader, "Main menu [m]", screenWidth / 2 + 120, screenHeight / 2 - 40, 0.7f, hex2rgb("ff0040"));
+		RenderText(textShader, "Exit [esc]", screenWidth / 2 + 120, screenHeight / 2 - 80, 0.7f, hex2rgb("ff0040"));
 	}
 
 	// Se muestra el texto cuando se pierde por que se termino el tiempo o las vidas
